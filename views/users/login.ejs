@@ -1,0 +1,81 @@
+<%- include('../includes/header') %>
+
+<section class="auth-page">
+  <div class="auth-container">
+    <div class="auth-card">
+      <h2>🔐 Giriş Yap</h2>
+      <p class="auth-subtitle">KDS Pazar Araştırması Sistemine Hoş Geldiniz</p>
+
+      <form id="loginForm" class="auth-form">
+        <div class="form-group">
+          <label for="email">Email Adresi</label>
+          <input 
+            type="email" 
+            id="email" 
+            name="email" 
+            placeholder="ornek@email.com"
+            required
+          >
+        </div>
+
+        <div class="form-group">
+          <label for="sifre">Şifre</label>
+          <input 
+            type="password" 
+            id="sifre" 
+            name="sifre" 
+            placeholder="••••••••"
+            required
+          >
+        </div>
+
+        <div class="form-group checkbox-group">
+          <input type="checkbox" id="remember" name="remember">
+          <label for="remember">Beni hatırla</label>
+        </div>
+
+        <button type="submit" class="btn btn-primary btn-block">
+          Giriş Yap
+        </button>
+      </form>
+
+      <div class="auth-footer">
+        <p>Hesabınız yok mu? <a href="/users/register">Kayıt Ol</a></p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<script>
+  document.getElementById('loginForm').addEventListener('submit', async (e) => {
+    e.preventDefault();
+    
+    const formData = {
+      email: document.getElementById('email').value,
+      sifre: document.getElementById('sifre').value
+    };
+
+    try {
+      const response = await fetch('/users/login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(formData)
+      });
+
+      const data = await response.json();
+
+      if (data.status === 'success') {
+        // Kullanıcı bilgilerini localStorage'a kaydet
+        localStorage.setItem('kds_user', JSON.stringify(data.data.user));
+        localStorage.setItem('kds_token', 'authenticated'); // Basit auth flag
+        window.location.href = '/analyses/dashboard';
+      } else {
+        alert(data.message || 'Giriş başarısız');
+      }
+    } catch (error) {
+      alert('Bir hata oluştu: ' + error.message);
+    }
+  });
+</script>
+
+<%- include('../includes/footer') %>

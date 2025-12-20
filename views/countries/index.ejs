@@ -1,0 +1,155 @@
+<%- include('../includes/dashboard-header') %>
+
+<div class="dashboard-container">
+  
+  <div class="page-header">
+    <h1>🌍 Ülke İncele</h1>
+    <p class="page-subtitle">Bir ülke seçerek 2018-2023 dönemindeki ekonomik ve sektörel gelişimini analiz edin</p>
+  </div>
+
+  <% if (hasData) { %>
+    
+    <!-- Arama Kutusu -->
+    <div class="search-box">
+      <input type="text" id="countrySearch" placeholder="🔍 Ülke ara..." class="search-input">
+    </div>
+
+    <!-- Ülke Kartları Grid -->
+    <section class="country-grid">
+      <% countries.forEach(function(country) { %>
+        <a href="/countries/<%= country.ulke_id %>" class="country-card" data-name="<%= country.ulke_adi.toLowerCase() %>">
+          <div class="country-flag">
+            <span class="flag-emoji"><%= country.ISO_KODU %></span>
+          </div>
+          <div class="country-info">
+            <h3><%= country.ulke_adi %></h3>
+            <span class="country-code"><%= country.ISO_KODU %></span>
+          </div>
+          <div class="country-arrow">→</div>
+        </a>
+      <% }); %>
+    </section>
+
+  <% } else { %>
+    <div class="empty-state-card">
+      <div class="empty-state-icon">🌍</div>
+      <h2>Ülke Bulunamadı</h2>
+      <p>Veritabanında henüz ülke kaydı bulunmuyor.</p>
+    </div>
+  <% } %>
+
+</div>
+
+<style>
+  .search-box {
+    margin-bottom: 2rem;
+  }
+
+  .search-input {
+    width: 100%;
+    max-width: 400px;
+    padding: 1.2rem 1.5rem;
+    font-size: 1.4rem;
+    border: 2px solid #e2e8f0;
+    border-radius: 0.8rem;
+    outline: none;
+    transition: border-color 0.3s;
+  }
+
+  .search-input:focus {
+    border-color: #4299e1;
+  }
+
+  .country-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 1.5rem;
+  }
+
+  .country-card {
+    display: flex;
+    align-items: center;
+    gap: 1.2rem;
+    padding: 1.5rem;
+    background: #fff;
+    border-radius: 1rem;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+    text-decoration: none;
+    color: inherit;
+    transition: all 0.3s ease;
+    border: 2px solid transparent;
+  }
+
+  .country-card:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 8px 20px rgba(0,0,0,0.1);
+    border-color: #4299e1;
+  }
+
+  .country-card.hidden {
+    display: none;
+  }
+
+  .country-flag {
+    width: 50px;
+    height: 50px;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+  }
+
+  .flag-emoji {
+    font-size: 1.4rem;
+    font-weight: 700;
+    color: #fff;
+  }
+
+  .country-info {
+    flex: 1;
+  }
+
+  .country-info h3 {
+    font-size: 1.5rem;
+    color: #2d3748;
+    margin: 0 0 0.3rem 0;
+  }
+
+  .country-code {
+    font-size: 1.2rem;
+    color: #718096;
+    font-weight: 500;
+  }
+
+  .country-arrow {
+    font-size: 1.8rem;
+    color: #a0aec0;
+    transition: transform 0.3s;
+  }
+
+  .country-card:hover .country-arrow {
+    transform: translateX(5px);
+    color: #4299e1;
+  }
+</style>
+
+<script>
+  // Ülke arama
+  document.getElementById('countrySearch').addEventListener('input', function(e) {
+    const searchTerm = e.target.value.toLowerCase();
+    const cards = document.querySelectorAll('.country-card');
+    
+    cards.forEach(card => {
+      const name = card.dataset.name;
+      if (name.includes(searchTerm)) {
+        card.classList.remove('hidden');
+      } else {
+        card.classList.add('hidden');
+      }
+    });
+  });
+</script>
+
+<%- include('../includes/dashboard-footer') %>

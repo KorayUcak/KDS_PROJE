@@ -1,0 +1,167 @@
+<!-- Top Navigation Bar -->
+<header class="topbar">
+  <div class="topbar-left">
+    <!-- Mobile Menu Toggle -->
+    <button class="menu-toggle" id="menuToggle">
+      <span></span>
+      <span></span>
+      <span></span>
+    </button>
+    
+    <!-- Breadcrumb -->
+    <nav class="breadcrumb">
+      <a href="/analyses/dashboard" class="breadcrumb-item">Ana Sayfa</a>
+      <% if (typeof breadcrumb !== 'undefined' && breadcrumb.length > 0) { %>
+        <% breadcrumb.forEach((item, index) => { %>
+          <span class="breadcrumb-separator">/</span>
+          <% if (index === breadcrumb.length - 1) { %>
+            <span class="breadcrumb-item current"><%= item.name %></span>
+          <% } else { %>
+            <a href="<%= item.url %>" class="breadcrumb-item"><%= item.name %></a>
+          <% } %>
+        <% }); %>
+      <% } %>
+    </nav>
+  </div>
+
+  <div class="topbar-right">
+    <!-- Bildirimler -->
+    <div class="topbar-item notifications">
+      <button class="notification-btn" id="notificationBtn">
+        <span class="notification-icon">🔔</span>
+        <span class="notification-badge" id="notificationBadge">3</span>
+      </button>
+      <div class="notification-dropdown" id="notificationDropdown">
+        <div class="dropdown-header">
+          <h4>Bildirimler</h4>
+          <a href="#" class="mark-read">Tümünü Okundu İşaretle</a>
+        </div>
+        <div class="dropdown-body">
+          <div class="notification-item unread">
+            <span class="notification-icon">📈</span>
+            <div class="notification-content">
+              <p>Yeni analiz tamamlandı</p>
+              <span class="notification-time">5 dk önce</span>
+            </div>
+          </div>
+          <div class="notification-item unread">
+            <span class="notification-icon">🌍</span>
+            <div class="notification-content">
+              <p>Almanya pazar verisi güncellendi</p>
+              <span class="notification-time">1 saat önce</span>
+            </div>
+          </div>
+          <div class="notification-item">
+            <span class="notification-icon">⚠️</span>
+            <div class="notification-content">
+              <p>Sistem bakımı planlandı</p>
+              <span class="notification-time">2 saat önce</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Kullanıcı Profili -->
+    <div class="topbar-item user-profile">
+      <button class="profile-btn" id="profileBtn">
+        <div class="profile-avatar">
+          <span id="userAvatarInitial">K</span>
+        </div>
+        <div class="profile-info">
+          <span class="profile-name" id="userEmailDisplay">Kullanıcı</span>
+        </div>
+        <span class="dropdown-arrow">▼</span>
+      </button>
+      <div class="profile-dropdown" id="profileDropdown">
+        <button type="button" class="dropdown-item logout" id="logoutBtn">
+          <span>🚪</span> Çıkış Yap
+        </button>
+      </div>
+    </div>
+  </div>
+</header>
+
+<script>
+  // ═══════════════════════════════════════════════════════════════
+  // KULLANICI BİLGİSİ VE OTURUM YÖNETİMİ
+  // ═══════════════════════════════════════════════════════════════
+  (function() {
+    // LocalStorage'dan kullanıcı bilgisini al
+    const userDataStr = localStorage.getItem('kds_user');
+    const userAvatarEl = document.getElementById('userAvatarInitial');
+    const userEmailEl = document.getElementById('userEmailDisplay');
+    
+    if (userDataStr) {
+      try {
+        const userData = JSON.parse(userDataStr);
+        if (userData.email) {
+          // Email'in ilk harfini avatar olarak göster
+          if (userAvatarEl) {
+            userAvatarEl.textContent = userData.email.charAt(0).toUpperCase();
+          }
+          // Email'i göster
+          if (userEmailEl) {
+            userEmailEl.textContent = userData.email;
+          }
+        }
+      } catch (e) {
+        console.error('Kullanıcı verisi parse edilemedi:', e);
+      }
+    }
+
+    // Logout butonu işlevi
+    const logoutBtn = document.getElementById('logoutBtn');
+    if (logoutBtn) {
+      logoutBtn.addEventListener('click', async function(e) {
+        e.preventDefault();
+        e.stopPropagation();
+        
+        try {
+          // Backend'e logout isteği gönder
+          await fetch('/users/logout', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' }
+          });
+        } catch (err) {
+          console.log('Logout API hatası (önemsiz):', err);
+        }
+        
+        // LocalStorage'ı temizle
+        localStorage.removeItem('kds_user');
+        localStorage.removeItem('kds_token');
+        
+        // Tüm session/cookie'leri temizle
+        document.cookie.split(";").forEach(function(c) {
+          document.cookie = c.replace(/^ +/, "").replace(/=.*/, "=;expires=" + new Date().toUTCString() + ";path=/");
+        });
+        
+        // Login sayfasına yönlendir
+        window.location.href = '/users/login';
+      });
+    }
+  })();
+
+  // Dropdown toggle scripts
+  document.getElementById('notificationBtn')?.addEventListener('click', function(e) {
+    e.stopPropagation();
+    document.getElementById('notificationDropdown').classList.toggle('show');
+    document.getElementById('profileDropdown').classList.remove('show');
+  });
+
+  document.getElementById('profileBtn')?.addEventListener('click', function(e) {
+    e.stopPropagation();
+    document.getElementById('profileDropdown').classList.toggle('show');
+    document.getElementById('notificationDropdown').classList.remove('show');
+  });
+
+  document.addEventListener('click', function() {
+    document.getElementById('notificationDropdown')?.classList.remove('show');
+    document.getElementById('profileDropdown')?.classList.remove('show');
+  });
+
+  // Mobile menu toggle
+  document.getElementById('menuToggle')?.addEventListener('click', function() {
+    document.querySelector('.sidebar').classList.toggle('open');
+  });
+</script>

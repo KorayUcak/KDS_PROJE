@@ -1,0 +1,114 @@
+<%- include('../includes/header') %>
+
+<section class="auth-page">
+  <div class="auth-container">
+    <div class="auth-card">
+      <h2>📝 Kayıt Ol</h2>
+      <p class="auth-subtitle">KDS Sistemine Üye Olun</p>
+
+      <form id="registerForm" class="auth-form">
+        <div class="form-group">
+          <label for="ad_soyad">Ad Soyad</label>
+          <input 
+            type="text" 
+            id="ad_soyad" 
+            name="ad_soyad" 
+            placeholder="Adınız Soyadınız"
+            minlength="3"
+            required
+          >
+        </div>
+
+        <div class="form-group">
+          <label for="email">Email Adresi</label>
+          <input 
+            type="email" 
+            id="email" 
+            name="email" 
+            placeholder="ornek@email.com"
+            required
+          >
+        </div>
+
+        <div class="form-group">
+          <label for="sifre">Şifre</label>
+          <input 
+            type="password" 
+            id="sifre" 
+            name="sifre" 
+            placeholder="En az 6 karakter"
+            minlength="6"
+            required
+          >
+        </div>
+
+        <div class="form-group">
+          <label for="sifre_tekrar">Şifre Tekrar</label>
+          <input 
+            type="password" 
+            id="sifre_tekrar" 
+            name="sifre_tekrar" 
+            placeholder="Şifrenizi tekrar girin"
+            minlength="6"
+            required
+          >
+        </div>
+
+        <div class="form-group checkbox-group">
+          <input type="checkbox" id="terms" name="terms" required>
+          <label for="terms">Kullanım şartlarını kabul ediyorum</label>
+        </div>
+
+        <button type="submit" class="btn btn-primary btn-block">
+          Kayıt Ol
+        </button>
+      </form>
+
+      <div class="auth-footer">
+        <p>Zaten hesabınız var mı? <a href="/users/login">Giriş Yap</a></p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<script>
+  document.getElementById('registerForm').addEventListener('submit', async (e) => {
+    e.preventDefault();
+    
+    const sifre = document.getElementById('sifre').value;
+    const sifre_tekrar = document.getElementById('sifre_tekrar').value;
+
+    if (sifre !== sifre_tekrar) {
+      alert('Şifreler eşleşmiyor!');
+      return;
+    }
+
+    const formData = {
+      ad_soyad: document.getElementById('ad_soyad').value,
+      email: document.getElementById('email').value,
+      sifre: sifre,
+      sifre_tekrar: sifre_tekrar
+    };
+
+    try {
+      const response = await fetch('/users/register', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(formData)
+      });
+
+      const data = await response.json();
+
+      if (data.status === 'success') {
+        alert('Kayıt başarılı! Giriş sayfasına yönlendiriliyorsunuz.');
+        window.location.href = '/users/login';
+      } else {
+        alert(data.message || 'Kayıt başarısız');
+      }
+    } catch (error) {
+      alert('Bir hata oluştu: ' + error.message);
+    }
+  });
+</script>
+
+<%- include('../includes/footer') %>

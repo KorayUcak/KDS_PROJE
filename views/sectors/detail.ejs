@@ -1,0 +1,1555 @@
+<%- include('../includes/dashboard-header') %>
+
+<div class="dashboard-container integrated-report">
+  
+  <!-- ═══════════════════════════════════════════════════════════════
+       RAPOR BAŞLIĞI
+       ═══════════════════════════════════════════════════════════════ -->
+  <header class="report-header">
+    <a href="/dashboard" class="back-link">← Sektörlere Dön</a>
+    <h1>📊 <%= sector.sektor_adi %> - Bütünleşik Rapor</h1>
+    <p class="report-subtitle">Güncel ve geçmiş dönem sektörel veriler ile ilgili ülkelerin ekonomik göstergeleri</p>
+  </header>
+
+  <% if (hasData) { %>
+
+    <!-- ═══════════════════════════════════════════════════════════════
+         BÖLÜM 1: GÜNCEL SEKTÖREL DURUM
+         ═══════════════════════════════════════════════════════════════ -->
+    <section class="report-section" id="current-sector">
+      <div class="section-header">
+        <h2>📈 Bölüm 1: Güncel Sektörel Durum</h2>
+        <span class="section-badge">2024 Verileri</span>
+      </div>
+
+      <!-- KPI Kartları -->
+      <div class="kpi-grid">
+        <div class="kpi-card">
+          <div class="kpi-icon blue"><span>🌍</span></div>
+          <div class="kpi-content">
+            <h3 class="kpi-value"><%= stats.totalCountries %></h3>
+            <p class="kpi-label">Ülke Sayısı</p>
+          </div>
+        </div>
+        <div class="kpi-card">
+          <div class="kpi-icon green"><span>📤</span></div>
+          <div class="kpi-content">
+            <h3 class="kpi-value">$<%= (stats.totalExport / 1000).toFixed(1) %>B</h3>
+            <p class="kpi-label">Toplam İhracat</p>
+          </div>
+        </div>
+        <div class="kpi-card">
+          <div class="kpi-icon orange"><span>📈</span></div>
+          <div class="kpi-content">
+            <h3 class="kpi-value">%<%= stats.avgGrowth %></h3>
+            <p class="kpi-label">Ortalama Büyüme</p>
+          </div>
+        </div>
+        <div class="kpi-card">
+          <div class="kpi-icon purple"><span>👥</span></div>
+          <div class="kpi-content">
+            <h3 class="kpi-value"><%= (stats.totalEmployment / 1000).toFixed(1) %>M</h3>
+            <p class="kpi-label">Toplam İstihdam</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- ═══════════════════════════════════════════════════════════════
+           BÖLÜM A: GRAFİKSEL KIYASLAMA
+           ═══════════════════════════════════════════════════════════════ -->
+      <div class="charts-section">
+        <h3 class="subsection-title">📊 Grafiksel Kıyaslama (17 Ülke)</h3>
+        
+        <div class="charts-grid">
+          <!-- Grafik 1: Ticaret Dengesi (Yatay Bar) -->
+          <div class="chart-card full-width">
+            <div class="card-header">
+              <h4>📈 İhracat vs İthalat Karşılaştırması</h4>
+              <span class="card-subtitle">Ticaret dengesi analizi - Tüm ülkeler</span>
+            </div>
+            <div class="card-body" style="height: 550px;">
+              <canvas id="tradeChart"></canvas>
+            </div>
+          </div>
+
+          <!-- Grafik 2: Yatırım ve Büyüme Karma Grafik (Bar + Line) -->
+          <div class="chart-card">
+            <div class="card-header">
+              <h4>📊 Yatırım ve Büyüme Karşılaştırması</h4>
+              <span class="card-subtitle">Sütunlar: Yatırım (M$) | Çizgi: Büyüme Oranı (%)</span>
+            </div>
+            <div class="card-body" style="height: 450px;">
+              <canvas id="investmentGrowthChart"></canvas>
+            </div>
+          </div>
+
+          <!-- Harita -->
+          <div class="chart-card">
+            <div class="card-header">
+              <h4>🗺️ İhracat Haritası</h4>
+              <span class="card-subtitle">Coğrafi dağılım</span>
+            </div>
+            <div class="card-body">
+              <div id="world-map" style="width: 100%; height: 350px;"></div>
+            </div>
+            <div class="card-legend">
+              <span class="legend-item"><span class="legend-color low"></span> Düşük</span>
+              <span class="legend-item"><span class="legend-color mid"></span> Orta</span>
+              <span class="legend-item"><span class="legend-color high"></span> Yüksek</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ═══════════════════════════════════════════════════════════════
+           BÖLÜM B: DİNAMİK KIYASLAMA GRAFİĞİ
+           ═══════════════════════════════════════════════════════════════ -->
+      <div class="chart-card dynamic-comparison">
+        <div class="card-header">
+          <h3>📊 Dinamik Kıyaslama Grafiği (17 Ülke)</h3>
+          <div class="metric-tabs">
+            <button class="metric-tab active" data-metric="ihracat">📤 İhracat</button>
+            <button class="metric-tab" data-metric="uretim">🏭 Üretim</button>
+            <button class="metric-tab" data-metric="istihdam">👥 İstihdam</button>
+            <button class="metric-tab" data-metric="yatirim">💰 Yatırım</button>
+          </div>
+        </div>
+        <div class="card-body" style="height: 500px;">
+          <canvas id="dynamicComparisonChart"></canvas>
+        </div>
+      </div>
+
+      <!-- Accordion: Detaylı Tablo (Gizli) -->
+      <div class="accordion-section">
+        <button class="accordion-toggle" onclick="toggleAccordion('sectorTableAccordion')">
+          <span>📋 Detaylı Tablo Verilerini Göster</span>
+          <span class="accordion-icon">▼</span>
+        </button>
+        <div class="accordion-content" id="sectorTableAccordion" style="display: none;">
+          <div class="table-card detailed-table">
+            <div class="card-header">
+              <h3>📋 Detaylı Sektör Verileri (17 Ülke)</h3>
+              <span class="record-count"><%= tableData.length %> ülke</span>
+            </div>
+            <div class="table-responsive">
+              <table class="data-table" id="sectorTable">
+                <thead>
+                  <tr>
+                    <th>Ülke</th>
+                    <th>Üretim Miktarı</th>
+                    <th>Kapasite Puanı</th>
+                    <th>İhracat (M$)</th>
+                    <th>İthalat (M$)</th>
+                    <th>Ticaret Dengesi</th>
+                    <th>Büyüme (%)</th>
+                    <th>Yatırım (M$)</th>
+                    <th>İstihdam (Bin)</th>
+                    <th>Yerli Üretim (%)</th>
+                    <th>Trend</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <% tableData.forEach(function(row) { %>
+                    <tr class="<%= row.isHighGrowth ? 'high-growth-row' : '' %>" data-country="<%= row.ulke_adi %>">
+                      <td>
+                        <strong><%= row.ulke_adi %></strong>
+                        <span class="iso-badge"><%= row.iso_kodu %></span>
+                        <% if (row.isExporter) { %><span class="exporter-badge">📤</span><% } %>
+                      </td>
+                      <td><%= row.uretim.toLocaleString('tr-TR') %></td>
+                      <td>
+                        <div class="capacity-bar">
+                          <div class="capacity-fill" style="width: <%= Math.min(row.kapasite, 100) %>%"></div>
+                          <span><%= row.kapasite.toFixed(0) %></span>
+                        </div>
+                      </td>
+                      <td class="text-success">$<%= row.ihracat.toLocaleString('tr-TR') %></td>
+                      <td class="text-danger">$<%= row.ithalat.toLocaleString('tr-TR') %></td>
+                      <td>
+                        <span class="trade-balance <%= row.ticaretDengesi >= 0 ? 'positive' : 'negative' %>">
+                          <%= row.ticaretDengesi >= 0 ? '+' : '' %>$<%= row.ticaretDengesi.toLocaleString('tr-TR') %>
+                        </span>
+                      </td>
+                      <td>
+                        <span class="growth-badge <%= row.buyume > 5 ? 'positive' : row.buyume > 0 ? 'neutral' : 'negative' %>">
+                          <%= row.buyume > 0 ? '+' : '' %><%= row.buyume.toFixed(1) %>%
+                        </span>
+                      </td>
+                      <td>$<%= row.yatirim.toLocaleString('tr-TR') %></td>
+                      <td><%= row.istihdam.toLocaleString('tr-TR') %></td>
+                      <td>%<%= row.yerliUretim.toFixed(1) %></td>
+                      <td class="trend-cell" data-country="<%= row.ulke_adi %>">
+                        <span class="trend-sparkline">📊</span>
+                      </td>
+                    </tr>
+                  <% }); %>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ═══════════════════════════════════════════════════════════════
+         BÖLÜM 2: SEKTÖREL YARIŞ GRAFİĞİ (Trendler)
+         ═══════════════════════════════════════════════════════════════ -->
+    <section class="report-section" id="historical-sector">
+      <div class="section-header">
+        <h2>🏁 Bölüm 2: Sektörel Yarış Grafiği</h2>
+        <span class="section-badge">2018-2023 Trendleri</span>
+      </div>
+
+      <% if (hasHistoricalSector) { %>
+        <!-- Sektörel Yarış Grafiği (Multi-Line Chart) -->
+        <div class="chart-card">
+          <div class="card-header">
+            <h3>📈 Ülkelerin Sektörel İhracat Yarışı (2018-2023)</h3>
+            <span class="card-subtitle">Lejanttan ülkelere tıklayarak çizgileri gizleyebilirsiniz</span>
+          </div>
+          <div class="card-body" style="height: 500px;">
+            <canvas id="sectorRaceChart"></canvas>
+          </div>
+        </div>
+
+        <!-- Accordion: Geçmiş Tablo (Gizli) -->
+        <div class="accordion-section">
+          <button class="accordion-toggle" onclick="toggleAccordion('historicalSectorAccordion')">
+            <span>📋 Geçmiş Dönem Tablo Verilerini Göster</span>
+            <span class="accordion-icon">▼</span>
+          </button>
+          <div class="accordion-content" id="historicalSectorAccordion" style="display: none;">
+            <div class="table-card">
+              <div class="card-header">
+                <h3>📈 Yıllara Göre Sektör Verileri</h3>
+                <span class="record-count"><%= historicalSectorData.length %> kayıt</span>
+              </div>
+              <div class="table-responsive">
+                <table class="data-table">
+                  <thead>
+                    <tr>
+                      <th>Ülke</th>
+                      <th>Yıl</th>
+                      <th>İhracat (M$)</th>
+                      <th>İthalat (M$)</th>
+                      <th>Büyüme (%)</th>
+                      <th>İstihdam (Bin)</th>
+                      <th>Yatırım (M$)</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <% historicalSectorData.forEach(function(row) { %>
+                      <tr>
+                        <td><strong><%= row.ulke_adi %></strong> <span class="iso-badge"><%= row.iso_kodu %></span></td>
+                        <td><span class="year-badge"><%= row.yil %></span></td>
+                        <td>$<%= row.ihracat.toLocaleString('tr-TR') %></td>
+                        <td>$<%= row.ithalat.toLocaleString('tr-TR') %></td>
+                        <td>
+                          <span class="growth-badge <%= row.buyume > 0 ? 'positive' : 'negative' %>">
+                            <%= row.buyume > 0 ? '+' : '' %><%= row.buyume.toFixed(1) %>%
+                          </span>
+                        </td>
+                        <td><%= row.istihdam.toLocaleString('tr-TR') %></td>
+                        <td>$<%= row.yatirim.toLocaleString('tr-TR') %></td>
+                      </tr>
+                    <% }); %>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+        </div>
+      <% } else { %>
+        <div class="empty-state-inline">
+          <span>📭</span> Bu sektör için geçmiş dönem verisi bulunmuyor.
+        </div>
+      <% } %>
+    </section>
+
+    <!-- ═══════════════════════════════════════════════════════════════
+         BÖLÜM 3-4: EKONOMİK GÖSTERGELER (Grafikler)
+         ═══════════════════════════════════════════════════════════════ -->
+    <section class="report-section" id="economy-charts">
+      <div class="section-header">
+        <h2>💰 Bölüm 3: Ekonomik Göstergeler</h2>
+        <span class="section-badge">Makro Analiz</span>
+      </div>
+
+      <% if (hasCurrentEconomy || hasHistoricalEconomy) { %>
+        <!-- İki Yan Yana Grafik -->
+        <div class="economy-charts-grid">
+          <!-- Grafik A: GSYİH Koşusu -->
+          <div class="chart-card">
+            <div class="card-header">
+              <h3>🏆 GSYİH Sıralaması (17 Ülke)</h3>
+              <span class="card-subtitle">Ekonomik büyüklük karşılaştırması</span>
+            </div>
+            <div class="card-body" style="height: 450px;">
+              <canvas id="gdpRankingChart"></canvas>
+            </div>
+          </div>
+
+          <!-- Grafik B: Enflasyon Karşılaştırması -->
+          <div class="chart-card">
+            <div class="card-header">
+              <h3>📉 Enflasyon Karşılaştırması</h3>
+              <span class="card-subtitle">2023 enflasyon oranları</span>
+            </div>
+            <div class="card-body" style="height: 450px;">
+              <canvas id="inflationChart"></canvas>
+            </div>
+          </div>
+        </div>
+
+        <!-- Tarihsel GSYİH Trend Grafiği -->
+        <% if (hasHistoricalEconomy) { %>
+        <div class="chart-card" style="margin-top: 2rem;">
+          <div class="card-header">
+            <h3>📈 GSYİH Trend Yarışı (2018-2023)</h3>
+            <span class="card-subtitle">Lejanttan ülkelere tıklayarak çizgileri gizleyebilirsiniz</span>
+          </div>
+          <div class="card-body" style="height: 500px;">
+            <canvas id="gdpTrendChart"></canvas>
+          </div>
+        </div>
+        <% } %>
+
+        <!-- Accordion: Ekonomi Tabloları (Gizli) -->
+        <div class="accordion-section">
+          <button class="accordion-toggle" onclick="toggleAccordion('economyTablesAccordion')">
+            <span>📋 Ekonomik Tablo Verilerini Göster</span>
+            <span class="accordion-icon">▼</span>
+          </button>
+          <div class="accordion-content" id="economyTablesAccordion" style="display: none;">
+            <!-- Güncel Ekonomi Tablosu -->
+            <% if (hasCurrentEconomy) { %>
+            <div class="table-card" style="margin-bottom: 1.5rem;">
+              <div class="card-header">
+                <h3>🏦 Güncel Makro Ekonomik Veriler</h3>
+                <span class="record-count"><%= currentEconomyData.length %> ülke</span>
+              </div>
+              <div class="table-responsive">
+                <table class="data-table">
+                  <thead>
+                    <tr>
+                      <th>Ülke</th>
+                      <th>GSYH (Milyar $)</th>
+                      <th>Kişi Başı ($)</th>
+                      <th>Büyüme</th>
+                      <th>Enflasyon</th>
+                      <th>İşsizlik</th>
+                      <th>Risk Notu</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <% currentEconomyData.forEach(function(row) { %>
+                      <tr>
+                        <td><strong><%= row.ulke_adi %></strong> <span class="iso-badge"><%= row.iso_kodu %></span></td>
+                        <td>$<%= row.gsyh.toLocaleString('tr-TR') %></td>
+                        <td>$<%= row.gsyhKisiBasi.toLocaleString('tr-TR') %></td>
+                        <td>
+                          <span class="growth-badge <%= row.buyume > 3 ? 'positive' : row.buyume > 0 ? 'neutral' : 'negative' %>">
+                            <%= row.buyume > 0 ? '+' : '' %><%= row.buyume.toFixed(1) %>%
+                          </span>
+                        </td>
+                        <td>
+                          <span class="indicator-badge <%= row.enflasyon < 5 ? 'good' : row.enflasyon < 10 ? 'warning' : 'danger' %>">
+                            %<%= row.enflasyon.toFixed(1) %>
+                          </span>
+                        </td>
+                        <td>
+                          <span class="indicator-badge <%= row.issizlik < 5 ? 'good' : row.issizlik < 10 ? 'warning' : 'danger' %>">
+                            %<%= row.issizlik.toFixed(1) %>
+                          </span>
+                        </td>
+                        <td><span class="risk-badge risk-<%= row.riskNotu.charAt(0).toLowerCase() %>"><%= row.riskNotu %></span></td>
+                      </tr>
+                    <% }); %>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+            <% } %>
+
+            <!-- Tarihsel Ekonomi Tablosu -->
+            <% if (hasHistoricalEconomy) { %>
+            <div class="table-card">
+              <div class="card-header">
+                <h3>📊 Yıllara Göre Ekonomik Veriler</h3>
+                <span class="record-count"><%= historicalEconomyData.length %> kayıt</span>
+              </div>
+              <div class="table-responsive">
+                <table class="data-table">
+                  <thead>
+                    <tr>
+                      <th>Ülke</th>
+                      <th>Yıl</th>
+                      <th>GSYH (Milyar $)</th>
+                      <th>Büyüme (%)</th>
+                      <th>Enflasyon (%)</th>
+                      <th>İşsizlik (%)</th>
+                      <th>İhracat (Milyar $)</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <% historicalEconomyData.forEach(function(row) { %>
+                      <tr>
+                        <td><strong><%= row.ulke_adi %></strong> <span class="iso-badge"><%= row.iso_kodu %></span></td>
+                        <td><span class="year-badge"><%= row.yil %></span></td>
+                        <td>$<%= row.gsyh.toLocaleString('tr-TR') %></td>
+                        <td>
+                          <span class="growth-badge <%= row.buyume > 0 ? 'positive' : 'negative' %>">
+                            <%= row.buyume > 0 ? '+' : '' %><%= row.buyume.toFixed(1) %>%
+                          </span>
+                        </td>
+                        <td>%<%= row.enflasyon.toFixed(1) %></td>
+                        <td>%<%= row.issizlik.toFixed(1) %></td>
+                        <td>$<%= row.ihracat.toLocaleString('tr-TR') %></td>
+                      </tr>
+                    <% }); %>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+            <% } %>
+          </div>
+        </div>
+      <% } else { %>
+        <div class="empty-state-inline">
+          <span>📭</span> Ekonomi verisi bulunmuyor.
+        </div>
+      <% } %>
+    </section>
+
+    <!-- ═══════════════════════════════════════════════════════════════
+         JAVASCRIPT: Harita ve Grafikler
+         ═══════════════════════════════════════════════════════════════ -->
+    <script>
+      // Backend'den gelen veriler (17 ülke)
+      const mapData = <%- mapData %>;
+      const chartLabels = <%- chartLabels %>;
+      const chartExportValues = <%- chartExportValues %>;
+      const chartImportValues = <%- chartImportValues %>;
+      const chartGrowthValues = <%- chartGrowthValues %>;
+      const chartInvestmentValues = <%- chartInvestmentValues %>;
+      const chartEmploymentValues = <%- chartEmploymentValues %>;
+      const trendData = <%- trendData %>;
+
+      // Ek veriler (Tablolardan JSON)
+      const tableData = <%- JSON.stringify(tableData) %>;
+      const historicalSectorData = <%- JSON.stringify(historicalSectorData || []) %>;
+      const currentEconomyData = <%- JSON.stringify(currentEconomyData || []) %>;
+      const historicalEconomyData = <%- JSON.stringify(historicalEconomyData || []) %>;
+
+      // 17 Ülke için Pastel Renk Paleti
+      const pastelColors = [
+        'rgba(102, 126, 234, 0.8)',  // Mor-Mavi
+        'rgba(72, 187, 120, 0.8)',   // Yeşil
+        'rgba(237, 137, 54, 0.8)',   // Turuncu
+        'rgba(159, 122, 234, 0.8)',  // Açık Mor
+        'rgba(66, 153, 225, 0.8)',   // Mavi
+        'rgba(245, 101, 101, 0.8)',  // Kırmızı
+        'rgba(56, 178, 172, 0.8)',   // Teal
+        'rgba(246, 173, 85, 0.8)',   // Sarı
+        'rgba(160, 174, 192, 0.8)',  // Gri
+        'rgba(236, 201, 75, 0.8)',   // Altın
+        'rgba(129, 230, 217, 0.8)',  // Açık Teal
+        'rgba(251, 182, 206, 0.8)',  // Pembe
+        'rgba(144, 205, 244, 0.8)',  // Açık Mavi
+        'rgba(183, 148, 244, 0.8)',  // Lavanta
+        'rgba(154, 230, 180, 0.8)',  // Açık Yeşil
+        'rgba(252, 129, 129, 0.8)',  // Açık Kırmızı
+        'rgba(128, 90, 213, 0.8)'    // Koyu Mor
+      ];
+
+      // Accordion Toggle Fonksiyonu
+      function toggleAccordion(id) {
+        const content = document.getElementById(id);
+        const button = content.previousElementSibling;
+        const icon = button.querySelector('.accordion-icon');
+        
+        if (content.style.display === 'none') {
+          content.style.display = 'block';
+          icon.textContent = '▲';
+          button.classList.add('active');
+        } else {
+          content.style.display = 'none';
+          icon.textContent = '▼';
+          button.classList.remove('active');
+        }
+      }
+
+      // ═══════════════════════════════════════════════════════════════
+      // GRAFİK 1: TİCARET DENGESİ (Yatay Bar - 17 Ülke)
+      // ═══════════════════════════════════════════════════════════════
+      if (chartLabels.length > 0) {
+        const tradeCtx = document.getElementById('tradeChart').getContext('2d');
+        new Chart(tradeCtx, {
+          type: 'bar',
+          data: {
+            labels: chartLabels,
+            datasets: [
+              {
+                label: 'İhracat (Milyon $)',
+                data: chartExportValues,
+                backgroundColor: 'rgba(72, 187, 120, 0.85)',
+                borderColor: 'rgba(72, 187, 120, 1)',
+                borderWidth: 1,
+                borderRadius: 4
+              },
+              {
+                label: 'İthalat (Milyon $)',
+                data: chartImportValues,
+                backgroundColor: 'rgba(245, 101, 101, 0.85)',
+                borderColor: 'rgba(245, 101, 101, 1)',
+                borderWidth: 1,
+                borderRadius: 4
+              }
+            ]
+          },
+          options: {
+            indexAxis: 'y', // YATAY BAR
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+              legend: { position: 'top' },
+              tooltip: {
+                callbacks: {
+                  label: function(ctx) {
+                    return ctx.dataset.label + ': $' + ctx.raw.toLocaleString('tr-TR') + ' M';
+                  }
+                }
+              }
+            },
+            scales: {
+              x: { 
+                beginAtZero: true,
+                title: { display: true, text: 'Milyon $' },
+                ticks: {
+                  callback: function(value) {
+                    return '$' + value.toLocaleString('tr-TR');
+                  }
+                }
+              },
+              y: { 
+                ticks: { font: { size: 12, weight: '500' } }
+              }
+            }
+          }
+        });
+      }
+
+      // ═══════════════════════════════════════════════════════════════
+      // GRAFİK 2: YATIRIM ve BÜYÜME (Mixed Bar/Line Chart - 17 Ülke)
+      // Sütunlar: Yatırım Miktarı, Çizgi: Büyüme Oranı
+      // ═══════════════════════════════════════════════════════════════
+      if (chartLabels.length > 0) {
+        const mixedCtx = document.getElementById('investmentGrowthChart').getContext('2d');
+        new Chart(mixedCtx, {
+          type: 'bar',
+          data: {
+            labels: chartLabels,
+            datasets: [
+              {
+                label: 'Yatırım (Milyon $)',
+                type: 'bar',
+                data: chartInvestmentValues,
+                backgroundColor: 'rgba(102, 126, 234, 0.7)',
+                borderColor: 'rgba(102, 126, 234, 1)',
+                borderWidth: 1,
+                borderRadius: 4,
+                yAxisID: 'y'
+              },
+              {
+                label: 'Büyüme Oranı (%)',
+                type: 'line',
+                data: chartGrowthValues,
+                borderColor: 'rgba(72, 187, 120, 1)',
+                backgroundColor: 'rgba(72, 187, 120, 0.1)',
+                borderWidth: 3,
+                pointBackgroundColor: 'rgba(72, 187, 120, 1)',
+                pointBorderColor: '#fff',
+                pointBorderWidth: 2,
+                pointRadius: 5,
+                pointHoverRadius: 7,
+                tension: 0.3,
+                fill: false,
+                yAxisID: 'y1'
+              }
+            ]
+          },
+          options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            interaction: {
+              mode: 'index',
+              intersect: false
+            },
+            plugins: {
+              legend: {
+                display: true,
+                position: 'top',
+                labels: {
+                  usePointStyle: true,
+                  padding: 20,
+                  font: { size: 12, weight: '500' }
+                }
+              },
+              tooltip: {
+                backgroundColor: 'rgba(0,0,0,0.8)',
+                padding: 12,
+                titleFont: { size: 14, weight: 'bold' },
+                bodyFont: { size: 13 },
+                callbacks: {
+                  label: function(ctx) {
+                    if (ctx.dataset.type === 'line') {
+                      return 'Büyüme: %' + ctx.raw.toFixed(1);
+                    }
+                    return 'Yatırım: $' + ctx.raw.toLocaleString('tr-TR') + ' M';
+                  }
+                }
+              }
+            },
+            scales: {
+              x: {
+                grid: { display: false },
+                ticks: {
+                  font: { size: 11 },
+                  maxRotation: 45,
+                  minRotation: 45
+                }
+              },
+              y: {
+                type: 'linear',
+                display: true,
+                position: 'left',
+                title: {
+                  display: true,
+                  text: 'Yatırım (Milyon $)',
+                  font: { size: 12, weight: 'bold' },
+                  color: 'rgba(102, 126, 234, 1)'
+                },
+                ticks: {
+                  color: 'rgba(102, 126, 234, 1)',
+                  callback: function(value) {
+                    return '$' + value.toLocaleString('tr-TR');
+                  }
+                },
+                grid: { color: 'rgba(0,0,0,0.05)' }
+              },
+              y1: {
+                type: 'linear',
+                display: true,
+                position: 'right',
+                title: {
+                  display: true,
+                  text: 'Büyüme Oranı (%)',
+                  font: { size: 12, weight: 'bold' },
+                  color: 'rgba(72, 187, 120, 1)'
+                },
+                ticks: {
+                  color: 'rgba(72, 187, 120, 1)',
+                  callback: function(value) {
+                    return '%' + value.toFixed(1);
+                  }
+                },
+                grid: { drawOnChartArea: false }
+              }
+            }
+          }
+        });
+      }
+
+      // ═══════════════════════════════════════════════════════════════
+      // GRAFİK 3: DİNAMİK KIYASLAMA GRAFİĞİ (Tab'lı)
+      // ═══════════════════════════════════════════════════════════════
+      let dynamicChart = null;
+      const dynamicChartCanvas = document.getElementById('dynamicComparisonChart');
+      
+      if (dynamicChartCanvas && tableData.length > 0) {
+        // Verileri hazırla
+        const sortedByExport = [...tableData].sort((a, b) => b.ihracat - a.ihracat);
+        const labels = sortedByExport.map(d => d.ulke_adi);
+        
+        const metricsData = {
+          ihracat: sortedByExport.map(d => d.ihracat),
+          uretim: sortedByExport.map(d => d.uretim),
+          istihdam: sortedByExport.map(d => d.istihdam),
+          yatirim: sortedByExport.map(d => d.yatirim)
+        };
+        
+        const metricLabels = {
+          ihracat: 'İhracat (Milyon $)',
+          uretim: 'Üretim Miktarı',
+          istihdam: 'İstihdam (Bin Kişi)',
+          yatirim: 'Yatırım (Milyon $)'
+        };
+        
+        // Renkleri en yüksek 3'ü vurgula
+        const getColors = (data) => {
+          const sorted = [...data].sort((a, b) => b - a);
+          const top3 = sorted.slice(0, 3);
+          return data.map(val => {
+            if (val === top3[0]) return 'rgba(72, 187, 120, 0.9)';
+            if (val === top3[1]) return 'rgba(102, 126, 234, 0.9)';
+            if (val === top3[2]) return 'rgba(237, 137, 54, 0.9)';
+            return 'rgba(160, 174, 192, 0.7)';
+          });
+        };
+        
+        // Grafiği oluştur
+        function createDynamicChart(metric) {
+          if (dynamicChart) dynamicChart.destroy();
+          
+          const ctx = dynamicChartCanvas.getContext('2d');
+          dynamicChart = new Chart(ctx, {
+            type: 'bar',
+            data: {
+              labels: labels,
+              datasets: [{
+                label: metricLabels[metric],
+                data: metricsData[metric],
+                backgroundColor: getColors(metricsData[metric]),
+                borderRadius: 6,
+                borderSkipped: false
+              }]
+            },
+            options: {
+              indexAxis: 'y',
+              responsive: true,
+              maintainAspectRatio: false,
+              animation: { duration: 800, easing: 'easeOutQuart' },
+              plugins: {
+                legend: { display: false },
+                tooltip: {
+                  backgroundColor: 'rgba(0,0,0,0.8)',
+                  padding: 12,
+                  callbacks: {
+                    label: (ctx) => metricLabels[metric] + ': ' + ctx.raw.toLocaleString('tr-TR')
+                  }
+                }
+              },
+              scales: {
+                x: { 
+                  beginAtZero: true,
+                  grid: { color: 'rgba(0,0,0,0.05)' },
+                  ticks: { callback: (v) => v.toLocaleString('tr-TR') }
+                },
+                y: { 
+                  grid: { display: false },
+                  ticks: { font: { size: 12, weight: '500' } }
+                }
+              }
+            }
+          });
+        }
+        
+        // İlk grafik
+        createDynamicChart('ihracat');
+        
+        // Tab butonları
+        document.querySelectorAll('.metric-tab').forEach(btn => {
+          btn.addEventListener('click', function() {
+            document.querySelectorAll('.metric-tab').forEach(b => b.classList.remove('active'));
+            this.classList.add('active');
+            createDynamicChart(this.dataset.metric);
+          });
+        });
+      }
+
+      // ═══════════════════════════════════════════════════════════════
+      // GRAFİK 4: SEKTÖREL YARIŞ GRAFİĞİ (Multi-Line)
+      // ═══════════════════════════════════════════════════════════════
+      const sectorRaceCanvas = document.getElementById('sectorRaceChart');
+      if (sectorRaceCanvas && historicalSectorData.length > 0) {
+        // Verileri ülke ve yıla göre grupla
+        const countryData = {};
+        const years = new Set();
+        
+        historicalSectorData.forEach(row => {
+          years.add(row.yil);
+          if (!countryData[row.ulke_adi]) {
+            countryData[row.ulke_adi] = {};
+          }
+          countryData[row.ulke_adi][row.yil] = row.ihracat;
+        });
+        
+        const sortedYears = Array.from(years).sort();
+        const datasets = Object.keys(countryData).map((country, i) => ({
+          label: country,
+          data: sortedYears.map(y => countryData[country][y] || 0),
+          borderColor: pastelColors[i % pastelColors.length],
+          backgroundColor: pastelColors[i % pastelColors.length].replace('0.8', '0.1'),
+          borderWidth: 2,
+          pointRadius: 4,
+          pointHoverRadius: 6,
+          tension: 0.3,
+          fill: false
+        }));
+        
+        new Chart(sectorRaceCanvas.getContext('2d'), {
+          type: 'line',
+          data: { labels: sortedYears, datasets },
+          options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            interaction: { mode: 'index', intersect: false },
+            plugins: {
+              legend: {
+                position: 'right',
+                labels: { boxWidth: 12, padding: 8, font: { size: 11 } }
+              },
+              tooltip: {
+                backgroundColor: 'rgba(0,0,0,0.85)',
+                padding: 12,
+                callbacks: {
+                  label: (ctx) => ctx.dataset.label + ': $' + ctx.raw.toLocaleString('tr-TR') + ' M'
+                }
+              }
+            },
+            scales: {
+              x: { title: { display: true, text: 'Yıl' }, grid: { display: false } },
+              y: { 
+                title: { display: true, text: 'İhracat (Milyon $)' },
+                ticks: { callback: (v) => '$' + v.toLocaleString('tr-TR') }
+              }
+            }
+          }
+        });
+      }
+
+      // ═══════════════════════════════════════════════════════════════
+      // GRAFİK 5: GSYİH SIRALAMASI (Bar Chart)
+      // ═══════════════════════════════════════════════════════════════
+      const gdpRankingCanvas = document.getElementById('gdpRankingChart');
+      if (gdpRankingCanvas && currentEconomyData.length > 0) {
+        const sorted = [...currentEconomyData].sort((a, b) => b.gsyh - a.gsyh);
+        
+        new Chart(gdpRankingCanvas.getContext('2d'), {
+          type: 'bar',
+          data: {
+            labels: sorted.map(d => d.ulke_adi),
+            datasets: [{
+              label: 'GSYİH (Milyar $)',
+              data: sorted.map(d => d.gsyh),
+              backgroundColor: sorted.map((_, i) => pastelColors[i % pastelColors.length]),
+              borderRadius: 6
+            }]
+          },
+          options: {
+            indexAxis: 'y',
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+              legend: { display: false },
+              tooltip: {
+                callbacks: {
+                  label: (ctx) => 'GSYİH: $' + ctx.raw.toLocaleString('tr-TR') + ' Milyar'
+                }
+              }
+            },
+            scales: {
+              x: { 
+                beginAtZero: true,
+                ticks: { callback: (v) => '$' + v.toLocaleString('tr-TR') + 'B' }
+              },
+              y: { ticks: { font: { size: 11, weight: '500' } } }
+            }
+          }
+        });
+      }
+
+      // ═══════════════════════════════════════════════════════════════
+      // GRAFİK 6: ENFLASYON KARŞILAŞTIRMASI (Bar Chart)
+      // ═══════════════════════════════════════════════════════════════
+      const inflationCanvas = document.getElementById('inflationChart');
+      if (inflationCanvas && currentEconomyData.length > 0) {
+        const sorted = [...currentEconomyData].sort((a, b) => b.enflasyon - a.enflasyon);
+        
+        // Enflasyona göre renk (düşük=yeşil, yüksek=kırmızı)
+        const getInflationColor = (val) => {
+          if (val < 5) return 'rgba(72, 187, 120, 0.8)';
+          if (val < 10) return 'rgba(236, 201, 75, 0.8)';
+          if (val < 20) return 'rgba(237, 137, 54, 0.8)';
+          return 'rgba(245, 101, 101, 0.8)';
+        };
+        
+        new Chart(inflationCanvas.getContext('2d'), {
+          type: 'bar',
+          data: {
+            labels: sorted.map(d => d.ulke_adi),
+            datasets: [{
+              label: 'Enflasyon (%)',
+              data: sorted.map(d => d.enflasyon),
+              backgroundColor: sorted.map(d => getInflationColor(d.enflasyon)),
+              borderRadius: 6
+            }]
+          },
+          options: {
+            indexAxis: 'y',
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+              legend: { display: false },
+              tooltip: {
+                callbacks: {
+                  label: (ctx) => 'Enflasyon: %' + ctx.raw.toFixed(1)
+                }
+              }
+            },
+            scales: {
+              x: { 
+                beginAtZero: true,
+                ticks: { callback: (v) => '%' + v }
+              },
+              y: { ticks: { font: { size: 11, weight: '500' } } }
+            }
+          }
+        });
+      }
+
+      // ═══════════════════════════════════════════════════════════════
+      // GRAFİK 7: GSYİH TREND YARIŞI (Multi-Line)
+      // ═══════════════════════════════════════════════════════════════
+      const gdpTrendCanvas = document.getElementById('gdpTrendChart');
+      if (gdpTrendCanvas && historicalEconomyData.length > 0) {
+        const countryGdp = {};
+        const years = new Set();
+        
+        historicalEconomyData.forEach(row => {
+          years.add(row.yil);
+          if (!countryGdp[row.ulke_adi]) {
+            countryGdp[row.ulke_adi] = {};
+          }
+          countryGdp[row.ulke_adi][row.yil] = row.gsyh;
+        });
+        
+        const sortedYears = Array.from(years).sort();
+        const datasets = Object.keys(countryGdp).map((country, i) => ({
+          label: country,
+          data: sortedYears.map(y => countryGdp[country][y] || 0),
+          borderColor: pastelColors[i % pastelColors.length],
+          backgroundColor: pastelColors[i % pastelColors.length].replace('0.8', '0.1'),
+          borderWidth: 2,
+          pointRadius: 4,
+          pointHoverRadius: 6,
+          tension: 0.3,
+          fill: false
+        }));
+        
+        new Chart(gdpTrendCanvas.getContext('2d'), {
+          type: 'line',
+          data: { labels: sortedYears, datasets },
+          options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            interaction: { mode: 'index', intersect: false },
+            plugins: {
+              legend: {
+                position: 'right',
+                labels: { boxWidth: 12, padding: 8, font: { size: 11 } }
+              },
+              tooltip: {
+                backgroundColor: 'rgba(0,0,0,0.85)',
+                padding: 12,
+                callbacks: {
+                  label: (ctx) => ctx.dataset.label + ': $' + ctx.raw.toLocaleString('tr-TR') + ' Milyar'
+                }
+              }
+            },
+            scales: {
+              x: { title: { display: true, text: 'Yıl' }, grid: { display: false } },
+              y: { 
+                title: { display: true, text: 'GSYİH (Milyar $)' },
+                ticks: { callback: (v) => '$' + v.toLocaleString('tr-TR') + 'B' }
+              }
+            }
+          }
+        });
+      }
+
+      // ═══════════════════════════════════════════════════════════════
+      // DÜNYA HARİTASI
+      // ═══════════════════════════════════════════════════════════════
+      $(document).ready(function() {
+        if (Object.keys(mapData).length > 0) {
+          $('#world-map').vectorMap({
+            map: 'world_mill_en',
+            backgroundColor: 'transparent',
+            zoomOnScroll: false,
+            regionStyle: {
+              initial: {
+                fill: '#e2e8f0',
+                'fill-opacity': 1,
+                stroke: '#fff',
+                'stroke-width': 0.5
+              },
+              hover: { 'fill-opacity': 0.8, cursor: 'pointer' }
+            },
+            series: {
+              regions: [{
+                values: mapData,
+                scale: ['#C6F6D5', '#276749'],
+                normalizeFunction: 'polynomial'
+              }]
+            },
+            onRegionTipShow: function(e, el, code) {
+              if (mapData[code] !== undefined) {
+                el.html('<strong>' + el.html() + '</strong><br>İhracat: <b>$' + mapData[code].toLocaleString() + ' M</b>');
+              }
+            }
+          });
+        }
+
+        // ═══════════════════════════════════════════════════════════════
+        // TREND SPARKLINES (Geçmiş ihracat değişimi)
+        // ═══════════════════════════════════════════════════════════════
+        document.querySelectorAll('.trend-cell').forEach(cell => {
+          const country = cell.dataset.country;
+          const data = trendData[country];
+          
+          if (data && data.length > 1) {
+            const first = data[0].ihracat;
+            const last = data[data.length - 1].ihracat;
+            const change = ((last - first) / first * 100).toFixed(1);
+            const arrow = change >= 0 ? '⬆' : '⬇';
+            const color = change >= 0 ? '#22543D' : '#822727';
+            cell.innerHTML = '<span style="color:' + color + '; font-weight: 600;">' + arrow + ' ' + (change >= 0 ? '+' : '') + change + '%</span>';
+          } else {
+            cell.innerHTML = '<span style="color: #718096;">—</span>';
+          }
+        });
+      });
+    </script>
+
+  <% } else { %>
+    <!-- Empty State -->
+    <section class="empty-state-section">
+      <div class="empty-state-card">
+        <div class="empty-state-icon">📊</div>
+        <h2>Veri Bulunamadı</h2>
+        <p>Bu sektör için henüz veri bulunmuyor.</p>
+        <a href="/dashboard" class="btn btn-primary">← Sektörlere Dön</a>
+      </div>
+    </section>
+  <% } %>
+
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════════
+     SAYFA STİLLERİ
+     ═══════════════════════════════════════════════════════════════ -->
+<style>
+  .integrated-report {
+    max-width: 1400px;
+  }
+
+  /* Rapor Header */
+  .report-header {
+    margin-bottom: 2rem;
+    padding-bottom: 1.5rem;
+    border-bottom: 2px solid #e2e8f0;
+  }
+
+  .report-header h1 {
+    font-size: 2.6rem;
+    color: #1a202c;
+    margin: 0.5rem 0;
+  }
+
+  .report-subtitle {
+    color: #718096;
+    font-size: 1.4rem;
+  }
+
+  .back-link {
+    display: inline-block;
+    color: #4299e1;
+    text-decoration: none;
+    font-size: 1.3rem;
+    margin-bottom: 0.5rem;
+  }
+
+  .back-link:hover { text-decoration: underline; }
+
+  /* Bölüm Stilleri */
+  .report-section {
+    margin-bottom: 3rem;
+    padding: 2rem;
+    background: #fff;
+    border-radius: 1rem;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.06);
+  }
+
+  .section-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1.5rem;
+    padding-bottom: 1rem;
+    border-bottom: 1px solid #e2e8f0;
+  }
+
+  .section-header h2 {
+    font-size: 1.8rem;
+    color: #2d3748;
+    margin: 0;
+  }
+
+  .section-badge {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: #fff;
+    padding: 0.5rem 1rem;
+    border-radius: 2rem;
+    font-size: 1.1rem;
+    font-weight: 600;
+  }
+
+  /* Viz Grid */
+  .viz-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1.5rem;
+    margin-bottom: 1.5rem;
+  }
+
+  .viz-card {
+    background: #f8fafc;
+    border-radius: 0.8rem;
+    overflow: hidden;
+    border: 1px solid #e2e8f0;
+  }
+
+  .viz-card .card-header {
+    padding: 1rem 1.5rem;
+    border-bottom: 1px solid #e2e8f0;
+    background: #fff;
+  }
+
+  .viz-card .card-header h3 {
+    font-size: 1.4rem;
+    margin: 0;
+    color: #2d3748;
+  }
+
+  .viz-card .card-subtitle {
+    font-size: 1.1rem;
+    color: #718096;
+  }
+
+  .viz-card .card-body {
+    padding: 1rem;
+  }
+
+  .card-legend {
+    display: flex;
+    justify-content: center;
+    gap: 1.5rem;
+    padding: 0.8rem;
+    background: #fff;
+    border-top: 1px solid #e2e8f0;
+  }
+
+  .legend-item {
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+    font-size: 1.1rem;
+    color: #4a5568;
+  }
+
+  .legend-color {
+    width: 14px;
+    height: 14px;
+    border-radius: 3px;
+  }
+
+  .legend-color.low { background: #C6F6D5; }
+  .legend-color.mid { background: #68D391; }
+  .legend-color.high { background: #276749; }
+
+  /* Tablo Kartları */
+  .table-card {
+    background: #f8fafc;
+    border-radius: 0.8rem;
+    overflow: hidden;
+    border: 1px solid #e2e8f0;
+  }
+
+  .table-card .card-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 1rem 1.5rem;
+    background: #fff;
+    border-bottom: 1px solid #e2e8f0;
+  }
+
+  .table-card .card-header h3 {
+    font-size: 1.4rem;
+    margin: 0;
+    color: #2d3748;
+  }
+
+  .record-count {
+    background: #edf2f7;
+    padding: 0.3rem 0.8rem;
+    border-radius: 1rem;
+    font-size: 1.1rem;
+    color: #4a5568;
+  }
+
+  .table-responsive {
+    overflow-x: auto;
+  }
+
+  .data-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 1.25rem;
+  }
+
+  .data-table th,
+  .data-table td {
+    padding: 1rem 1.2rem;
+    text-align: left;
+    border-bottom: 1px solid #e2e8f0;
+  }
+
+  .data-table th {
+    background: #fff;
+    font-weight: 600;
+    color: #4a5568;
+    white-space: nowrap;
+    position: sticky;
+    top: 0;
+  }
+
+  .data-table tbody tr:hover {
+    background: #fff;
+  }
+
+  .high-growth-row {
+    background: linear-gradient(90deg, rgba(72, 187, 120, 0.08) 0%, transparent 50%);
+  }
+
+  /* Badges */
+  .iso-badge {
+    display: inline-block;
+    background: #e2e8f0;
+    color: #4a5568;
+    padding: 0.2rem 0.5rem;
+    border-radius: 0.3rem;
+    font-size: 1rem;
+    margin-left: 0.3rem;
+  }
+
+  .year-badge {
+    display: inline-block;
+    background: #ebf8ff;
+    color: #2b6cb0;
+    padding: 0.3rem 0.6rem;
+    border-radius: 0.3rem;
+    font-weight: 600;
+  }
+
+  .growth-badge {
+    display: inline-block;
+    padding: 0.3rem 0.6rem;
+    border-radius: 1rem;
+    font-weight: 600;
+    font-size: 1.1rem;
+  }
+
+  .growth-badge.positive { background: #C6F6D5; color: #22543D; }
+  .growth-badge.neutral { background: #FEFCBF; color: #744210; }
+  .growth-badge.negative { background: #FED7D7; color: #822727; }
+
+  .indicator-badge {
+    display: inline-block;
+    padding: 0.3rem 0.6rem;
+    border-radius: 0.3rem;
+    font-weight: 600;
+  }
+
+  .indicator-badge.good { background: #C6F6D5; color: #22543D; }
+  .indicator-badge.warning { background: #FEFCBF; color: #744210; }
+  .indicator-badge.danger { background: #FED7D7; color: #822727; }
+
+  .risk-badge {
+    display: inline-block;
+    padding: 0.3rem 0.8rem;
+    border-radius: 0.3rem;
+    font-weight: 700;
+    font-size: 1.1rem;
+  }
+
+  .risk-badge.risk-a { background: #C6F6D5; color: #22543D; }
+  .risk-badge.risk-b { background: #BEE3F8; color: #2A4365; }
+  .risk-badge.risk-c { background: #FEFCBF; color: #744210; }
+  .risk-badge.risk-d { background: #FED7D7; color: #822727; }
+
+  /* Empty State */
+  .empty-state-inline {
+    padding: 2rem;
+    text-align: center;
+    color: #718096;
+    font-size: 1.4rem;
+    background: #f7fafc;
+    border-radius: 0.5rem;
+  }
+
+  .empty-state-inline span {
+    font-size: 2rem;
+    margin-right: 0.5rem;
+  }
+
+  /* KPI Icon Colors */
+  .kpi-icon.purple {
+    background: linear-gradient(135deg, #9F7AEA 0%, #6B46C1 100%);
+  }
+
+  /* Charts Section */
+  .charts-section {
+    margin-top: 2rem;
+    margin-bottom: 2rem;
+  }
+
+  .subsection-title {
+    font-size: 1.5rem;
+    color: #2d3748;
+    margin-bottom: 1.5rem;
+    padding-bottom: 0.5rem;
+    border-bottom: 2px solid #e2e8f0;
+  }
+
+  .charts-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1.5rem;
+  }
+
+  .chart-card {
+    background: #f8fafc;
+    border-radius: 0.8rem;
+    overflow: hidden;
+    border: 1px solid #e2e8f0;
+  }
+
+  .chart-card.full-width {
+    grid-column: 1 / -1;
+  }
+
+  .chart-card .card-header {
+    padding: 1rem 1.5rem;
+    border-bottom: 1px solid #e2e8f0;
+    background: #fff;
+  }
+
+  .chart-card .card-header h4 {
+    font-size: 1.3rem;
+    margin: 0;
+    color: #2d3748;
+  }
+
+  .chart-card .card-body {
+    padding: 1rem;
+  }
+
+  /* Detailed Table Styles */
+  .detailed-table .data-table {
+    font-size: 1.15rem;
+  }
+
+  .detailed-table th {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: #fff;
+    font-size: 1.1rem;
+  }
+
+  .exporter-badge {
+    margin-left: 0.3rem;
+    font-size: 1rem;
+  }
+
+  .capacity-bar {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+  }
+
+  .capacity-bar .capacity-fill {
+    height: 8px;
+    background: linear-gradient(90deg, #48bb78, #38a169);
+    border-radius: 4px;
+    min-width: 20px;
+  }
+
+  .capacity-bar span {
+    font-size: 1.1rem;
+    color: #4a5568;
+    font-weight: 600;
+  }
+
+  .text-success {
+    color: #22543D;
+    font-weight: 600;
+  }
+
+  .text-danger {
+    color: #822727;
+  }
+
+  .trade-balance {
+    display: inline-block;
+    padding: 0.3rem 0.6rem;
+    border-radius: 0.3rem;
+    font-weight: 700;
+    font-size: 1.1rem;
+  }
+
+  .trade-balance.positive {
+    background: #C6F6D5;
+    color: #22543D;
+  }
+
+  .trade-balance.negative {
+    background: #FED7D7;
+    color: #822727;
+  }
+
+  .trend-cell {
+    text-align: center;
+    min-width: 80px;
+  }
+
+  .trend-sparkline {
+    font-size: 1.2rem;
+  }
+
+  /* Accordion Stilleri */
+  .accordion-section {
+    margin-top: 1.5rem;
+  }
+
+  .accordion-toggle {
+    width: 100%;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 1rem 1.5rem;
+    background: linear-gradient(135deg, #f8fafc 0%, #edf2f7 100%);
+    border: 1px solid #e2e8f0;
+    border-radius: 0.8rem;
+    cursor: pointer;
+    font-size: 1.3rem;
+    font-weight: 600;
+    color: #4a5568;
+    transition: all 0.3s ease;
+  }
+
+  .accordion-toggle:hover {
+    background: linear-gradient(135deg, #edf2f7 0%, #e2e8f0 100%);
+  }
+
+  .accordion-toggle.active {
+    border-radius: 0.8rem 0.8rem 0 0;
+    border-bottom: none;
+  }
+
+  .accordion-icon {
+    font-size: 1rem;
+    transition: transform 0.3s ease;
+  }
+
+  .accordion-content {
+    border: 1px solid #e2e8f0;
+    border-top: none;
+    border-radius: 0 0 0.8rem 0.8rem;
+    padding: 1.5rem;
+    background: #fff;
+  }
+
+  /* Metric Tabs Stilleri */
+  .metric-tabs {
+    display: flex;
+    gap: 0.5rem;
+    flex-wrap: wrap;
+  }
+
+  .metric-tab {
+    padding: 0.6rem 1.2rem;
+    border: 2px solid #e2e8f0;
+    border-radius: 2rem;
+    background: #fff;
+    color: #4a5568;
+    font-size: 1.2rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.3s ease;
+  }
+
+  .metric-tab:hover {
+    border-color: #667eea;
+    color: #667eea;
+  }
+
+  .metric-tab.active {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    border-color: transparent;
+    color: #fff;
+  }
+
+  /* Economy Charts Grid */
+  .economy-charts-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1.5rem;
+    margin-bottom: 1.5rem;
+  }
+
+  @media (max-width: 992px) {
+    .economy-charts-grid {
+      grid-template-columns: 1fr;
+    }
+  }
+
+  /* Dynamic Comparison Card */
+  .dynamic-comparison .card-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 1rem;
+  }
+
+  .dynamic-comparison .card-header h3 {
+    margin: 0;
+  }
+
+  /* Responsive */
+  @media (max-width: 1024px) {
+    .charts-grid {
+      grid-template-columns: 1fr;
+    }
+    .chart-card.full-width {
+      grid-column: 1;
+    }
+  }
+
+  @media (max-width: 768px) {
+    .metric-tabs {
+      justify-content: center;
+    }
+    .metric-tab {
+      font-size: 1.1rem;
+      padding: 0.5rem 1rem;
+    }
+    .accordion-toggle {
+      font-size: 1.2rem;
+      padding: 0.8rem 1rem;
+    }
+  }
+</style>
+
+<%- include('../includes/dashboard-footer') %>

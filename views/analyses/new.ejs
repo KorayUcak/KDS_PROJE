@@ -1,0 +1,214 @@
+<%- include('../includes/dashboard-header') %>
+
+<div class="dashboard-container">
+  <div class="page-header">
+    <h1>📋 Yeni Rapor Oluştur</h1>
+    <p class="page-subtitle">Sektör ve ülke bazlı pazar araştırma raporu oluşturun</p>
+  </div>
+
+  <section class="form-section">
+    <div class="form-card">
+      <form id="analysisForm" class="analysis-form">
+        <!-- ADIM 1: Sektör Seçimi -->
+        <div class="form-step">
+          <h3 class="step-title">1️⃣ Sektör Seçimi</h3>
+          <div class="form-group">
+            <label for="sektor_id">Hedef Sektör *</label>
+            <select id="sektor_id" name="sektor_id" required>
+              <option value="">Sektör Seçiniz...</option>
+              <% if (typeof sectors !== 'undefined' && sectors.length > 0) { %>
+                <% sectors.forEach(function(sector) { %>
+                  <option value="<%= sector.sektor_id %>"><%= sector.sektor_adi %></option>
+                <% }); %>
+              <% } %>
+            </select>
+          </div>
+        </div>
+
+        <!-- ADIM 2: Ülke Seçimi -->
+        <div class="form-step">
+          <h3 class="step-title">2️⃣ Ülke Seçimi</h3>
+          <div class="form-group">
+            <label for="ulke_id">Hedef Ülke *</label>
+            <select id="ulke_id" name="ulke_id" required>
+              <option value="">Ülke Seçiniz...</option>
+              <% if (typeof countries !== 'undefined' && countries.length > 0) { %>
+                <% countries.forEach(function(country) { %>
+                  <option value="<%= country.ulke_id %>" data-iso="<%= country.ISO_KODU %>">
+                    <%= country.ulke_adi %> (<%= country.ISO_KODU %>)
+                  </option>
+                <% }); %>
+              <% } %>
+            </select>
+          </div>
+        </div>
+
+        <!-- ADIM 3: Rapor Detayları -->
+        <div class="form-step">
+          <h3 class="step-title">3️⃣ Rapor Detayları</h3>
+          
+          <div class="form-group">
+            <label for="analiz_adi">Rapor Adı *</label>
+            <input 
+              type="text" 
+              id="analiz_adi" 
+              name="analiz_adi" 
+              placeholder="Örn: Almanya Otomotiv Sektörü 2024 Raporu"
+              required
+            >
+          </div>
+
+          <div class="form-group">
+            <label for="aciklama">Açıklama / Notlar</label>
+            <textarea 
+              id="aciklama" 
+              name="aciklama" 
+              rows="3"
+              placeholder="Rapor hakkında ek notlar..."
+            ></textarea>
+          </div>
+        </div>
+
+        <div class="form-actions">
+          <a href="/dashboard" class="btn btn-secondary">← İptal</a>
+          <button type="submit" class="btn btn-primary">📊 Rapor Oluştur</button>
+        </div>
+      </form>
+    </div>
+  </section>
+</div>
+
+<style>
+  .form-section {
+    max-width: 700px;
+    margin: 0 auto;
+  }
+
+  .form-card {
+    background: #fff;
+    border-radius: 1.2rem;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+    padding: 3rem;
+  }
+
+  .form-step {
+    margin-bottom: 2.5rem;
+    padding-bottom: 2rem;
+    border-bottom: 1px solid #e2e8f0;
+  }
+
+  .form-step:last-of-type {
+    border-bottom: none;
+    margin-bottom: 1.5rem;
+  }
+
+  .step-title {
+    font-size: 1.6rem;
+    color: #2c5282;
+    margin-bottom: 1.5rem;
+  }
+
+  .form-group {
+    margin-bottom: 1.5rem;
+  }
+
+  .form-group label {
+    display: block;
+    font-weight: 600;
+    margin-bottom: 0.5rem;
+    color: #2d3748;
+    font-size: 1.4rem;
+  }
+
+  .form-group input,
+  .form-group select,
+  .form-group textarea {
+    width: 100%;
+    padding: 1.2rem 1.5rem;
+    font-size: 1.4rem;
+    border: 2px solid #e2e8f0;
+    border-radius: 0.8rem;
+    transition: border-color 0.2s;
+  }
+
+  .form-group input:focus,
+  .form-group select:focus,
+  .form-group textarea:focus {
+    outline: none;
+    border-color: #2c5282;
+  }
+
+  .form-actions {
+    display: flex;
+    justify-content: space-between;
+    gap: 1rem;
+    margin-top: 2rem;
+  }
+</style>
+
+<script>
+  document.getElementById('analysisForm').addEventListener('submit', async (e) => {
+    e.preventDefault();
+
+    // Seçilen sektör bilgilerini al
+    const sektorSelect = document.getElementById('sektor_id');
+    const sektorId = sektorSelect.value;
+    const sektorAdi = sektorSelect.options[sektorSelect.selectedIndex].text;
+
+    // Seçilen ülke bilgilerini al
+    const ulkeSelect = document.getElementById('ulke_id');
+    const ulkeId = ulkeSelect.value;
+    const ulkeOption = ulkeSelect.options[ulkeSelect.selectedIndex];
+    const ulkeAdi = ulkeOption.text.split(' (')[0]; // "Türkiye (TR)" -> "Türkiye"
+    const ulkeKodu = ulkeOption.dataset.iso; // data-iso attribute
+
+    // Validasyon
+    if (!sektorId || !ulkeId) {
+      alert('Lütfen sektör ve ülke seçiniz.');
+      return;
+    }
+
+    const formData = {
+      analiz_adi: document.getElementById('analiz_adi').value || `${ulkeAdi} - ${sektorAdi} Raporu`,
+      analiz_tipi: 'detayli_rapor', // Otomatik atanıyor
+      parametreler: {
+        hedef_sektor_id: parseInt(sektorId),
+        hedef_ulke_id: parseInt(ulkeId),
+        sektor: sektorAdi,
+        ulke: ulkeAdi,
+        ulke_kodu: ulkeKodu,
+        aciklama: document.getElementById('aciklama').value || ''
+      },
+      // Sonuçlar - ISO kodu ile birlikte (harita için)
+      sonuclar: {
+        ulke: ulkeAdi,
+        ulke_kodu: ulkeKodu,
+        sektor: sektorAdi,
+        pazar_skoru: 0
+      },
+      // TODO: Session'dan kullanıcı ID'si alınacak
+      kullanici_id: 1
+    };
+
+    try {
+      const response = await fetch('/analyses', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(formData)
+      });
+
+      const data = await response.json();
+
+      if (data.status === 'success') {
+        alert('Rapor başarıyla oluşturuldu!');
+        window.location.href = '/dashboard';
+      } else {
+        alert(data.message || 'Rapor oluşturulamadı');
+      }
+    } catch (error) {
+      alert('Bir hata oluştu: ' + error.message);
+    }
+  });
+</script>
+
+<%- include('../includes/dashboard-footer') %>

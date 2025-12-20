@@ -1,0 +1,176 @@
+<%- include('../includes/dashboard-header') %>
+
+<div class="dashboard-container">
+  <!-- Sayfa Başlığı -->
+  <div class="page-header">
+    <h1>🏭 Sektörel Analiz</h1>
+    <p class="page-subtitle">Küresel sektör verilerini inceleyin ve karşılaştırın</p>
+  </div>
+
+  <% if (hasData) { %>
+    <!-- Sektör Kartları Grid -->
+    <section class="sector-grid">
+      <% 
+        // Sektör ikonları
+        const sectorIcons = {
+          'Otomotiv': '🚗',
+          'Teknoloji': '💻',
+          'Tarım': '🌾',
+          'Sağlık': '🏥',
+          'Turizm': '✈️',
+          'İnşaat': '🏗️',
+          'Enerji': '⚡',
+          'Tekstil': '👔',
+          'Gıda': '🍎',
+          'Finans': '🏦',
+          'Savunma': '🛡️'
+        };
+      %>
+      <% sectors.forEach(function(sector) { %>
+        <a href="/dashboard/sector/<%= sector.sektor_id %>" class="sector-card">
+          <div class="sector-card-header">
+            <span class="sector-icon"><%= sectorIcons[sector.sektor_adi] || '📊' %></span>
+            <h3><%= sector.sektor_adi %></h3>
+          </div>
+          
+          <div class="sector-card-body">
+            <% if (sector.stats) { %>
+              <div class="sector-stats">
+                <div class="stat-item">
+                  <span class="stat-value"><%= sector.stats.totalCountries %></span>
+                  <span class="stat-label">Ülke</span>
+                </div>
+                <div class="stat-item">
+                  <span class="stat-value">$<%= (sector.stats.totalExport / 1000).toFixed(1) %>B</span>
+                  <span class="stat-label">Toplam İhracat</span>
+                </div>
+                <div class="stat-item">
+                  <span class="stat-value">%<%= sector.stats.avgGrowth.toFixed(1) %></span>
+                  <span class="stat-label">Ort. Büyüme</span>
+                </div>
+              </div>
+            <% } else { %>
+              <p class="sector-desc">Sektör verilerini görüntülemek için tıklayın</p>
+            <% } %>
+          </div>
+          
+          <div class="sector-card-footer">
+            <span class="view-detail">Detaylı Analiz →</span>
+          </div>
+        </a>
+      <% }); %>
+    </section>
+
+  <% } else { %>
+    <!-- Empty State -->
+    <section class="empty-state-section">
+      <div class="empty-state-card">
+        <div class="empty-state-icon">🏭</div>
+        <h2>Sektör Verisi Bulunamadı</h2>
+        <p class="empty-state-message">
+          Veritabanında henüz sektör verisi bulunmuyor. 
+          Lütfen sistem yöneticisiyle iletişime geçin.
+        </p>
+      </div>
+    </section>
+  <% } %>
+</div>
+
+<style>
+  /* Sektör Kartları Grid */
+  .sector-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+    gap: 2rem;
+    padding: 2rem 0;
+  }
+
+  .sector-card {
+    background: #fff;
+    border-radius: 1.2rem;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+    overflow: hidden;
+    text-decoration: none;
+    color: inherit;
+    transition: all 0.3s ease;
+    display: flex;
+    flex-direction: column;
+  }
+
+  .sector-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 8px 30px rgba(0, 0, 0, 0.12);
+  }
+
+  .sector-card-header {
+    background: linear-gradient(135deg, #2c5282 0%, #1a365d 100%);
+    color: #fff;
+    padding: 2rem;
+    display: flex;
+    align-items: center;
+    gap: 1.5rem;
+  }
+
+  .sector-icon {
+    font-size: 3rem;
+  }
+
+  .sector-card-header h3 {
+    font-size: 1.8rem;
+    margin: 0;
+  }
+
+  .sector-card-body {
+    padding: 2rem;
+    flex: 1;
+  }
+
+  .sector-desc {
+    color: #718096;
+    font-size: 1.4rem;
+    line-height: 1.6;
+    margin-bottom: 1.5rem;
+  }
+
+  .sector-stats {
+    display: flex;
+    justify-content: space-between;
+    gap: 1rem;
+  }
+
+  .stat-item {
+    text-align: center;
+    flex: 1;
+    padding: 1rem;
+    background: #f7fafc;
+    border-radius: 0.8rem;
+  }
+
+  .stat-value {
+    display: block;
+    font-size: 1.6rem;
+    font-weight: 700;
+    color: #2c5282;
+  }
+
+  .stat-label {
+    display: block;
+    font-size: 1.1rem;
+    color: #718096;
+    margin-top: 0.3rem;
+  }
+
+  .sector-card-footer {
+    padding: 1.5rem 2rem;
+    border-top: 1px solid #e2e8f0;
+    text-align: right;
+  }
+
+  .view-detail {
+    color: #2c5282;
+    font-weight: 600;
+    font-size: 1.4rem;
+  }
+</style>
+
+<%- include('../includes/dashboard-footer') %>

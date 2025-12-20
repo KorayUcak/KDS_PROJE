@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="KDS - Küresel Pazar Araştırması Karar Destek Sistemi">
+  <title><%= typeof title !== 'undefined' ? title : 'KDS Dashboard' %></title>
+  
+  <!-- Ana Stil Dosyası -->
+  <link rel="stylesheet" href="/css/style.css">
+  
+  <!-- jVectorMap CSS -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/jvectormap@2.0.4/jquery-jvectormap.min.css">
+  
+  <!-- Chart.js -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+  
+  <!-- jQuery (jVectorMap için gerekli) -->
+  <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+  
+  <!-- jVectorMap -->
+  <script src="https://cdn.jsdelivr.net/npm/jvectormap@2.0.4/jquery-jvectormap.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/jvectormap@2.0.4/tests/assets/jquery-jvectormap-world-mill-en.js"></script>
+</head>
+<body class="dashboard-layout">
+  <!-- Sidebar -->
+  <%- include('sidebar') %>
+  
+  <!-- Main Content Wrapper -->
+  <div class="main-wrapper">
+    <!-- Top Navbar -->
+    <%- include('navbar') %>
+    
+    <!-- Page Content -->
+    <main class="main-content">

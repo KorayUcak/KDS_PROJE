@@ -1,0 +1,1542 @@
+<%- include('../includes/dashboard-header') %>
+
+<div class="dashboard-container country-detail-page">
+  
+  <!-- ═══════════════════════════════════════════════════════════════
+       SAYFA BAŞLIĞI
+       ═══════════════════════════════════════════════════════════════ -->
+  <header class="country-header">
+    <a href="/countries" class="back-link">← Ülkelere Dön</a>
+    <div class="country-title">
+      <span class="country-flag-large"><%= country.ISO_KODU %></span>
+      <div>
+        <h1>
+          <%= country.ulke_adi %>
+          <% if (locals.logistics && logistics.anlasmaAdi) { %>
+            <span class="badge bg-success"><%= logistics.anlasmaAdi %></span>
+          <% } else { %>
+            <span class="badge bg-secondary">Standart Tarife</span>
+          <% } %>
+        </h1>
+        <p class="country-meta"><%= country.ISO_KODU %> • 2018-2023 Trend Analizi</p>
+      </div>
+    </div>
+  </header>
+
+  <!-- Ülke bulundu - sayfa her zaman açılır -->
+  
+    <!-- Lojistik Performansı ve Simülatör -->
+    <% if (locals.logistics && logistics.hasData) { %>
+    <section class="logistics-section">
+      <div class="logistics-grid">
+        <!-- Lojistik Performans Kartı -->
+        <div class="logistics-card">
+          <div class="logistics-header">
+            <h3>📦 Lojistik Performansı</h3>
+          </div>
+          <div class="logistics-body">
+            <!-- LPI Skoru -->
+            <div class="logistics-item">
+              <div class="logistics-icon">🎯</div>
+              <div class="logistics-info">
+                <span class="logistics-label">LPI Skoru</span>
+                <div class="progress-bar-container">
+                  <div class="progress-bar" style="width: <%= (logistics.lpiSkoru / 5) * 100 %>%"></div>
+                </div>
+                <span class="logistics-value"><%= logistics.lpiSkoru.toFixed(2) %> / 5.00</span>
+              </div>
+            </div>
+            <!-- Gümrük Süresi -->
+            <div class="logistics-item">
+              <div class="logistics-icon">⏱️</div>
+              <div class="logistics-info">
+                <span class="logistics-label">Gümrük Bekleme Süresi</span>
+                <span class="logistics-value highlight"><%= logistics.gumrukSuresi.toFixed(1) %> gün</span>
+              </div>
+            </div>
+            <!-- Navlun Maliyeti -->
+            <div class="logistics-item">
+              <div class="logistics-icon">💵</div>
+              <div class="logistics-info">
+                <span class="logistics-label">Konteyner İhracat Maliyeti</span>
+                <span class="logistics-value">$<%= logistics.konteynerMaliyeti.toLocaleString('tr-TR') %></span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Navlun Simülatörü Kartı - Akıllı Lojistik Algoritması -->
+        <div class="simulator-card">
+          <div class="simulator-header">
+            <h3>🖩️ Akıllı Maliyet Hesaplayıcı</h3>
+          </div>
+          <div class="simulator-body">
+            <p class="simulator-desc">Konteyner sayısı ve mal bedeline göre detaylı ihracat maliyeti hesaplayın.</p>
+            
+            <!-- Konteyner Sayısı Input -->
+            <div class="simulator-input-group">
+              <label for="containerCount">Konteyner Sayısı (20ft) <span class="required">*</span></label>
+              <input type="number" id="containerCount" min="1" max="1000" value="1" class="simulator-input" required>
+            </div>
+            
+            <!-- Mal Bedeli Input (YENİ) -->
+            <div class="simulator-input-group">
+              <label for="goodsValue">Mal Bedeli ($) <span class="required">*</span></label>
+              <input type="number" id="goodsValue" min="0" step="100" value="10000" class="simulator-input" placeholder="Örn: 50000" required>
+              <small class="input-hint">İhraç edilecek malların toplam değeri</small>
+            </div>
+            
+            <button type="button" class="btn-simulator" onclick="calculateSmartFreight()">
+              📊 Detaylı Maliyet Hesapla
+            </button>
+            
+            <!-- Detaylı Sonuç Gösterimi -->
+            <div class="simulator-result-detailed" id="simulatorResultDetailed">
+              <div class="result-breakdown">
+                <!-- Temel Navlun -->
+                <div class="breakdown-item">
+                  <span class="breakdown-icon">🚢</span>
+                  <span class="breakdown-label">Temel Navlun:</span>
+                  <span class="breakdown-value" id="baseFreightValue">$0</span>
+                </div>
+                
+                <!-- Ardiye (Bekleme) Maliyeti -->
+                <div class="breakdown-item">
+                  <span class="breakdown-icon">⏱️</span>
+                  <span class="breakdown-label">Tahmini Ardiye (Bekleme):</span>
+                  <span class="breakdown-value" id="demurrageValue">$0</span>
+                </div>
+                
+                <!-- Risk Primi (LPI Bazlı) -->
+                <div class="breakdown-item risk-item" id="riskPremiumRow">
+                  <span class="breakdown-icon">⚠️</span>
+                  <span class="breakdown-label">Bölgesel Risk Primi (LPI):</span>
+                  <span class="breakdown-value" id="riskPremiumValue">$0</span>
+                </div>
+                
+                <!-- Gümrük Vergisi -->
+                <div class="breakdown-item">
+                  <span class="breakdown-icon">🏛️</span>
+                  <span class="breakdown-label">Gümrük Vergisi (%5):</span>
+                  <span class="breakdown-value" id="customsDutyValue">$0</span>
+                </div>
+              </div>
+              
+              <!-- Toplam -->
+              <div class="result-total">
+                <div class="total-label">TOPLAM TAHMİNİ MALİYET</div>
+                <div class="total-value" id="totalCostValue">$0</div>
+                <div class="total-note" id="totalNote">Hesaplamak için butona tıklayın</div>
+              </div>
+              
+              <!-- LPI Bilgi Notu -->
+              <div class="lpi-info-note" id="lpiInfoNote">
+                <span class="info-icon">ℹ️</span>
+                <span class="info-text">LPI Skoru: <strong><%= logistics.lpiSkoru.toFixed(2) %></strong> - 
+                  <span id="lpiStatusText"></span>
+                </span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+    <% } else { %>
+    <!-- Lojistik verisi yoksa bilgi mesajı -->
+    <section class="logistics-section">
+      <div class="empty-state-inline">
+        <span>📦</span> Bu ülke için lojistik verisi henüz eklenmemiş.
+      </div>
+    </section>
+    <% } %>
+
+    <!-- Güncel KPI'lar -->
+    <% if (currentKPIs) { %>
+      <section class="kpi-section">
+        <h2 class="section-title">📊 Güncel Durum (2024)</h2>
+        <div class="kpi-grid">
+          <div class="kpi-card">
+            <div class="kpi-icon blue"><span>💰</span></div>
+            <div class="kpi-content">
+              <h3 class="kpi-value">$<%= currentKPIs.gsyh.toLocaleString('tr-TR') %>B</h3>
+              <p class="kpi-label">GSYİH</p>
+            </div>
+          </div>
+          <div class="kpi-card">
+            <div class="kpi-icon green"><span>👤</span></div>
+            <div class="kpi-content">
+              <h3 class="kpi-value">$<%= currentKPIs.gsyhKisiBasi.toLocaleString('tr-TR') %></h3>
+              <p class="kpi-label">Kişi Başı Gelir</p>
+            </div>
+          </div>
+          <div class="kpi-card">
+            <div class="kpi-icon <%= currentKPIs.enflasyon < 10 ? 'green' : currentKPIs.enflasyon < 30 ? 'orange' : 'red' %>">
+              <span>📈</span>
+            </div>
+            <div class="kpi-content">
+              <h3 class="kpi-value">%<%= currentKPIs.enflasyon.toFixed(1) %></h3>
+              <p class="kpi-label">Enflasyon</p>
+            </div>
+          </div>
+          <div class="kpi-card">
+            <div class="kpi-icon <%= currentKPIs.issizlik < 7 ? 'green' : currentKPIs.issizlik < 12 ? 'orange' : 'red' %>">
+              <span>👥</span>
+            </div>
+            <div class="kpi-content">
+              <h3 class="kpi-value">%<%= currentKPIs.issizlik.toFixed(1) %></h3>
+              <p class="kpi-label">İşsizlik</p>
+            </div>
+          </div>
+        </div>
+      </section>
+    <% } %>
+
+    <!-- ═══════════════════════════════════════════════════════════════
+         BÖLÜM A: MAKRO EKONOMİ TRENDİ (Line Chart)
+         ═══════════════════════════════════════════════════════════════ -->
+    <% if (hasData) { %>
+    <section class="chart-section">
+      <div class="section-header">
+        <h2>📈 Bölüm A: Makro Ekonomi Trendi (2018-2023)</h2>
+        <p class="section-desc">GSYİH ve Enflasyon değişimi - Sol eksen: GSYİH (Milyar $), Sağ eksen: Enflasyon (%)</p>
+      </div>
+      <div class="chart-card">
+        <canvas id="economyChart" height="350"></canvas>
+      </div>
+    </section>
+
+    <!-- İkinci Grafik: Büyüme ve İşsizlik -->
+    <section class="chart-section">
+      <div class="section-header">
+        <h2>📊 Büyüme Oranı ve İşsizlik Trendi</h2>
+        <p class="section-desc">Ekonomik büyüme ve işsizlik oranlarının yıllara göre değişimi</p>
+      </div>
+      <div class="chart-card">
+        <canvas id="growthChart" height="300"></canvas>
+      </div>
+    </section>
+
+    <!-- ═══════════════════════════════════════════════════════════════
+         EKONOMİK GÖSTERGELER - SEKMELİ GRAFİK SETİ
+         ═══════════════════════════════════════════════════════════════ -->
+    <section class="chart-section">
+      <div class="section-header">
+        <h2>📊 Ekonomik Göstergeler (2018-2023)</h2>
+        <p class="section-desc">Ülkenin son 6 yıllık ekonomik performansı</p>
+      </div>
+
+      <!-- Sekmeli Grafik Alanı -->
+      <div class="chart-card tabbed-chart-card">
+        <!-- Tab Butonları -->
+        <div class="chart-tabs">
+          <button class="chart-tab active" data-tab="financial" onclick="switchEconomyTab('financial')">
+            💰 Finansal Hacim
+          </button>
+          <button class="chart-tab" data-tab="rates" onclick="switchEconomyTab('rates')">
+            📈 Ekonomik Oranlar
+          </button>
+        </div>
+        
+        <!-- Grafik Canvas -->
+        <div class="chart-body" style="height: 400px; padding: 1.5rem;">
+          <canvas id="economyTabbedChart"></canvas>
+        </div>
+        
+        <!-- Grafik Açıklaması -->
+        <div class="chart-info" id="chartInfo">
+          <span class="info-text" id="financialInfo">
+            <strong>Finansal Hacim:</strong> GSYİH (Yeşil), İhracat (Mavi), İthalat (Kırmızı) - Milyar $ cinsinden
+          </span>
+          <span class="info-text" id="ratesInfo" style="display: none;">
+            <strong>Ekonomik Oranlar:</strong> Enflasyon (Turuncu), Büyüme (Mor), İşsizlik (Gri) - % cinsinden
+          </span>
+        </div>
+      </div>
+
+      <!-- Accordion: Detaylı Tablo (Varsayılan Gizli) -->
+      <div class="accordion-section">
+        <button class="accordion-toggle" onclick="toggleEconomyTable()">
+          <span>📋 Detaylı Veri Tablosunu Göster</span>
+          <span class="accordion-icon" id="economyAccordionIcon">▼</span>
+        </button>
+        <div class="accordion-content" id="economyTableAccordion" style="display: none;">
+          <div class="table-responsive">
+            <table class="data-table economy-table">
+              <thead>
+                <tr>
+                  <th>Yıl</th>
+                  <th>GSYİH (Milyar $)</th>
+                  <th>Kişi Başı ($)</th>
+                  <th>Büyüme (%)</th>
+                  <th>Enflasyon (%)</th>
+                  <th>İşsizlik (%)</th>
+                  <th>İhracat (Milyar $)</th>
+                  <th>İthalat (Milyar $)</th>
+                </tr>
+              </thead>
+              <tbody id="economyTableBody">
+                <!-- JavaScript ile doldurulacak -->
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </section>
+    <% } else { %>
+    <section class="chart-section">
+      <div class="empty-state-inline">
+        <span>📭</span> Bu ülke için ekonomi geçmişi verisi bulunmuyor.
+      </div>
+    </section>
+    <% } %>
+
+    <!-- ═══════════════════════════════════════════════════════════════
+         BÖLÜM B: SEKTÖREL GELİŞİM (Multi-Line Chart)
+         ═══════════════════════════════════════════════════════════════ -->
+    <% if (hasSectorData) { %>
+      <section class="chart-section">
+        <div class="section-header">
+          <h2>🏭 Bölüm B: Sektörel İhracat Gelişimi (2018-2023)</h2>
+          <p class="section-desc">Her sektörün ihracat performansı - Hangi sektör yükselişte?</p>
+        </div>
+        <div class="chart-card chart-card-large">
+          <canvas id="sectorChart" height="400"></canvas>
+        </div>
+        <div class="chart-legend" id="sectorLegend"></div>
+      </section>
+    <% } else { %>
+      <section class="chart-section">
+        <div class="empty-state-inline">
+          <span>📭</span> Bu ülke için sektörel geçmiş verisi bulunmuyor.
+        </div>
+      </section>
+    <% } %>
+
+    <!-- ═══════════════════════════════════════════════════════════════
+         JAVASCRIPT: Chart.js Grafikleri
+         ═══════════════════════════════════════════════════════════════ -->
+    <script>
+      // Backend'den gelen veriler
+      const economyYears = <%- economyYears %>;
+      const gdpTrend = <%- gdpTrend %>;
+      const gdpPerCapitaTrend = <%- gdpPerCapitaTrend %>;
+      const inflationTrend = <%- inflationTrend %>;
+      const growthTrend = <%- growthTrend %>;
+      const unemploymentTrend = <%- unemploymentTrend %>;
+      const exportTrend = <%- exportTrend %>;
+      const importTrend = <%- importTrend %>;
+      const economyTableData = <%- economyTableData %>;
+      const sectorYears = <%- sectorYears %>;
+      const sectorDatasets = <%- sectorDatasets %>;
+
+      console.log('📊 Ekonomi Yılları:', economyYears);
+      console.log('💰 GSYİH Trendi:', gdpTrend);
+      console.log('📈 Enflasyon Trendi:', inflationTrend);
+      console.log('📋 Tablo Verisi:', economyTableData);
+      console.log('🏭 Sektör Verileri:', sectorDatasets);
+
+      // Ekonomi tablosunu doldur
+      const tableBody = document.getElementById('economyTableBody');
+      if (tableBody && economyTableData.length > 0) {
+        tableBody.innerHTML = economyTableData.map(row => `
+          <tr>
+            <td><strong>${row.yil}</strong></td>
+            <td>$${row.gsyh.toLocaleString('tr-TR')}</td>
+            <td>$${row.gsyhKisiBasi.toLocaleString('tr-TR')}</td>
+            <td class="${row.buyume >= 0 ? 'positive' : 'negative'}">${row.buyume >= 0 ? '+' : ''}${row.buyume.toFixed(1)}%</td>
+            <td class="${row.enflasyon > 10 ? 'warning' : ''}">${row.enflasyon.toFixed(1)}%</td>
+            <td>${row.issizlik.toFixed(1)}%</td>
+            <td>$${row.ihracat.toLocaleString('tr-TR')}</td>
+            <td>$${row.ithalat.toLocaleString('tr-TR')}</td>
+          </tr>
+        `).join('');
+      }
+
+      // ═══════════════════════════════════════════════════════════════
+      // SEKMELİ EKONOMİK GÖSTERGELER GRAFİĞİ
+      // ═══════════════════════════════════════════════════════════════
+      let economyTabbedChart = null;
+      const tabbedChartCanvas = document.getElementById('economyTabbedChart');
+      
+      // Finansal Hacim Dataset (Milyar $)
+      const financialDatasets = [
+        {
+          label: 'GSYİH (Milyar $)',
+          data: gdpTrend,
+          borderColor: 'rgba(72, 187, 120, 1)',
+          backgroundColor: 'rgba(72, 187, 120, 0.1)',
+          borderWidth: 3,
+          fill: true,
+          tension: 0.4,
+          pointRadius: 5,
+          pointHoverRadius: 8,
+          pointBackgroundColor: 'rgba(72, 187, 120, 1)',
+          pointBorderColor: '#fff',
+          pointBorderWidth: 2
+        },
+        {
+          label: 'İhracat (Milyar $)',
+          data: exportTrend,
+          borderColor: 'rgba(66, 153, 225, 1)',
+          backgroundColor: 'rgba(66, 153, 225, 0.1)',
+          borderWidth: 3,
+          fill: false,
+          tension: 0.4,
+          pointRadius: 5,
+          pointHoverRadius: 8,
+          pointBackgroundColor: 'rgba(66, 153, 225, 1)',
+          pointBorderColor: '#fff',
+          pointBorderWidth: 2
+        },
+        {
+          label: 'İthalat (Milyar $)',
+          data: importTrend,
+          borderColor: 'rgba(245, 101, 101, 1)',
+          backgroundColor: 'rgba(245, 101, 101, 0.1)',
+          borderWidth: 3,
+          fill: false,
+          tension: 0.4,
+          pointRadius: 5,
+          pointHoverRadius: 8,
+          pointBackgroundColor: 'rgba(245, 101, 101, 1)',
+          pointBorderColor: '#fff',
+          pointBorderWidth: 2
+        }
+      ];
+
+      // Ekonomik Oranlar Dataset (%)
+      const ratesDatasets = [
+        {
+          label: 'Enflasyon (%)',
+          data: inflationTrend,
+          borderColor: 'rgba(237, 137, 54, 1)',
+          backgroundColor: 'rgba(237, 137, 54, 0.1)',
+          borderWidth: 3,
+          fill: true,
+          tension: 0.4,
+          pointRadius: 5,
+          pointHoverRadius: 8,
+          pointBackgroundColor: 'rgba(237, 137, 54, 1)',
+          pointBorderColor: '#fff',
+          pointBorderWidth: 2
+        },
+        {
+          label: 'Büyüme (%)',
+          data: growthTrend,
+          borderColor: 'rgba(128, 90, 213, 1)',
+          backgroundColor: 'rgba(128, 90, 213, 0.1)',
+          borderWidth: 3,
+          fill: false,
+          tension: 0.4,
+          pointRadius: 5,
+          pointHoverRadius: 8,
+          pointBackgroundColor: 'rgba(128, 90, 213, 1)',
+          pointBorderColor: '#fff',
+          pointBorderWidth: 2
+        },
+        {
+          label: 'İşsizlik (%)',
+          data: unemploymentTrend,
+          borderColor: 'rgba(160, 174, 192, 1)',
+          backgroundColor: 'rgba(160, 174, 192, 0.1)',
+          borderWidth: 3,
+          fill: false,
+          tension: 0.4,
+          pointRadius: 5,
+          pointHoverRadius: 8,
+          pointBackgroundColor: 'rgba(160, 174, 192, 1)',
+          pointBorderColor: '#fff',
+          pointBorderWidth: 2
+        }
+      ];
+
+      // Grafik oluşturma fonksiyonu
+      function createTabbedChart(type) {
+        if (economyTabbedChart) {
+          economyTabbedChart.destroy();
+        }
+
+        const datasets = type === 'financial' ? financialDatasets : ratesDatasets;
+        const yAxisLabel = type === 'financial' ? 'Milyar $' : '%';
+        const yAxisCallback = type === 'financial' 
+          ? (v) => '$' + v.toLocaleString('tr-TR') + 'B'
+          : (v) => '%' + v;
+
+        economyTabbedChart = new Chart(tabbedChartCanvas.getContext('2d'), {
+          type: 'line',
+          data: {
+            labels: economyYears,
+            datasets: datasets
+          },
+          options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            animation: {
+              duration: 800,
+              easing: 'easeOutQuart'
+            },
+            interaction: {
+              mode: 'index',
+              intersect: false
+            },
+            plugins: {
+              legend: {
+                position: 'top',
+                labels: {
+                  usePointStyle: true,
+                  padding: 20,
+                  font: { size: 13, weight: '500' }
+                }
+              },
+              tooltip: {
+                backgroundColor: 'rgba(0,0,0,0.85)',
+                padding: 14,
+                titleFont: { size: 14, weight: 'bold' },
+                bodyFont: { size: 13 },
+                cornerRadius: 8,
+                callbacks: {
+                  label: function(ctx) {
+                    const value = ctx.raw;
+                    if (type === 'financial') {
+                      return ctx.dataset.label + ': $' + value.toLocaleString('tr-TR') + ' Milyar';
+                    } else {
+                      return ctx.dataset.label + ': %' + value.toFixed(1);
+                    }
+                  }
+                }
+              }
+            },
+            scales: {
+              x: {
+                grid: { display: false },
+                ticks: { font: { size: 12, weight: '500' } },
+                title: { display: true, text: 'Yıl', font: { size: 13 } }
+              },
+              y: {
+                beginAtZero: type !== 'financial',
+                grid: { color: 'rgba(0,0,0,0.05)' },
+                ticks: {
+                  font: { size: 11 },
+                  callback: yAxisCallback
+                },
+                title: { display: true, text: yAxisLabel, font: { size: 13 } }
+              }
+            }
+          }
+        });
+      }
+
+      // Tab değiştirme fonksiyonu
+      function switchEconomyTab(tab) {
+        // Tab butonlarını güncelle
+        document.querySelectorAll('.chart-tab').forEach(btn => {
+          btn.classList.remove('active');
+          if (btn.dataset.tab === tab) {
+            btn.classList.add('active');
+          }
+        });
+
+        // Info text'leri güncelle
+        document.getElementById('financialInfo').style.display = tab === 'financial' ? 'block' : 'none';
+        document.getElementById('ratesInfo').style.display = tab === 'rates' ? 'block' : 'none';
+
+        // Grafiği yeniden oluştur
+        createTabbedChart(tab);
+      }
+
+      // Accordion toggle fonksiyonu
+      function toggleEconomyTable() {
+        const content = document.getElementById('economyTableAccordion');
+        const icon = document.getElementById('economyAccordionIcon');
+        const button = content.previousElementSibling;
+        
+        if (content.style.display === 'none') {
+          content.style.display = 'block';
+          icon.textContent = '▲';
+          button.classList.add('active');
+          button.querySelector('span:first-child').textContent = '📋 Detaylı Veri Tablosunu Gizle';
+        } else {
+          content.style.display = 'none';
+          icon.textContent = '▼';
+          button.classList.remove('active');
+          button.querySelector('span:first-child').textContent = '📋 Detaylı Veri Tablosunu Göster';
+        }
+      }
+
+      // Sayfa yüklendiğinde ilk grafiği oluştur
+      if (tabbedChartCanvas && economyYears.length > 0) {
+        createTabbedChart('financial');
+      }
+
+      <% if (hasData) { %>
+      // ═══════════════════════════════════════════
+      // GRAFİK A: GSYİH ve Enflasyon (Dual Axis)
+      // ═══════════════════════════════════════════
+      const economyCtx = document.getElementById('economyChart').getContext('2d');
+      new Chart(economyCtx, {
+        type: 'line',
+        data: {
+          labels: economyYears,
+          datasets: [
+            {
+              label: 'GSYİH (Milyar $)',
+              data: gdpTrend,
+              borderColor: 'rgba(66, 153, 225, 1)',
+              backgroundColor: 'rgba(66, 153, 225, 0.1)',
+              borderWidth: 3,
+              fill: true,
+              tension: 0.3,
+              yAxisID: 'y',
+              pointRadius: 5,
+              pointHoverRadius: 8
+            },
+            {
+              label: 'Enflasyon (%)',
+              data: inflationTrend,
+              borderColor: 'rgba(245, 101, 101, 1)',
+              backgroundColor: 'rgba(245, 101, 101, 0.1)',
+              borderWidth: 3,
+              fill: false,
+              tension: 0.3,
+              yAxisID: 'y1',
+              pointRadius: 5,
+              pointHoverRadius: 8,
+              borderDash: [5, 5]
+            }
+          ]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          interaction: {
+            mode: 'index',
+            intersect: false
+          },
+          plugins: {
+            legend: {
+              position: 'top',
+              labels: { font: { size: 13 }, padding: 20 }
+            },
+            tooltip: {
+              backgroundColor: 'rgba(0,0,0,0.8)',
+              padding: 12,
+              titleFont: { size: 14 },
+              bodyFont: { size: 13 }
+            }
+          },
+          scales: {
+            y: {
+              type: 'linear',
+              position: 'left',
+              title: { display: true, text: 'GSYİH (Milyar $)', font: { size: 12 } },
+              grid: { color: 'rgba(0,0,0,0.05)' }
+            },
+            y1: {
+              type: 'linear',
+              position: 'right',
+              title: { display: true, text: 'Enflasyon (%)', font: { size: 12 } },
+              grid: { drawOnChartArea: false }
+            },
+            x: {
+              grid: { display: false },
+              ticks: { font: { size: 12 } }
+            }
+          }
+        }
+      });
+
+      // ═══════════════════════════════════════════
+      // GRAFİK: Büyüme ve İşsizlik
+      // ═══════════════════════════════════════════
+      const growthCtx = document.getElementById('growthChart').getContext('2d');
+      new Chart(growthCtx, {
+        type: 'line',
+        data: {
+          labels: economyYears,
+          datasets: [
+            {
+              label: 'Büyüme Oranı (%)',
+              data: growthTrend,
+              borderColor: 'rgba(72, 187, 120, 1)',
+              backgroundColor: 'rgba(72, 187, 120, 0.2)',
+              borderWidth: 3,
+              fill: true,
+              tension: 0.3,
+              pointRadius: 5
+            },
+            {
+              label: 'İşsizlik Oranı (%)',
+              data: unemploymentTrend,
+              borderColor: 'rgba(237, 137, 54, 1)',
+              backgroundColor: 'rgba(237, 137, 54, 0.1)',
+              borderWidth: 3,
+              fill: false,
+              tension: 0.3,
+              pointRadius: 5
+            }
+          ]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: {
+            legend: { position: 'top' }
+          },
+          scales: {
+            y: {
+              title: { display: true, text: 'Oran (%)' },
+              grid: { color: 'rgba(0,0,0,0.05)' }
+            },
+            x: { grid: { display: false } }
+          }
+        }
+      });
+      <% } %>
+
+      // ═══════════════════════════════════════════
+      // GRAFİK B: Sektörel İhracat (Multi-Line)
+      // ═══════════════════════════════════════════
+      <% if (hasSectorData) { %>
+      const sectorCtx = document.getElementById('sectorChart').getContext('2d');
+      
+      // Her sektör için dataset oluştur
+      const sectorChartDatasets = sectorDatasets.map(sector => ({
+        label: sector.name,
+        data: sector.exportData,
+        borderColor: sector.color,
+        backgroundColor: sector.color.replace('1)', '0.1)'),
+        borderWidth: 2.5,
+        fill: false,
+        tension: 0.3,
+        pointRadius: 4,
+        pointHoverRadius: 7
+      }));
+
+      new Chart(sectorCtx, {
+        type: 'line',
+        data: {
+          labels: sectorYears,
+          datasets: sectorChartDatasets
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          interaction: {
+            mode: 'index',
+            intersect: false
+          },
+          plugins: {
+            legend: {
+              position: 'bottom',
+              labels: { 
+                font: { size: 12 },
+                padding: 15,
+                usePointStyle: true
+              }
+            },
+            tooltip: {
+              backgroundColor: 'rgba(0,0,0,0.8)',
+              padding: 12,
+              callbacks: {
+                label: function(context) {
+                  return context.dataset.label + ': $' + context.parsed.y.toLocaleString() + ' M';
+                }
+              }
+            }
+          },
+          scales: {
+            y: {
+              title: { display: true, text: 'İhracat (Milyon $)', font: { size: 12 } },
+              grid: { color: 'rgba(0,0,0,0.05)' },
+              ticks: {
+                callback: function(value) {
+                  return '$' + value.toLocaleString();
+                }
+              }
+            },
+            x: {
+              grid: { display: false },
+              ticks: { font: { size: 12 } }
+            }
+          }
+        }
+      });
+      <% } %>
+
+      // ═══════════════════════════════════════════════════════════════
+      // AKILLI LOJİSTİK MALİYET HESAPLAYICI
+      // ═══════════════════════════════════════════════════════════════
+      <% if (locals.logistics && logistics.hasData) { %>
+      
+      // SABİTLER (Constants) - İleride kolayca değiştirilebilir
+      const LOGISTICS_CONSTANTS = {
+        DAILY_DEMURRAGE_COST: 100,      // Günlük ardiye bedeli ($)
+        CUSTOMS_DUTY_RATE: 0.05,        // Gümrük vergisi oranı (%5)
+        HIGH_RISK_LPI_THRESHOLD: 3.0,   // Yüksek risk LPI eşiği
+        MEDIUM_RISK_LPI_THRESHOLD: 3.8, // Orta risk LPI eşiği
+        HIGH_RISK_PREMIUM_RATE: 0.15,   // Yüksek risk primi (%15)
+        MEDIUM_RISK_PREMIUM_RATE: 0.05  // Orta risk primi (%5)
+      };
+
+      // Veritabanından gelen lojistik verileri
+      const logisticsData = {
+        containerCost: parseFloat(<%= logistics.konteynerMaliyeti %>) || 0,
+        lpiScore: parseFloat(<%= logistics.lpiSkoru %>) || 0,
+        customsWaitDays: parseFloat(<%= logistics.gumrukSuresi %>) || 0
+      };
+
+      /**
+       * LPI Skoruna göre risk primi oranını hesapla
+       * @param {number} lpiScore - Lojistik Performans İndeksi
+       * @returns {object} - { rate: oran, label: açıklama }
+       */
+      function calculateRiskPremiumRate(lpiScore) {
+        if (lpiScore < LOGISTICS_CONSTANTS.HIGH_RISK_LPI_THRESHOLD) {
+          return { 
+            rate: LOGISTICS_CONSTANTS.HIGH_RISK_PREMIUM_RATE, 
+            label: 'Yüksek Risk Bölgesi (%15 prim)',
+            class: 'high-risk'
+          };
+        } else if (lpiScore < LOGISTICS_CONSTANTS.MEDIUM_RISK_LPI_THRESHOLD) {
+          return { 
+            rate: LOGISTICS_CONSTANTS.MEDIUM_RISK_PREMIUM_RATE, 
+            label: 'Orta Risk Bölgesi (%5 prim)',
+            class: 'medium-risk'
+          };
+        } else {
+          return { 
+            rate: 0, 
+            label: 'Düşük Risk Bölgesi (Prim yok)',
+            class: 'low-risk'
+          };
+        }
+      }
+
+      /**
+       * Akıllı Lojistik Maliyet Hesaplama Fonksiyonu
+       * Formüller:
+       * 1. Navlun = Konteyner Maliyeti × Konteyner Sayısı
+       * 2. Ardiye = Gümrük Bekleme Süresi × Konteyner Sayısı × 100$
+       * 3. Risk Primi = Navlun × (LPI bazlı oran)
+       * 4. Gümrük Vergisi = Mal Bedeli × %5
+       * 5. TOPLAM = Navlun + Ardiye + Risk Primi + Gümrük Vergisi
+       */
+      function calculateSmartFreight() {
+        // Input değerlerini al
+        const containerCount = parseInt(document.getElementById('containerCount').value) || 1;
+        const goodsValue = parseFloat(document.getElementById('goodsValue').value) || 0;
+
+        // Validasyon
+        if (containerCount < 1) {
+          alert('Konteyner sayısı en az 1 olmalıdır.');
+          return;
+        }
+        if (goodsValue <= 0) {
+          alert('Lütfen geçerli bir mal bedeli giriniz.');
+          return;
+        }
+
+        // 1. Temel Navlun Hesabı
+        const baseFreight = logisticsData.containerCost * containerCount;
+
+        // 2. Ardiye (Bekleme) Maliyeti Hesabı
+        const demurrageCost = logisticsData.customsWaitDays * containerCount * LOGISTICS_CONSTANTS.DAILY_DEMURRAGE_COST;
+
+        // 3. Risk Primi Hesabı (LPI Bazlı)
+        const riskInfo = calculateRiskPremiumRate(logisticsData.lpiScore);
+        const riskPremium = baseFreight * riskInfo.rate;
+
+        // 4. Gümrük Vergisi Hesabı
+        const customsDuty = goodsValue * LOGISTICS_CONSTANTS.CUSTOMS_DUTY_RATE;
+
+        // 5. Toplam Maliyet
+        const totalCost = baseFreight + demurrageCost + riskPremium + customsDuty;
+
+        // UI Güncelleme
+        document.getElementById('baseFreightValue').textContent = '$' + baseFreight.toLocaleString('tr-TR', {minimumFractionDigits: 0, maximumFractionDigits: 0});
+        document.getElementById('demurrageValue').textContent = '$' + demurrageCost.toLocaleString('tr-TR', {minimumFractionDigits: 0, maximumFractionDigits: 0});
+        document.getElementById('riskPremiumValue').textContent = '$' + riskPremium.toLocaleString('tr-TR', {minimumFractionDigits: 0, maximumFractionDigits: 0});
+        document.getElementById('customsDutyValue').textContent = '$' + customsDuty.toLocaleString('tr-TR', {minimumFractionDigits: 0, maximumFractionDigits: 0});
+        document.getElementById('totalCostValue').textContent = '$' + totalCost.toLocaleString('tr-TR', {minimumFractionDigits: 0, maximumFractionDigits: 0});
+        
+        // Not güncelleme
+        document.getElementById('totalNote').textContent = containerCount + ' konteyner, $' + goodsValue.toLocaleString('tr-TR') + ' mal bedeli için';
+
+        // LPI durum metni güncelleme
+        document.getElementById('lpiStatusText').textContent = riskInfo.label;
+        
+        // Risk satırı stilini güncelle
+        const riskRow = document.getElementById('riskPremiumRow');
+        riskRow.className = 'breakdown-item risk-item ' + riskInfo.class;
+
+        // Animasyon efekti
+        const resultEl = document.getElementById('simulatorResultDetailed');
+        resultEl.classList.add('calculated');
+        resultEl.classList.add('pulse');
+        setTimeout(() => resultEl.classList.remove('pulse'), 400);
+      }
+
+      // Sayfa yüklendiğinde LPI durumunu göster
+      (function initLPIStatus() {
+        const riskInfo = calculateRiskPremiumRate(logisticsData.lpiScore);
+        const lpiStatusEl = document.getElementById('lpiStatusText');
+        if (lpiStatusEl) {
+          lpiStatusEl.textContent = riskInfo.label;
+        }
+        const riskRow = document.getElementById('riskPremiumRow');
+        if (riskRow) {
+          riskRow.className = 'breakdown-item risk-item ' + riskInfo.class;
+        }
+      })();
+
+      <% } %>
+    </script>
+
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════════
+     SAYFA STİLLERİ
+     ═══════════════════════════════════════════════════════════════ -->
+<style>
+  .country-detail-page {
+    max-width: 1400px;
+  }
+
+  /* Header */
+  .country-header {
+    margin-bottom: 2rem;
+  }
+
+  .back-link {
+    display: inline-block;
+    color: #4299e1;
+    text-decoration: none;
+    font-size: 1.3rem;
+    margin-bottom: 1rem;
+  }
+
+  .back-link:hover { text-decoration: underline; }
+
+  .country-title {
+    display: flex;
+    align-items: center;
+    gap: 1.5rem;
+  }
+
+  .country-flag-large {
+    width: 70px;
+    height: 70px;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 2rem;
+    font-weight: 700;
+    color: #fff;
+  }
+
+  .country-title h1 {
+    font-size: 2.6rem;
+    color: #1a202c;
+    margin: 0;
+  }
+
+  .country-meta {
+    color: #718096;
+    font-size: 1.4rem;
+    margin: 0.3rem 0 0 0;
+  }
+
+  /* Section Title */
+  .section-title {
+    font-size: 1.6rem;
+    color: #2d3748;
+    margin-bottom: 1rem;
+  }
+
+  /* Chart Sections */
+  .chart-section {
+    margin-bottom: 2.5rem;
+  }
+
+  .section-header {
+    margin-bottom: 1rem;
+  }
+
+  .section-header h2 {
+    font-size: 1.8rem;
+    color: #2d3748;
+    margin: 0 0 0.3rem 0;
+  }
+
+  .section-desc {
+    color: #718096;
+    font-size: 1.3rem;
+    margin: 0;
+  }
+
+  .chart-card {
+    background: #fff;
+    border-radius: 1rem;
+    padding: 2rem;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.06);
+  }
+
+  .chart-card-large {
+    padding: 2rem;
+  }
+
+  .chart-legend {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 1rem;
+    margin-top: 1rem;
+  }
+
+  /* Tablo Kartı */
+  .table-card {
+    background: #fff;
+    border-radius: 1rem;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.06);
+    overflow: hidden;
+  }
+
+  .economy-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 1.3rem;
+  }
+
+  .economy-table th {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: #fff;
+    padding: 1.2rem 1rem;
+    text-align: left;
+    font-weight: 600;
+    font-size: 1.2rem;
+    white-space: nowrap;
+  }
+
+  .economy-table td {
+    padding: 1rem;
+    border-bottom: 1px solid #e2e8f0;
+  }
+
+  .economy-table tbody tr:hover {
+    background: rgba(102, 126, 234, 0.05);
+  }
+
+  .economy-table .positive {
+    color: #38a169;
+    font-weight: 600;
+  }
+
+  .economy-table .negative {
+    color: #e53e3e;
+    font-weight: 600;
+  }
+
+  .economy-table .warning {
+    color: #dd6b20;
+    font-weight: 600;
+  }
+
+  /* KPI Icon Colors */
+  .kpi-icon.red {
+    background: linear-gradient(135deg, #FC8181 0%, #E53E3E 100%);
+  }
+
+  /* Empty State */
+  .empty-state-inline {
+    padding: 2rem;
+    text-align: center;
+    color: #718096;
+    font-size: 1.4rem;
+    background: #f7fafc;
+    border-radius: 0.5rem;
+  }
+
+  .empty-state-inline span {
+    font-size: 2rem;
+    margin-right: 0.5rem;
+  }
+
+  /* Badge Stilleri */
+  .badge {
+    display: inline-block;
+    padding: 0.4rem 1rem;
+    font-size: 1.2rem;
+    font-weight: 600;
+    border-radius: 2rem;
+    margin-left: 1rem;
+    vertical-align: middle;
+  }
+
+  .bg-success {
+    background: linear-gradient(135deg, #48bb78 0%, #38a169 100%);
+    color: #fff;
+  }
+
+  .bg-secondary {
+    background: linear-gradient(135deg, #a0aec0 0%, #718096 100%);
+    color: #fff;
+  }
+
+  /* Lojistik Section */
+  .logistics-section {
+    margin-bottom: 2.5rem;
+  }
+
+  .logistics-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 2rem;
+  }
+
+  @media (max-width: 992px) {
+    .logistics-grid {
+      grid-template-columns: 1fr;
+    }
+  }
+
+  .logistics-card,
+  .simulator-card {
+    background: #fff;
+    border-radius: 1.2rem;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.06);
+    overflow: hidden;
+  }
+
+  .logistics-header,
+  .simulator-header {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: #fff;
+    padding: 1.5rem 2rem;
+  }
+
+  .logistics-header h3,
+  .simulator-header h3 {
+    margin: 0;
+    font-size: 1.6rem;
+    font-weight: 600;
+  }
+
+  .logistics-body,
+  .simulator-body {
+    padding: 2rem;
+  }
+
+  .logistics-item {
+    display: flex;
+    align-items: center;
+    gap: 1.5rem;
+    padding: 1.2rem 0;
+    border-bottom: 1px solid #f0f0f0;
+  }
+
+  .logistics-item:last-child {
+    border-bottom: none;
+  }
+
+  .logistics-icon {
+    font-size: 2rem;
+    width: 50px;
+    height: 50px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: #f7fafc;
+    border-radius: 0.8rem;
+  }
+
+  .logistics-info {
+    flex: 1;
+  }
+
+  .logistics-label {
+    display: block;
+    font-size: 1.2rem;
+    color: #718096;
+    margin-bottom: 0.3rem;
+  }
+
+  .logistics-value {
+    font-size: 1.6rem;
+    font-weight: 700;
+    color: #2d3748;
+  }
+
+  .logistics-value.highlight {
+    color: #4299e1;
+  }
+
+  /* Progress Bar */
+  .progress-bar-container {
+    width: 100%;
+    height: 8px;
+    background: #e2e8f0;
+    border-radius: 4px;
+    margin: 0.5rem 0;
+    overflow: hidden;
+  }
+
+  .progress-bar {
+    height: 100%;
+    background: linear-gradient(90deg, #48bb78 0%, #38a169 100%);
+    border-radius: 4px;
+    transition: width 0.5s ease;
+  }
+
+  /* Simülatör Stilleri */
+  .simulator-desc {
+    color: #718096;
+    font-size: 1.3rem;
+    margin-bottom: 1.5rem;
+  }
+
+  .simulator-input-group {
+    margin-bottom: 1.5rem;
+  }
+
+  .simulator-input-group label {
+    display: block;
+    font-size: 1.3rem;
+    color: #4a5568;
+    margin-bottom: 0.5rem;
+    font-weight: 500;
+  }
+
+  .simulator-input {
+    width: 100%;
+    padding: 1.2rem;
+    font-size: 1.6rem;
+    border: 2px solid #e2e8f0;
+    border-radius: 0.8rem;
+    outline: none;
+    transition: border-color 0.3s;
+  }
+
+  .simulator-input:focus {
+    border-color: #667eea;
+  }
+
+  .btn-simulator {
+    width: 100%;
+    padding: 1.4rem 2rem;
+    font-size: 1.5rem;
+    font-weight: 600;
+    color: #fff;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    border: none;
+    border-radius: 0.8rem;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
+  }
+
+  .btn-simulator:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(102, 126, 234, 0.5);
+  }
+
+  .btn-simulator:active {
+    transform: translateY(0);
+  }
+
+  .simulator-result {
+    margin-top: 2rem;
+    padding: 2rem;
+    background: linear-gradient(135deg, #f7fafc 0%, #edf2f7 100%);
+    border-radius: 1rem;
+    text-align: center;
+    transition: all 0.3s ease;
+  }
+
+  .simulator-result.pulse {
+    transform: scale(1.02);
+  }
+
+  .result-label {
+    font-size: 1.2rem;
+    color: #718096;
+    margin-bottom: 0.5rem;
+  }
+
+  .result-value {
+    font-size: 3rem;
+    font-weight: 700;
+    color: #2d3748;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+
+  .result-note {
+    font-size: 1.2rem;
+    color: #a0aec0;
+    margin-top: 0.5rem;
+  }
+
+  /* ═══════════════════════════════════════════════════════════════
+     AKILLI LOJİSTİK SİMÜLATÖR STİLLERİ
+     ═══════════════════════════════════════════════════════════════ */
+  .required {
+    color: #e53e3e;
+    font-weight: bold;
+  }
+
+  .input-hint {
+    display: block;
+    font-size: 1.1rem;
+    color: #a0aec0;
+    margin-top: 0.4rem;
+  }
+
+  .simulator-result-detailed {
+    margin-top: 2rem;
+    background: linear-gradient(135deg, #f8fafc 0%, #edf2f7 100%);
+    border-radius: 1rem;
+    overflow: hidden;
+    transition: all 0.3s ease;
+    border: 2px solid #e2e8f0;
+  }
+
+  .simulator-result-detailed.calculated {
+    border-color: #667eea;
+  }
+
+  .simulator-result-detailed.pulse {
+    transform: scale(1.01);
+  }
+
+  .result-breakdown {
+    padding: 1.5rem;
+  }
+
+  .breakdown-item {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    padding: 1rem;
+    background: #fff;
+    border-radius: 0.6rem;
+    margin-bottom: 0.8rem;
+    transition: all 0.3s ease;
+  }
+
+  .breakdown-item:last-child {
+    margin-bottom: 0;
+  }
+
+  .breakdown-item:hover {
+    transform: translateX(5px);
+  }
+
+  .breakdown-icon {
+    font-size: 1.6rem;
+    width: 40px;
+    text-align: center;
+  }
+
+  .breakdown-label {
+    flex: 1;
+    font-size: 1.3rem;
+    color: #4a5568;
+  }
+
+  .breakdown-value {
+    font-size: 1.4rem;
+    font-weight: 700;
+    color: #2d3748;
+  }
+
+  /* Risk Primi Satırı Stilleri */
+  .risk-item.high-risk {
+    background: linear-gradient(135deg, #fff5f5 0%, #fed7d7 100%);
+    border-left: 4px solid #e53e3e;
+  }
+
+  .risk-item.high-risk .breakdown-value {
+    color: #c53030;
+  }
+
+  .risk-item.medium-risk {
+    background: linear-gradient(135deg, #fffaf0 0%, #feebc8 100%);
+    border-left: 4px solid #ed8936;
+  }
+
+  .risk-item.medium-risk .breakdown-value {
+    color: #c05621;
+  }
+
+  .risk-item.low-risk {
+    background: linear-gradient(135deg, #f0fff4 0%, #c6f6d5 100%);
+    border-left: 4px solid #48bb78;
+  }
+
+  .risk-item.low-risk .breakdown-value {
+    color: #276749;
+  }
+
+  /* Toplam Bölümü */
+  .result-total {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    padding: 1.5rem;
+    text-align: center;
+  }
+
+  .total-label {
+    font-size: 1.2rem;
+    color: rgba(255,255,255,0.8);
+    margin-bottom: 0.5rem;
+    font-weight: 600;
+    letter-spacing: 1px;
+  }
+
+  .total-value {
+    font-size: 2.8rem;
+    font-weight: 700;
+    color: #fff;
+    text-shadow: 0 2px 10px rgba(0,0,0,0.2);
+  }
+
+  .total-note {
+    font-size: 1.1rem;
+    color: rgba(255,255,255,0.7);
+    margin-top: 0.5rem;
+  }
+
+  /* LPI Bilgi Notu */
+  .lpi-info-note {
+    display: flex;
+    align-items: center;
+    gap: 0.8rem;
+    padding: 1rem 1.5rem;
+    background: #fff;
+    border-top: 1px solid #e2e8f0;
+    font-size: 1.2rem;
+    color: #4a5568;
+  }
+
+  .lpi-info-note .info-icon {
+    font-size: 1.4rem;
+  }
+
+  .lpi-info-note strong {
+    color: #667eea;
+  }
+
+  /* ═══════════════════════════════════════════════════════════════
+     SEKMELİ GRAFİK STİLLERİ
+     ═══════════════════════════════════════════════════════════════ */
+  .tabbed-chart-card {
+    padding: 0;
+    overflow: hidden;
+  }
+
+  .chart-tabs {
+    display: flex;
+    background: linear-gradient(135deg, #f7fafc 0%, #edf2f7 100%);
+    border-bottom: 1px solid #e2e8f0;
+  }
+
+  .chart-tab {
+    flex: 1;
+    padding: 1.2rem 2rem;
+    border: none;
+    background: transparent;
+    font-size: 1.3rem;
+    font-weight: 600;
+    color: #718096;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    position: relative;
+  }
+
+  .chart-tab:hover {
+    color: #667eea;
+    background: rgba(102, 126, 234, 0.05);
+  }
+
+  .chart-tab.active {
+    color: #667eea;
+    background: #fff;
+  }
+
+  .chart-tab.active::after {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    height: 3px;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  }
+
+  .chart-body {
+    background: #fff;
+  }
+
+  .chart-info {
+    padding: 1rem 1.5rem;
+    background: linear-gradient(135deg, #f7fafc 0%, #edf2f7 100%);
+    border-top: 1px solid #e2e8f0;
+  }
+
+  .info-text {
+    font-size: 1.2rem;
+    color: #4a5568;
+  }
+
+  .info-text strong {
+    color: #2d3748;
+  }
+
+  /* Accordion Stilleri */
+  .accordion-section {
+    margin-top: 1.5rem;
+  }
+
+  .accordion-toggle {
+    width: 100%;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 1rem 1.5rem;
+    background: linear-gradient(135deg, #f8fafc 0%, #edf2f7 100%);
+    border: 1px solid #e2e8f0;
+    border-radius: 0.8rem;
+    cursor: pointer;
+    font-size: 1.3rem;
+    font-weight: 600;
+    color: #4a5568;
+    transition: all 0.3s ease;
+  }
+
+  .accordion-toggle:hover {
+    background: linear-gradient(135deg, #edf2f7 0%, #e2e8f0 100%);
+  }
+
+  .accordion-toggle.active {
+    border-radius: 0.8rem 0.8rem 0 0;
+    border-bottom: none;
+  }
+
+  .accordion-icon {
+    font-size: 1rem;
+    transition: transform 0.3s ease;
+  }
+
+  .accordion-content {
+    border: 1px solid #e2e8f0;
+    border-top: none;
+    border-radius: 0 0 0.8rem 0.8rem;
+    background: #fff;
+    overflow: hidden;
+  }
+</style>
+
+<%- include('../includes/dashboard-footer') %>

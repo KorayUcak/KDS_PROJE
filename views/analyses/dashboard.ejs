@@ -1,0 +1,267 @@
+<%- include('../includes/dashboard-header') %>
+
+<div class="dashboard-container">
+  <!-- Sayfa Başlığı -->
+  <div class="page-header">
+    <h1>📊 Genel Bakış</h1>
+    <p class="page-subtitle">Küresel Pazar Araştırması Karar Destek Sistemi - Gerçek Zamanlı Global Özet</p>
+  </div>
+
+  <!-- KPI Kartları - Gerçek Zamanlı Global Özet -->
+  <section class="kpi-section">
+    <div class="kpi-grid">
+      <!-- 1. Küresel Pazar Hacmi -->
+      <div class="kpi-card">
+        <div class="kpi-icon blue">
+          <span>🌐</span>
+        </div>
+        <div class="kpi-content">
+          <h3 class="kpi-value"><%= stats.globalGDPFormatted %></h3>
+          <p class="kpi-label">Küresel Pazar Hacmi</p>
+          <span class="kpi-trend positive">
+            <span>🌍</span> <%= stats.totalCountries %> ülke GSYİH toplamı
+          </span>
+        </div>
+      </div>
+
+      <!-- 2. Ortalama Büyüme -->
+      <div class="kpi-card">
+        <div class="kpi-icon green">
+          <span>📈</span>
+        </div>
+        <div class="kpi-content">
+          <h3 class="kpi-value">%<%= stats.avgGrowth %></h3>
+          <p class="kpi-label">Ortalama Büyüme</p>
+          <span class="kpi-trend positive">
+            <span>↑</span> Yıllık ekonomik büyüme
+          </span>
+        </div>
+      </div>
+
+      <!-- 3. En Yüksek Enflasyon -->
+      <div class="kpi-card">
+        <div class="kpi-icon orange">
+          <span>🔥</span>
+        </div>
+        <div class="kpi-content">
+          <h3 class="kpi-value">%<%= stats.maxInflation %></h3>
+          <p class="kpi-label">En Yüksek Enflasyon</p>
+          <span class="kpi-trend negative">
+            <span>⚠️</span> <%= stats.maxInflationCountry %>
+          </span>
+        </div>
+      </div>
+
+      <!-- 4. Toplam Nüfus -->
+      <div class="kpi-card">
+        <div class="kpi-icon purple">
+          <span>👥</span>
+        </div>
+        <div class="kpi-content">
+          <h3 class="kpi-value"><%= stats.totalPopulationFormatted %></h3>
+          <p class="kpi-label">Toplam Nüfus</p>
+          <span class="kpi-trend">
+            <span>🎯</span> Pazar büyüklüğü
+          </span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <% if (hasData) { %>
+    <!-- ========================================== -->
+    <!-- VERİ VAR - Harita, Grafik ve Tablo Göster -->
+    <!-- ========================================== -->
+    <section class="main-grid">
+      <!-- Dünya Haritası -->
+      <div class="grid-item map-section">
+        <div class="card">
+          <div class="card-header">
+            <h2>🗺️ Pazar Haritası</h2>
+            <span class="card-subtitle">Analiz edilen ülkeler</span>
+          </div>
+          <div class="card-body map-card-body">
+            <div id="world-map" class="world-map map-container"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Yatay Bar Chart - 17 Ülke GSYİH -->
+      <div class="grid-item chart-section">
+        <div class="card">
+          <div class="card-header">
+            <h2>📊 Ülkelerin Ekonomik Büyüklükleri (GSYİH)</h2>
+            <span class="card-subtitle">17 ülke - Milyar $ (Büyükten küçüğe sıralı)</span>
+          </div>
+          <div class="card-body" style="min-height: 550px;">
+            <canvas id="gdpChart"></canvas>
+          </div>
+        </div>
+      </div>
+
+      <!-- Son Analizler Tablosu -->
+      <div class="grid-item table-section">
+        <div class="card">
+          <div class="card-header">
+            <h2>📋 Son Analizler</h2>
+            <a href="/analyses/new" class="view-all-link">+ Yeni Analiz →</a>
+          </div>
+          <div class="card-body">
+            <% if (recentAnalyses && recentAnalyses.length > 0) { %>
+            <table class="data-table">
+              <thead>
+                <tr>
+                  <th>Ülke</th>
+                  <th>Sektör</th>
+                  <th>Durum</th>
+                  <th>Tarih</th>
+                </tr>
+              </thead>
+              <tbody>
+                <% recentAnalyses.forEach(function(analysis) { %>
+                  <tr>
+                    <td><strong><%= analysis.ulke_adi || 'Bilinmiyor' %></strong></td>
+                    <td><%= analysis.sektor_adi || '-' %></td>
+                    <td>
+                      <span class="status-badge <%= analysis.hesaplanan_skor ? 'status-tamamlandi' : 'status-taslak' %>">
+                        <%= analysis.hesaplanan_skor ? '✓ Tamamlandı' : '⏳ Bekliyor' %>
+                      </span>
+                    </td>
+                    <td><%= analysis.olusturulma_tarihi ? new Date(analysis.olusturulma_tarihi).toLocaleDateString('tr-TR') : '-' %></td>
+                  </tr>
+                <% }); %>
+              </tbody>
+            </table>
+            <% } else { %>
+            <div class="empty-table-message">
+              <p>Henüz analiz kaydı yok. <a href="/analyses/new">Yeni analiz oluşturun →</a></p>
+            </div>
+            <% } %>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- JavaScript: Harita ve Grafik (Sadece veri varsa) -->
+    <script>
+      const mapData = <%- mapData %>;
+      const gdpData = <%- gdpData %>;
+
+      // Harita - GSYİH değerleriyle
+      $(document).ready(function() {
+        if (Object.keys(mapData).length > 0) {
+          $('#world-map').vectorMap({
+            map: 'world_mill_en',
+            backgroundColor: 'transparent',
+            zoomOnScroll: false,
+            regionStyle: {
+              initial: {
+                fill: '#e4e4e4',
+                'fill-opacity': 1,
+                stroke: '#ffffff',
+                'stroke-width': 1
+              },
+              hover: { 'fill-opacity': 0.8, cursor: 'pointer' }
+            },
+            series: {
+              regions: [{
+                values: mapData,
+                scale: ['#C8EEFF', '#0071A4'],
+                normalizeFunction: 'polynomial'
+              }]
+            },
+            onRegionTipShow: function(e, el, code) {
+              if (mapData[code]) {
+                el.html(el.html() + '<br><strong>GSYİH: $' + mapData[code].toLocaleString('tr-TR') + ' Milyar</strong>');
+              }
+            }
+          });
+        }
+      });
+
+      // Yatay Bar Chart - 17 Ülke GSYİH
+      if (gdpData.labels && gdpData.labels.length > 0) {
+        const ctx = document.getElementById('gdpChart');
+        new Chart(ctx, {
+          type: 'bar',
+          data: {
+            labels: gdpData.labels,
+            datasets: [{
+              label: 'GSYİH (Milyar $)',
+              data: gdpData.data,
+              backgroundColor: gdpData.backgroundColors,
+              borderRadius: 4,
+              borderSkipped: false
+            }]
+          },
+          options: {
+            indexAxis: 'y', // YATAY BAR CHART
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: { 
+              legend: { display: false },
+              tooltip: {
+                callbacks: {
+                  label: function(context) {
+                    return '$' + context.raw.toLocaleString('tr-TR') + ' Milyar';
+                  }
+                }
+              }
+            },
+            scales: {
+              x: { 
+                beginAtZero: true,
+                grid: { color: 'rgba(0,0,0,0.05)' },
+                ticks: {
+                  callback: function(value) {
+                    return '$' + value.toLocaleString('tr-TR');
+                  }
+                }
+              },
+              y: { 
+                grid: { display: false },
+                ticks: {
+                  font: { size: 12, weight: '500' }
+                }
+              }
+            }
+          }
+        });
+      }
+    </script>
+
+  <% } else { %>
+    <!-- ========================================== -->
+    <!-- VERİ YOK - Empty State / Karşılama Ekranı -->
+    <!-- ========================================== -->
+    <section class="empty-state-section">
+      <div class="empty-state-card">
+        <div class="empty-state-icon">🚀</div>
+        <h2>Hoş Geldiniz!</h2>
+        <p class="empty-state-message">
+          Henüz hiç pazar analizi yapmadınız. İlk analizinizi oluşturarak 
+          küresel pazarları keşfetmeye başlayın.
+        </p>
+        <div class="empty-state-features">
+          <div class="feature-item">
+            <span class="feature-icon">🌍</span>
+            <span>50+ Ülke Verisi</span>
+          </div>
+          <div class="feature-item">
+            <span class="feature-icon">📊</span>
+            <span>7 Analiz Tipi</span>
+          </div>
+          <div class="feature-item">
+            <span class="feature-icon">📈</span>
+            <span>Detaylı Raporlar</span>
+          </div>
+        </div>
+        <a href="/analyses/new" class="btn btn-primary btn-lg">
+          ➕ Yeni Analiz Başlat
+        </a>
+      </div>
+    </section>
+  <% } %>
+</div>
+
+<%- include('../includes/dashboard-footer') %>

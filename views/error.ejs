@@ -1,0 +1,23 @@
+<%- include('includes/header') %>
+
+<section class="error-page">
+  <div class="error-content">
+    <h2>⚠️ Hata Oluştu</h2>
+    <p class="error-message"><%= typeof message !== 'undefined' ? message : 'Bilinmeyen bir hata oluştu.' %></p>
+    
+    <% if (typeof error !== 'undefined' && error.statusCode) { %>
+      <p class="error-code">Hata Kodu: <%= error.statusCode %></p>
+    <% } %>
+    
+    <% if (typeof error !== 'undefined' && error.stack && process.env.NODE_ENV === 'development') { %>
+      <details class="error-stack">
+        <summary>Teknik Detaylar (Development)</summary>
+        <pre><%= error.stack %></pre>
+      </details>
+    <% } %>
+    
+    <a href="/" class="btn btn-primary">Ana Sayfaya Dön</a>
+  </div>
+</section>
+
+<%- include('includes/footer') %>

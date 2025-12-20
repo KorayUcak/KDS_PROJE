@@ -1,0 +1,29 @@
+{
+  "name": "kds-pazar-arastirmasi",
+  "version": "1.0.0",
+  "description": "Küresel Pazar Araştırması Karar Destek Sistemi",
+  "main": "app.js",
+  "scripts": {
+    "start": "node app.js",
+    "dev": "nodemon app.js"
+  },
+  "keywords": [
+    "pazar-arastirmasi",
+    "karar-destek",
+    "kds",
+    "nodejs",
+    "express",
+    "mysql"
+  ],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "dotenv": "^16.3.1",
+    "ejs": "^3.1.9",
+    "express": "^4.18.2",
+    "mysql2": "^3.6.5"
+  },
+  "devDependencies": {
+    "nodemon": "^3.0.2"
+  }
+}

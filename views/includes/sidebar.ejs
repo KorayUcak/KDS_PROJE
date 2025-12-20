@@ -1,0 +1,158 @@
+<!-- Sidebar Navigation - Koyu Tema -->
+<aside class="sidebar">
+  <div class="sidebar-header">
+    <a href="/analyses/dashboard" class="sidebar-logo-link">
+      <div class="sidebar-logo">
+        <span class="logo-icon">🌍</span>
+        <span class="logo-text">KDS</span>
+      </div>
+      <span class="sidebar-subtitle">Karar Destek Sistemi</span>
+    </a>
+  </div>
+
+  <nav class="sidebar-nav">
+    <ul class="nav-list">
+      <!-- Ana Modüller -->
+      <li class="nav-section-title">Ana Modüller</li>
+      
+      <li class="nav-item">
+        <a href="/analyses/dashboard" class="nav-link <%= typeof activePage !== 'undefined' && activePage === 'dashboard' ? 'active' : '' %>">
+          <span class="nav-icon">🏠</span>
+          <span class="nav-text">Genel Bakış</span>
+        </a>
+      </li>
+      <li class="nav-item">
+        <a href="/dashboard" class="nav-link <%= typeof activePage !== 'undefined' && activePage === 'sectors' ? 'active' : '' %>">
+          <span class="nav-icon">🏭</span>
+          <span class="nav-text">Sektörler</span>
+        </a>
+      </li>
+      <li class="nav-item">
+        <a href="/countries" class="nav-link <%= typeof activePage !== 'undefined' && activePage === 'countries' ? 'active' : '' %>">
+          <span class="nav-icon">🌍</span>
+          <span class="nav-text">Ülkeler</span>
+        </a>
+      </li>
+      <li class="nav-item">
+        <a href="/analyses/new" class="nav-link <%= typeof activePage !== 'undefined' && activePage === 'new-analysis' ? 'active' : '' %>">
+          <span class="nav-icon">➕</span>
+          <span class="nav-text">Analiz Ekle</span>
+        </a>
+      </li>
+      
+      <!-- Sistem -->
+      <li class="nav-section-title">Hesap</li>
+      
+      <li class="nav-item">
+        <button type="button" class="nav-link sidebar-logout-btn" id="sidebarLogoutBtn">
+          <span class="nav-icon">🚪</span>
+          <span class="nav-text">Çıkış Yap</span>
+        </button>
+      </li>
+    </ul>
+  </nav>
+
+  <!-- Kullanıcı Email Gösterimi -->
+  <div class="sidebar-user-info">
+    <span class="user-icon">👤</span>
+    <span class="user-email" id="sidebarUserEmail">Kullanıcı</span>
+  </div>
+
+  <div class="sidebar-footer">
+    <div class="system-status">
+      <span class="status-dot online"></span>
+      <span class="status-text">Sistem Aktif</span>
+    </div>
+  </div>
+</aside>
+
+<script>
+  // Sidebar için kullanıcı bilgisi ve logout işlevi
+  (function() {
+    // LocalStorage'dan kullanıcı bilgisini al
+    const userDataStr = localStorage.getItem('kds_user');
+    const sidebarUserEmail = document.getElementById('sidebarUserEmail');
+    
+    if (userDataStr && sidebarUserEmail) {
+      try {
+        const userData = JSON.parse(userDataStr);
+        if (userData.email) {
+          sidebarUserEmail.textContent = userData.email;
+        }
+      } catch (e) {
+        console.error('Sidebar: Kullanıcı verisi parse edilemedi:', e);
+      }
+    }
+
+    // Sidebar Logout butonu işlevi
+    const sidebarLogoutBtn = document.getElementById('sidebarLogoutBtn');
+    if (sidebarLogoutBtn) {
+      sidebarLogoutBtn.addEventListener('click', async function(e) {
+        e.preventDefault();
+        
+        try {
+          await fetch('/users/logout', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' }
+          });
+        } catch (err) {
+          console.log('Logout API hatası (önemsiz):', err);
+        }
+        
+        // LocalStorage'ı temizle
+        localStorage.removeItem('kds_user');
+        localStorage.removeItem('kds_token');
+        
+        // Cookie'leri temizle
+        document.cookie.split(";").forEach(function(c) {
+          document.cookie = c.replace(/^ +/, "").replace(/=.*/, "=;expires=" + new Date().toUTCString() + ";path=/");
+        });
+        
+        // Login sayfasına yönlendir
+        window.location.href = '/users/login';
+      });
+    }
+  })();
+</script>
+
+<style>
+  /* Sidebar Logout Button Stili */
+  .sidebar-logout-btn {
+    width: 100%;
+    background: none;
+    border: none;
+    cursor: pointer;
+    text-align: left;
+    font-size: inherit;
+    font-family: inherit;
+    padding: 0;
+    display: flex;
+    align-items: center;
+  }
+  
+  .sidebar-logout-btn:hover {
+    color: #e53e3e;
+  }
+
+  /* Sidebar Kullanıcı Bilgisi */
+  .sidebar-user-info {
+    padding: 1rem 1.5rem;
+    border-top: 1px solid rgba(255,255,255,0.1);
+    display: flex;
+    align-items: center;
+    gap: 0.8rem;
+    color: rgba(255,255,255,0.7);
+    font-size: 1.2rem;
+  }
+
+  .sidebar-user-info .user-icon {
+    font-size: 1.4rem;
+  }
+
+  .sidebar-user-info .user-email {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    max-width: 150px;
+  }
+</style>
