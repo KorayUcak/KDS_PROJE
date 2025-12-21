@@ -30,6 +30,7 @@ class AnalysisModel {
           a.hedef_sektor_id,
           a.hesaplanan_skor,
           a.yonetici_notu,
+          a.aciklama,
           a.olusturulma_tarihi,
           u.ulke_adi,
           u.ISO_KODU as ulke_kodu,
@@ -61,6 +62,7 @@ class AnalysisModel {
           a.hedef_sektor_id,
           a.hesaplanan_skor,
           a.yonetici_notu,
+          a.aciklama,
           a.olusturulma_tarihi,
           u.ulke_adi,
           u.ISO_KODU as ulke_kodu,
@@ -92,6 +94,7 @@ class AnalysisModel {
           a.hedef_sektor_id,
           a.hesaplanan_skor,
           a.yonetici_notu,
+          a.aciklama,
           a.olusturulma_tarihi,
           u.ulke_adi,
           u.ISO_KODU as ulke_kodu,
@@ -119,19 +122,21 @@ class AnalysisModel {
       hedef_ulke_id, 
       hedef_sektor_id, 
       hesaplanan_skor = null,
-      yonetici_notu = null
+      yonetici_notu = null,
+      aciklama = null
     } = data;
     
     const [result] = await pool.query(`
       INSERT INTO kayitli_analizler 
-        (kullanici_id, hedef_ulke_id, hedef_sektor_id, hesaplanan_skor, yonetici_notu)
-      VALUES (?, ?, ?, ?, ?)
+        (kullanici_id, hedef_ulke_id, hedef_sektor_id, hesaplanan_skor, yonetici_notu, aciklama)
+      VALUES (?, ?, ?, ?, ?, ?)
     `, [
       kullanici_id, 
       hedef_ulke_id, 
       hedef_sektor_id, 
       hesaplanan_skor,
-      yonetici_notu
+      yonetici_notu,
+      aciklama
     ]);
     
     return result.insertId;
@@ -141,7 +146,7 @@ class AnalysisModel {
    * Analiz güncelle
    */
   static async update(id, data) {
-    const { hedef_ulke_id, hedef_sektor_id, hesaplanan_skor, yonetici_notu } = data;
+    const { hedef_ulke_id, hedef_sektor_id, hesaplanan_skor, yonetici_notu, aciklama } = data;
     
     const [result] = await pool.query(`
       UPDATE kayitli_analizler 
@@ -149,9 +154,10 @@ class AnalysisModel {
         hedef_ulke_id = COALESCE(?, hedef_ulke_id),
         hedef_sektor_id = COALESCE(?, hedef_sektor_id),
         hesaplanan_skor = COALESCE(?, hesaplanan_skor),
-        yonetici_notu = COALESCE(?, yonetici_notu)
+        yonetici_notu = COALESCE(?, yonetici_notu),
+        aciklama = COALESCE(?, aciklama)
       WHERE analiz_id = ?
-    `, [hedef_ulke_id, hedef_sektor_id, hesaplanan_skor, yonetici_notu, id]);
+    `, [hedef_ulke_id, hedef_sektor_id, hesaplanan_skor, yonetici_notu, aciklama, id]);
     
     return result.affectedRows;
   }

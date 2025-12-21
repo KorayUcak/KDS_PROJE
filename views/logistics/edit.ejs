@@ -1,0 +1,119 @@
+<%- include('../includes/dashboard-header') %>
+
+<div class="dashboard-container">
+  
+  <div class="page-header">
+    <h1>✏️ <%= logistics.ulke_adi %> - Lojistik Düzenle</h1>
+  </div>
+
+  <div class="form-container">
+    <form action="/logistics/<%= logistics.lojistik_id %>/edit" method="POST" class="data-form">
+      
+      <div class="form-section">
+        <h3>📦 Lojistik Bilgileri</h3>
+        
+        <div class="form-group">
+          <label for="lpi_skoru">LPI Skoru (1-5)</label>
+          <input type="number" id="lpi_skoru" name="lpi_skoru" class="form-control" 
+                 min="1" max="5" step="0.01" value="<%= logistics.lpi_skoru %>" required>
+          <small>Lojistik Performans Endeksi</small>
+        </div>
+
+        <div class="form-row">
+          <div class="form-group">
+            <label for="gumruk_bekleme_suresi_gun">Gümrük Bekleme Süresi (gün)</label>
+            <input type="number" id="gumruk_bekleme_suresi_gun" name="gumruk_bekleme_suresi_gun" 
+                   class="form-control" min="0" step="0.1" value="<%= logistics.gumruk_bekleme_suresi_gun %>" required>
+          </div>
+
+          <div class="form-group">
+            <label for="konteyner_ihracat_maliyeti_usd">Konteyner Maliyeti (USD)</label>
+            <input type="number" id="konteyner_ihracat_maliyeti_usd" name="konteyner_ihracat_maliyeti_usd" 
+                   class="form-control" min="0" step="0.01" value="<%= logistics.konteyner_ihracat_maliyeti_usd %>" required>
+            <small>20ft konteyner ihracat maliyeti</small>
+          </div>
+        </div>
+      </div>
+
+      <div class="form-actions">
+        <button type="submit" class="btn btn-primary">💾 Kaydet</button>
+        <a href="/logistics/<%= logistics.lojistik_id %>" class="btn btn-secondary">İptal</a>
+      </div>
+    </form>
+  </div>
+
+</div>
+
+<style>
+  .form-container {
+    max-width: 800px;
+    margin: 0 auto;
+  }
+
+  .data-form {
+    background: #fff;
+    padding: 2.5rem;
+    border-radius: 1rem;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+  }
+
+  .form-section {
+    margin-bottom: 2rem;
+  }
+
+  .form-section h3 {
+    font-size: 1.6rem;
+    color: #2d3748;
+    margin-bottom: 1.5rem;
+    padding-bottom: 1rem;
+    border-bottom: 2px solid #e2e8f0;
+  }
+
+  .form-row {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 1.5rem;
+  }
+
+  .form-group {
+    margin-bottom: 1.5rem;
+  }
+
+  .form-group label {
+    display: block;
+    font-size: 1.3rem;
+    font-weight: 600;
+    color: #2d3748;
+    margin-bottom: 0.5rem;
+  }
+
+  .form-control {
+    width: 100%;
+    padding: 1rem;
+    font-size: 1.4rem;
+    border: 2px solid #e2e8f0;
+    border-radius: 0.8rem;
+    outline: none;
+    transition: border-color 0.3s;
+  }
+
+  .form-control:focus {
+    border-color: #4299e1;
+  }
+
+  .form-group small {
+    display: block;
+    font-size: 1.1rem;
+    color: #718096;
+    margin-top: 0.3rem;
+  }
+
+  .form-actions {
+    display: flex;
+    gap: 1rem;
+    padding-top: 2rem;
+    border-top: 2px solid #e2e8f0;
+  }
+</style>
+
+<%- include('../includes/dashboard-footer') %>

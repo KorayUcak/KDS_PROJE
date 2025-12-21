@@ -336,6 +336,26 @@ exports.getNewAnalysisPage = catchAsync(async (req, res, next) => {
   });
 });
 
+// Analiz detay sayfası
+exports.getAnalysisDetailPage = catchAsync(async (req, res, next) => {
+  const { id } = req.params;
+  const analysis = await AnalysisModel.getById(id);
+
+  if (!analysis) {
+    return next(new AppError('Bu ID ile analiz bulunamadı', 404));
+  }
+
+  res.render('analyses/detail', {
+    title: `Analiz Detayı - ${analysis.ulke_adi} - KDS`,
+    activePage: 'dashboard',
+    breadcrumb: [
+      { name: 'Genel Bakış', url: '/analyses/dashboard' },
+      { name: 'Analiz Detayı', url: `/analyses/${id}/detail` }
+    ],
+    analysis
+  });
+});
+
 // Tüm analizleri listele (API)
 exports.getAllAnalyses = catchAsync(async (req, res, next) => {
   const analyses = await AnalysisModel.getAll();
@@ -388,7 +408,8 @@ exports.createAnalysis = catchAsync(async (req, res, next) => {
     hedef_ulke_id: parseInt(parametreler.hedef_ulke_id),
     hedef_sektor_id: parseInt(parametreler.hedef_sektor_id),
     hesaplanan_skor: null,
-    yonetici_notu: parametreler.aciklama || null
+    yonetici_notu: parametreler.yonetici_notu || null,
+    aciklama: parametreler.aciklama || null
   });
 
   // Log kaydet

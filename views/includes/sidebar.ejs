@@ -34,6 +34,18 @@
         </a>
       </li>
       <li class="nav-item">
+        <a href="/logistics" class="nav-link <%= typeof activePage !== 'undefined' && activePage === 'logistics' ? 'active' : '' %>">
+          <span class="nav-icon">📦</span>
+          <span class="nav-text">Lojistik Verileri</span>
+        </a>
+      </li>
+      <li class="nav-item">
+        <a href="/agreements" class="nav-link <%= typeof activePage !== 'undefined' && activePage === 'agreements' ? 'active' : '' %>">
+          <span class="nav-icon">📋</span>
+          <span class="nav-text">Anlaşma Tipleri</span>
+        </a>
+      </li>
+      <li class="nav-item">
         <a href="/analyses/new" class="nav-link <%= typeof activePage !== 'undefined' && activePage === 'new-analysis' ? 'active' : '' %>">
           <span class="nav-icon">➕</span>
           <span class="nav-text">Analiz Ekle</span>

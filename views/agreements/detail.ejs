@@ -1,0 +1,187 @@
+<%- include('../includes/dashboard-header') %>
+
+<div class="dashboard-container">
+  
+  <div class="page-header">
+    <h1>📋 <%= agreement.anlasma_adi %></h1>
+    <div class="header-actions">
+      <a href="/agreements/<%= agreement.anlasma_id %>/edit" class="btn btn-primary">✏️ Düzenle</a>
+      <a href="/agreements" class="btn btn-secondary">← Geri Dön</a>
+    </div>
+  </div>
+
+  <div class="detail-grid">
+    
+    <div class="detail-card">
+      <h3>📋 Anlaşma Bilgileri</h3>
+      <div class="detail-row">
+        <span class="detail-label">Anlaşma Adı:</span>
+        <span class="detail-value"><strong><%= agreement.anlasma_adi %></strong></span>
+      </div>
+      <div class="detail-row">
+        <span class="detail-label">Anlaşma Kodu:</span>
+        <span class="detail-value"><span class="badge badge-primary"><%= agreement.anlasma_kodu %></span></span>
+      </div>
+    </div>
+
+    <div class="detail-card">
+      <h3>🌍 Bu Anlaşmaya Sahip Ülkeler (<%= countries.length %>)</h3>
+      <% if (hasCountries) { %>
+        <div class="countries-list">
+          <% countries.forEach(function(country) { %>
+            <a href="/countries/<%= country.ulke_id %>" class="country-item">
+              <span class="country-name"><%= country.ulke_adi %></span>
+              <span class="country-code"><%= country.ISO_KODU %></span>
+            </a>
+          <% }); %>
+        </div>
+      <% } else { %>
+        <p class="text-muted">Bu anlaşmaya sahip ülke bulunmuyor.</p>
+      <% } %>
+    </div>
+
+  </div>
+
+  <div class="danger-zone">
+    <h3>⚠️ Tehlikeli Bölge</h3>
+    <p>Bu anlaşma tipini silmek kalıcı bir işlemdir ve geri alınamaz. Bu anlaşmayı kullanan ülkelerin lojistik verileri etkilenecektir.</p>
+    <form action="/agreements/<%= agreement.anlasma_id %>/delete" method="POST" onsubmit="return confirm('Bu anlaşma tipini silmek istediğinizden emin misiniz?');">
+      <button type="submit" class="btn btn-danger">🗑️ Anlaşmayı Sil</button>
+    </form>
+  </div>
+
+</div>
+
+<style>
+  .header-actions {
+    display: flex;
+    gap: 1rem;
+  }
+
+  .detail-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+    gap: 2rem;
+    margin-bottom: 3rem;
+  }
+
+  .detail-card {
+    background: #fff;
+    padding: 2rem;
+    border-radius: 1rem;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+  }
+
+  .detail-card h3 {
+    font-size: 1.6rem;
+    color: #2d3748;
+    margin-bottom: 1.5rem;
+    padding-bottom: 1rem;
+    border-bottom: 2px solid #e2e8f0;
+  }
+
+  .detail-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 1rem 0;
+    border-bottom: 1px solid #f7fafc;
+  }
+
+  .detail-row:last-child {
+    border-bottom: none;
+  }
+
+  .detail-label {
+    font-size: 1.3rem;
+    color: #718096;
+    font-weight: 500;
+  }
+
+  .detail-value {
+    font-size: 1.4rem;
+    color: #2d3748;
+    font-weight: 600;
+    text-align: right;
+  }
+
+  .badge {
+    display: inline-block;
+    padding: 0.4rem 0.8rem;
+    border-radius: 0.5rem;
+    font-size: 1.2rem;
+    font-weight: 600;
+  }
+
+  .badge-primary {
+    background: #bee3f8;
+    color: #2c5282;
+  }
+
+  .countries-list {
+    display: flex;
+    flex-direction: column;
+    gap: 0.8rem;
+  }
+
+  .country-item {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    padding: 1rem;
+    background: #f7fafc;
+    border-radius: 0.8rem;
+    text-decoration: none;
+    transition: all 0.3s;
+  }
+
+  .country-item:hover {
+    background: #e2e8f0;
+    transform: translateX(5px);
+  }
+
+  .country-name {
+    flex: 1;
+    font-size: 1.3rem;
+    color: #2d3748;
+    font-weight: 600;
+  }
+
+  .country-code {
+    font-size: 1.2rem;
+    color: #718096;
+    background: #fff;
+    padding: 0.3rem 0.6rem;
+    border-radius: 0.4rem;
+  }
+
+  .country-lpi {
+    font-size: 1.1rem;
+    color: #48bb78;
+    font-weight: 600;
+  }
+
+  .text-muted {
+    color: #a0aec0;
+    font-style: italic;
+  }
+
+  .danger-zone {
+    background: #fff5f5;
+    border: 2px solid #fc8181;
+    padding: 2rem;
+    border-radius: 1rem;
+  }
+
+  .danger-zone h3 {
+    color: #c53030;
+    margin-bottom: 1rem;
+  }
+
+  .danger-zone p {
+    color: #742a2a;
+    margin-bottom: 1.5rem;
+  }
+</style>
+
+<%- include('../includes/dashboard-footer') %>

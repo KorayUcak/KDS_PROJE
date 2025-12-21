@@ -1,0 +1,259 @@
+<%- include('../includes/dashboard-header') %>
+
+<div class="dashboard-container">
+  
+  <div class="page-header">
+    <h1>📦 Lojistik Verileri</h1>
+    <p class="page-subtitle">Ülkelerin lojistik performans göstergeleri ve ticaret anlaşmaları</p>
+  </div>
+
+  <% if (statistics) { %>
+  <div class="stats-grid">
+    <div class="stat-card">
+      <div class="stat-icon">📊</div>
+      <div class="stat-content">
+        <div class="stat-value"><%= statistics.toplam_kayit || 0 %></div>
+        <div class="stat-label">Toplam Kayıt</div>
+      </div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-icon">🎯</div>
+      <div class="stat-content">
+        <div class="stat-value"><%= statistics.ortalama_lpi ? parseFloat(statistics.ortalama_lpi).toFixed(2) : 'N/A' %></div>
+        <div class="stat-label">Ortalama LPI Skoru</div>
+      </div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-icon">⏱️</div>
+      <div class="stat-content">
+        <div class="stat-value"><%= statistics.ortalama_gumruk_suresi ? parseFloat(statistics.ortalama_gumruk_suresi).toFixed(1) : 'N/A' %> gün</div>
+        <div class="stat-label">Ort. Gümrük Süresi</div>
+      </div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-icon">💰</div>
+      <div class="stat-content">
+        <div class="stat-value">$<%= statistics.ortalama_maliyet ? Math.round(parseFloat(statistics.ortalama_maliyet)) : 'N/A' %></div>
+        <div class="stat-label">Ort. Konteyner Maliyeti</div>
+      </div>
+    </div>
+  </div>
+  <% } %>
+
+  <div class="action-bar">
+    <input type="text" id="logisticsSearch" placeholder="🔍 Ülke ara..." class="search-input">
+    <div style="display: flex; gap: 10px;">
+      <a href="/logistics/charts" class="btn btn-secondary">📊 Grafik Görünümü</a>
+      <a href="/logistics/create" class="btn btn-primary">+ Yeni Ekle</a>
+    </div>
+  </div>
+
+  <% if (hasData) { %>
+    <div class="table-container">
+      <table class="data-table">
+        <thead>
+          <tr>
+            <th>Ülke</th>
+            <th>ISO Kodu</th>
+            <th>LPI Skoru</th>
+            <th>Gümrük Süresi (gün)</th>
+            <th>Konteyner Maliyeti ($)</th>
+            <th>İşlemler</th>
+          </tr>
+        </thead>
+        <tbody>
+          <% logistics.forEach(function(item) { %>
+            <tr data-name="<%= item.ulke_adi.toLowerCase() %>">
+              <td><strong><%= item.ulke_adi %></strong></td>
+              <td><span class="badge badge-secondary"><%= item.ISO_KODU %></span></td>
+              <td><span class="badge badge-<%= item.lpi_skoru >= 3.5 ? 'success' : item.lpi_skoru >= 3.0 ? 'warning' : 'danger' %>"><%= item.lpi_skoru %></span></td>
+              <td><%= item.gumruk_bekleme_suresi_gun %></td>
+              <td>$<%= Math.round(item.konteyner_ihracat_maliyeti_usd) %></td>
+              <td>
+                <div class="action-buttons">
+                  <a href="/logistics/<%= item.lojistik_id %>" class="btn-icon" title="Detay">👁️</a>
+                  <a href="/logistics/<%= item.lojistik_id %>/edit" class="btn-icon" title="Düzenle">✏️</a>
+                </div>
+              </td>
+            </tr>
+          <% }); %>
+        </tbody>
+      </table>
+    </div>
+  <% } else { %>
+    <div class="empty-state-card">
+      <div class="empty-state-icon">📦</div>
+      <h2>Lojistik Verisi Bulunamadı</h2>
+      <p>Henüz lojistik verisi eklenmemiş.</p>
+      <a href="/logistics/create" class="btn btn-primary">İlk Veriyi Ekle</a>
+    </div>
+  <% } %>
+
+</div>
+
+<style>
+  .stats-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+    gap: 1.5rem;
+    margin-bottom: 2rem;
+  }
+
+  .stat-card {
+    background: #fff;
+    padding: 1.5rem;
+    border-radius: 1rem;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+    display: flex;
+    align-items: center;
+    gap: 1.2rem;
+  }
+
+  .stat-icon {
+    font-size: 2.5rem;
+  }
+
+  .stat-value {
+    font-size: 2rem;
+    font-weight: 700;
+    color: #2d3748;
+  }
+
+  .stat-label {
+    font-size: 1.2rem;
+    color: #718096;
+    margin-top: 0.3rem;
+  }
+
+  .action-bar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 2rem;
+    gap: 1rem;
+  }
+
+  .search-input {
+    flex: 1;
+    max-width: 400px;
+    padding: 1rem 1.5rem;
+    font-size: 1.4rem;
+    border: 2px solid #e2e8f0;
+    border-radius: 0.8rem;
+    outline: none;
+    transition: border-color 0.3s;
+  }
+
+  .search-input:focus {
+    border-color: #4299e1;
+  }
+
+  .table-container {
+    background: #fff;
+    border-radius: 1rem;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+    overflow: hidden;
+  }
+
+  .data-table {
+    width: 100%;
+    border-collapse: collapse;
+  }
+
+  .data-table thead {
+    background: #f7fafc;
+  }
+
+  .data-table th {
+    padding: 1.2rem;
+    text-align: left;
+    font-weight: 600;
+    color: #2d3748;
+    font-size: 1.3rem;
+    border-bottom: 2px solid #e2e8f0;
+  }
+
+  .data-table td {
+    padding: 1.2rem;
+    border-bottom: 1px solid #e2e8f0;
+    font-size: 1.3rem;
+  }
+
+  .data-table tbody tr:hover {
+    background: #f7fafc;
+  }
+
+  .badge {
+    display: inline-block;
+    padding: 0.4rem 0.8rem;
+    border-radius: 0.5rem;
+    font-size: 1.2rem;
+    font-weight: 600;
+  }
+
+  .badge-success {
+    background: #c6f6d5;
+    color: #22543d;
+  }
+
+  .badge-warning {
+    background: #feebc8;
+    color: #7c2d12;
+  }
+
+  .badge-danger {
+    background: #fed7d7;
+    color: #742a2a;
+  }
+
+  .badge-info {
+    background: #bee3f8;
+    color: #2c5282;
+  }
+
+  .badge-secondary {
+    background: #e2e8f0;
+    color: #2d3748;
+  }
+
+  .action-buttons {
+    display: flex;
+    gap: 0.5rem;
+  }
+
+  .btn-icon {
+    font-size: 1.6rem;
+    text-decoration: none;
+    transition: transform 0.2s;
+  }
+
+  .btn-icon:hover {
+    transform: scale(1.2);
+  }
+
+  .text-muted {
+    color: #a0aec0;
+  }
+
+  tr.hidden {
+    display: none;
+  }
+</style>
+
+<script>
+  document.getElementById('logisticsSearch').addEventListener('input', function(e) {
+    const searchTerm = e.target.value.toLowerCase();
+    const rows = document.querySelectorAll('.data-table tbody tr');
+    
+    rows.forEach(row => {
+      const name = row.dataset.name;
+      if (name.includes(searchTerm)) {
+        row.classList.remove('hidden');
+      } else {
+        row.classList.add('hidden');
+      }
+    });
+  });
+</script>
+
+<%- include('../includes/dashboard-footer') %>

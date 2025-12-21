@@ -113,15 +113,25 @@
                 <tr>
                   <th>Ülke</th>
                   <th>Sektör</th>
+                  <th>Açıklama</th>
                   <th>Durum</th>
                   <th>Tarih</th>
                 </tr>
               </thead>
               <tbody>
                 <% recentAnalyses.forEach(function(analysis) { %>
-                  <tr>
+                  <tr class="clickable-row" onclick="window.location.href='/analyses/<%= analysis.analiz_id %>/detail'" style="cursor: pointer;">
                     <td><strong><%= analysis.ulke_adi || 'Bilinmiyor' %></strong></td>
                     <td><%= analysis.sektor_adi || '-' %></td>
+                    <td>
+                      <% if (analysis.aciklama) { %>
+                        <span class="analysis-description" title="<%= analysis.aciklama %>">
+                          <%= analysis.aciklama.length > 50 ? analysis.aciklama.substring(0, 50) + '...' : analysis.aciklama %>
+                        </span>
+                      <% } else { %>
+                        <span class="text-muted">-</span>
+                      <% } %>
+                    </td>
                     <td>
                       <span class="status-badge <%= analysis.hesaplanan_skor ? 'status-tamamlandi' : 'status-taslak' %>">
                         <%= analysis.hesaplanan_skor ? '✓ Tamamlandı' : '⏳ Bekliyor' %>

@@ -1,0 +1,242 @@
+<%- include('../includes/dashboard-header') %>
+
+<div class="dashboard-container">
+  <div class="page-header">
+    <h1>📊 Analiz Detayı</h1>
+    <p class="page-subtitle">Pazar analizi detaylı bilgileri</p>
+  </div>
+
+  <% if (analysis) { %>
+  <!-- Ana Bilgiler Kartı -->
+  <div class="detail-card">
+    <div class="card-header">
+      <h2>🎯 Genel Bilgiler</h2>
+      <span class="status-badge <%= analysis.hesaplanan_skor ? 'status-tamamlandi' : 'status-taslak' %>">
+        <%= analysis.hesaplanan_skor ? '✓ Tamamlandı' : '⏳ Bekliyor' %>
+      </span>
+    </div>
+    <div class="card-body">
+      <div class="info-grid">
+        <div class="info-item">
+          <span class="info-label">🌍 Hedef Ülke</span>
+          <span class="info-value"><%= analysis.ulke_adi || 'Bilinmiyor' %></span>
+        </div>
+        <div class="info-item">
+          <span class="info-label">🏭 Hedef Sektör</span>
+          <span class="info-value"><%= analysis.sektor_adi || 'Bilinmiyor' %></span>
+        </div>
+        <div class="info-item">
+          <span class="info-label">📅 Oluşturulma Tarihi</span>
+          <span class="info-value">
+            <%= analysis.olusturulma_tarihi ? new Date(analysis.olusturulma_tarihi).toLocaleDateString('tr-TR', { 
+              year: 'numeric', 
+              month: 'long', 
+              day: 'numeric',
+              hour: '2-digit',
+              minute: '2-digit'
+            }) : '-' %>
+          </span>
+        </div>
+        <% if (analysis.hesaplanan_skor) { %>
+        <div class="info-item">
+          <span class="info-label">⭐ Hesaplanan Skor</span>
+          <span class="info-value score-value"><%= parseFloat(analysis.hesaplanan_skor).toFixed(2) %></span>
+        </div>
+        <% } %>
+        <% if (analysis.olusturan_kullanici) { %>
+        <div class="info-item">
+          <span class="info-label">👤 Oluşturan</span>
+          <span class="info-value"><%= analysis.olusturan_kullanici %></span>
+        </div>
+        <% } %>
+      </div>
+    </div>
+  </div>
+
+  <!-- Açıklama Kartı -->
+  <% if (analysis.aciklama) { %>
+  <div class="detail-card">
+    <div class="card-header">
+      <h2>📝 Açıklama</h2>
+    </div>
+    <div class="card-body">
+      <div class="description-content">
+        <%= analysis.aciklama %>
+      </div>
+    </div>
+  </div>
+  <% } %>
+
+  <!-- Yönetici Notu -->
+  <% if (analysis.yonetici_notu) { %>
+  <div class="detail-card">
+    <div class="card-header">
+      <h2>💼 Yönetici Notu</h2>
+    </div>
+    <div class="card-body">
+      <div class="note-content">
+        <%= analysis.yonetici_notu %>
+      </div>
+    </div>
+  </div>
+  <% } %>
+
+  <!-- Aksiyonlar -->
+  <div class="action-bar">
+    <a href="/analyses/dashboard" class="btn btn-secondary">← Geri Dön</a>
+    <button class="btn btn-danger" onclick="deleteAnalysis(<%= analysis.analiz_id %>)">🗑️ Sil</button>
+  </div>
+
+  <% } else { %>
+  <div class="empty-state">
+    <div class="empty-icon">❌</div>
+    <h2>Analiz Bulunamadı</h2>
+    <p>Bu analiz mevcut değil veya silinmiş olabilir.</p>
+    <a href="/analyses/dashboard" class="btn btn-primary">← Genel Bakış'a Dön</a>
+  </div>
+  <% } %>
+</div>
+
+<style>
+  .detail-card {
+    background: white;
+    border-radius: 12px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    margin-bottom: 2rem;
+    overflow: hidden;
+  }
+
+  .detail-card .card-header {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    padding: 2rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+
+  .detail-card .card-header h2 {
+    margin: 0;
+    font-size: 1.8rem;
+    font-weight: 600;
+  }
+
+  .detail-card .card-body {
+    padding: 2.5rem;
+  }
+
+  .info-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 2rem;
+  }
+
+  .info-item {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+  }
+
+  .info-label {
+    font-size: 1.3rem;
+    color: #718096;
+    font-weight: 500;
+  }
+
+  .info-value {
+    font-size: 1.6rem;
+    color: #2d3748;
+    font-weight: 600;
+  }
+
+  .score-value {
+    color: #48bb78;
+    font-size: 2rem;
+  }
+
+  .status-badge {
+    padding: 0.6rem 1.2rem;
+    border-radius: 20px;
+    font-size: 1.3rem;
+    font-weight: 600;
+  }
+
+  .status-tamamlandi {
+    background: #c6f6d5;
+    color: #22543d;
+  }
+
+  .status-taslak {
+    background: #feebc8;
+    color: #7c2d12;
+  }
+
+  .description-content,
+  .note-content {
+    font-size: 1.5rem;
+    line-height: 1.8;
+    color: #4a5568;
+    white-space: pre-wrap;
+    background: #f7fafc;
+    padding: 2rem;
+    border-radius: 8px;
+    border-left: 4px solid #667eea;
+  }
+
+  .action-bar {
+    display: flex;
+    justify-content: space-between;
+    gap: 1rem;
+    margin-top: 2rem;
+  }
+
+  .empty-state {
+    text-align: center;
+    padding: 4rem 2rem;
+    background: white;
+    border-radius: 12px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+  }
+
+  .empty-icon {
+    font-size: 6rem;
+    margin-bottom: 1rem;
+  }
+
+  .empty-state h2 {
+    color: #2d3748;
+    margin-bottom: 1rem;
+  }
+
+  .empty-state p {
+    color: #718096;
+    font-size: 1.4rem;
+    margin-bottom: 2rem;
+  }
+</style>
+
+<script>
+  async function deleteAnalysis(id) {
+    if (!confirm('Bu analizi silmek istediğinizden emin misiniz?')) {
+      return;
+    }
+
+    try {
+      const response = await fetch(`/analyses/${id}`, {
+        method: 'DELETE',
+        headers: { 'Content-Type': 'application/json' }
+      });
+
+      if (response.ok) {
+        alert('Analiz başarıyla silindi!');
+        window.location.href = '/analyses/dashboard';
+      } else {
+        alert('Analiz silinemedi!');
+      }
+    } catch (error) {
+      alert('Bir hata oluştu: ' + error.message);
+    }
+  }
+</script>
+
+<%- include('../includes/dashboard-footer') %>

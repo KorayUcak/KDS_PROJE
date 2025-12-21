@@ -1,0 +1,302 @@
+<%- include('../includes/dashboard-header') %>
+
+<div class="dashboard-container">
+  <div class="page-header">
+    <h1>📊 Lojistik Verileri</h1>
+    <p class="page-subtitle">Ülkelerin lojistik performans göstergelerinin görsel analizi</p>
+  </div>
+
+  <% if (statistics) { %>
+  <div class="stats-grid">
+    <div class="stat-card">
+      <div class="stat-icon">📊</div>
+      <div class="stat-content">
+        <div class="stat-value"><%= statistics.toplam_kayit || 0 %></div>
+        <div class="stat-label">Toplam Kayıt</div>
+      </div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-icon">🎯</div>
+      <div class="stat-content">
+        <div class="stat-value"><%= statistics.ortalama_lpi ? parseFloat(statistics.ortalama_lpi).toFixed(2) : 'N/A' %></div>
+        <div class="stat-label">Ortalama LPI Skoru</div>
+      </div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-icon">⏱️</div>
+      <div class="stat-content">
+        <div class="stat-value"><%= statistics.ortalama_gumruk_suresi ? parseFloat(statistics.ortalama_gumruk_suresi).toFixed(1) : 'N/A' %> gün</div>
+        <div class="stat-label">Ort. Gümrük Süresi</div>
+      </div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-icon">💰</div>
+      <div class="stat-content">
+        <div class="stat-value">$<%= statistics.ortalama_maliyet ? Math.round(parseFloat(statistics.ortalama_maliyet)) : 'N/A' %></div>
+        <div class="stat-label">Ort. Konteyner Maliyeti</div>
+      </div>
+    </div>
+  </div>
+  <% } %>
+
+  <div class="action-bar">
+    <a href="/logistics" class="btn btn-secondary">📋 Liste Görünümü</a>
+    <a href="/logistics/create" class="btn btn-primary">+ Yeni Ekle</a>
+  </div>
+
+  <% if (hasData) { %>
+    <!-- LPI Skoru Karşılaştırma Grafiği -->
+    <div class="chart-container">
+      <h2>🎯 LPI Skoru Karşılaştırması</h2>
+      <canvas id="lpiChart"></canvas>
+    </div>
+
+    <!-- Gümrük Süresi Karşılaştırma Grafiği -->
+    <div class="chart-container">
+      <h2>⏱️ Gümrük Bekleme Süresi (Gün)</h2>
+      <canvas id="customsChart"></canvas>
+    </div>
+
+    <!-- Konteyner Maliyeti Karşılaştırma Grafiği -->
+    <div class="chart-container">
+      <h2>💰 Konteyner İhracat Maliyeti (USD)</h2>
+      <canvas id="costChart"></canvas>
+    </div>
+
+    <!-- Çok Eksenli Karşılaştırma Grafiği -->
+    <div class="chart-container">
+      <h2>📈 Genel Performans Karşılaştırması</h2>
+      <canvas id="radarChart"></canvas>
+    </div>
+
+    <script>
+      // Veri hazırlama
+      const logisticsData = <%- JSON.stringify(logistics) %>;
+      
+      const countries = logisticsData.map(item => item.ulke_adi);
+      const lpiScores = logisticsData.map(item => parseFloat(item.lpi_skoru));
+      const customsTimes = logisticsData.map(item => parseFloat(item.gumruk_bekleme_suresi_gun));
+      const costs = logisticsData.map(item => parseFloat(item.konteyner_ihracat_maliyeti_usd));
+
+      // Renk paleti
+      const colors = [
+        'rgba(54, 162, 235, 0.8)',
+        'rgba(255, 99, 132, 0.8)',
+        'rgba(75, 192, 192, 0.8)',
+        'rgba(255, 206, 86, 0.8)',
+        'rgba(153, 102, 255, 0.8)',
+        'rgba(255, 159, 64, 0.8)',
+        'rgba(199, 199, 199, 0.8)',
+        'rgba(83, 102, 255, 0.8)',
+        'rgba(255, 99, 255, 0.8)',
+        'rgba(99, 255, 132, 0.8)'
+      ];
+
+      // LPI Skoru Grafiği
+      const lpiCtx = document.getElementById('lpiChart').getContext('2d');
+      new Chart(lpiCtx, {
+        type: 'bar',
+        data: {
+          labels: countries,
+          datasets: [{
+            label: 'LPI Skoru (1-5)',
+            data: lpiScores,
+            backgroundColor: colors,
+            borderColor: colors.map(c => c.replace('0.8', '1')),
+            borderWidth: 2
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: true,
+          plugins: {
+            legend: {
+              display: true,
+              position: 'top'
+            },
+            tooltip: {
+              callbacks: {
+                label: function(context) {
+                  return 'LPI Skoru: ' + context.parsed.y.toFixed(2);
+                }
+              }
+            }
+          },
+          scales: {
+            y: {
+              beginAtZero: true,
+              max: 5,
+              ticks: {
+                stepSize: 0.5
+              }
+            }
+          }
+        }
+      });
+
+      // Gümrük Süresi Grafiği
+      const customsCtx = document.getElementById('customsChart').getContext('2d');
+      new Chart(customsCtx, {
+        type: 'bar',
+        data: {
+          labels: countries,
+          datasets: [{
+            label: 'Gümrük Bekleme Süresi (Gün)',
+            data: customsTimes,
+            backgroundColor: 'rgba(255, 159, 64, 0.8)',
+            borderColor: 'rgba(255, 159, 64, 1)',
+            borderWidth: 2
+          }]
+        },
+        options: {
+          indexAxis: 'y',
+          responsive: true,
+          maintainAspectRatio: true,
+          plugins: {
+            legend: {
+              display: true,
+              position: 'top'
+            },
+            tooltip: {
+              callbacks: {
+                label: function(context) {
+                  return context.parsed.x.toFixed(1) + ' gün';
+                }
+              }
+            }
+          },
+          scales: {
+            x: {
+              beginAtZero: true
+            }
+          }
+        }
+      });
+
+      // Konteyner Maliyeti Grafiği
+      const costCtx = document.getElementById('costChart').getContext('2d');
+      new Chart(costCtx, {
+        type: 'line',
+        data: {
+          labels: countries,
+          datasets: [{
+            label: 'Konteyner Maliyeti (USD)',
+            data: costs,
+            backgroundColor: 'rgba(75, 192, 192, 0.2)',
+            borderColor: 'rgba(75, 192, 192, 1)',
+            borderWidth: 3,
+            fill: true,
+            tension: 0.4,
+            pointRadius: 5,
+            pointHoverRadius: 7
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: true,
+          plugins: {
+            legend: {
+              display: true,
+              position: 'top'
+            },
+            tooltip: {
+              callbacks: {
+                label: function(context) {
+                  return '$' + context.parsed.y.toLocaleString();
+                }
+              }
+            }
+          },
+          scales: {
+            y: {
+              beginAtZero: true,
+              ticks: {
+                callback: function(value) {
+                  return '$' + value.toLocaleString();
+                }
+              }
+            }
+          }
+        }
+      });
+
+      // Radar Grafiği - İlk 6 ülke
+      const radarCtx = document.getElementById('radarChart').getContext('2d');
+      const topCountries = logisticsData.slice(0, 6);
+      
+      new Chart(radarCtx, {
+        type: 'radar',
+        data: {
+          labels: ['LPI Skoru', 'Gümrük Hızı', 'Maliyet Verimliliği'],
+          datasets: topCountries.map((item, index) => ({
+            label: item.ulke_adi,
+            data: [
+              parseFloat(item.lpi_skoru),
+              5 - (parseFloat(item.gumruk_bekleme_suresi_gun) / 10), // Normalize edilmiş
+              5 - (parseFloat(item.konteyner_ihracat_maliyeti_usd) / 2000) // Normalize edilmiş
+            ],
+            backgroundColor: colors[index].replace('0.8', '0.2'),
+            borderColor: colors[index],
+            borderWidth: 2,
+            pointBackgroundColor: colors[index]
+          }))
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: true,
+          plugins: {
+            legend: {
+              display: true,
+              position: 'top'
+            }
+          },
+          scales: {
+            r: {
+              beginAtZero: true,
+              max: 5,
+              ticks: {
+                stepSize: 1
+              }
+            }
+          }
+        }
+      });
+    </script>
+
+    <style>
+      .chart-container {
+        background: white;
+        border-radius: 12px;
+        padding: 30px;
+        margin: 25px 0;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        max-width: 100%;
+        overflow: hidden;
+      }
+      
+      .chart-container h2 {
+        margin-bottom: 25px;
+        color: #2c3e50;
+        font-size: 1.4rem;
+        border-bottom: 3px solid #3498db;
+        padding-bottom: 10px;
+      }
+      
+      .chart-container canvas {
+        max-height: 400px;
+        max-width: 100%;
+      }
+    </style>
+
+  <% } else { %>
+    <div class="empty-state">
+      <div class="empty-icon">📊</div>
+      <h2>Henüz lojistik verisi bulunmuyor</h2>
+      <p>Grafikleri görmek için lütfen lojistik verileri ekleyin.</p>
+      <a href="/logistics/create" class="btn btn-primary">+ İlk Veriyi Ekle</a>
+    </div>
+  <% } %>
+
+</div>
+
+<%- include('../includes/dashboard-footer') %>

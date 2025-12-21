@@ -1,0 +1,166 @@
+<%- include('../includes/dashboard-header') %>
+
+<div class="dashboard-container">
+  
+  <div class="page-header">
+    <h1>📦 <%= logistics.ulke_adi %> - Lojistik Detay</h1>
+    <div class="header-actions">
+      <a href="/logistics/<%= logistics.lojistik_id %>/edit" class="btn btn-primary">✏️ Düzenle</a>
+      <a href="/logistics" class="btn btn-secondary">← Geri Dön</a>
+    </div>
+  </div>
+
+  <div class="detail-grid">
+    
+    <div class="detail-card">
+      <h3>🌍 Ülke Bilgileri</h3>
+      <div class="detail-row">
+        <span class="detail-label">Ülke Adı:</span>
+        <span class="detail-value"><strong><%= logistics.ulke_adi %></strong></span>
+      </div>
+      <div class="detail-row">
+        <span class="detail-label">ISO Kodu:</span>
+        <span class="detail-value"><span class="badge badge-secondary"><%= logistics.ISO_KODU %></span></span>
+      </div>
+    </div>
+
+    <div class="detail-card">
+      <h3>📊 Lojistik Performans Göstergeleri</h3>
+      <div class="detail-row">
+        <span class="detail-label">LPI Skoru:</span>
+        <span class="detail-value">
+          <span class="badge badge-<%= logistics.lpi_skoru >= 3.5 ? 'success' : logistics.lpi_skoru >= 3.0 ? 'warning' : 'danger' %>">
+            <%= logistics.lpi_skoru %> / 5.0
+          </span>
+        </span>
+      </div>
+      <div class="detail-row">
+        <span class="detail-label">Gümrük Bekleme Süresi:</span>
+        <span class="detail-value"><%= logistics.gumruk_bekleme_suresi_gun %> gün</span>
+      </div>
+      <div class="detail-row">
+        <span class="detail-label">Konteyner İhracat Maliyeti:</span>
+        <span class="detail-value">$<%= Math.round(logistics.konteyner_ihracat_maliyeti_usd).toLocaleString() %></span>
+      </div>
+    </div>
+
+  </div>
+
+  <div class="danger-zone">
+    <h3>⚠️ Tehlikeli Bölge</h3>
+    <p>Bu lojistik verisini silmek kalıcı bir işlemdir ve geri alınamaz.</p>
+    <form action="/logistics/<%= logistics.lojistik_id %>/delete" method="POST" onsubmit="return confirm('Bu lojistik verisini silmek istediğinizden emin misiniz?');">
+      <button type="submit" class="btn btn-danger">🗑️ Veriyi Sil</button>
+    </form>
+  </div>
+
+</div>
+
+<style>
+  .header-actions {
+    display: flex;
+    gap: 1rem;
+  }
+
+  .detail-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+    gap: 2rem;
+    margin-bottom: 3rem;
+  }
+
+  .detail-card {
+    background: #fff;
+    padding: 2rem;
+    border-radius: 1rem;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+  }
+
+  .detail-card h3 {
+    font-size: 1.6rem;
+    color: #2d3748;
+    margin-bottom: 1.5rem;
+    padding-bottom: 1rem;
+    border-bottom: 2px solid #e2e8f0;
+  }
+
+  .detail-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 1rem 0;
+    border-bottom: 1px solid #f7fafc;
+  }
+
+  .detail-row:last-child {
+    border-bottom: none;
+  }
+
+  .detail-label {
+    font-size: 1.3rem;
+    color: #718096;
+    font-weight: 500;
+  }
+
+  .detail-value {
+    font-size: 1.4rem;
+    color: #2d3748;
+    font-weight: 600;
+  }
+
+  .badge {
+    display: inline-block;
+    padding: 0.4rem 0.8rem;
+    border-radius: 0.5rem;
+    font-size: 1.2rem;
+    font-weight: 600;
+  }
+
+  .badge-success {
+    background: #c6f6d5;
+    color: #22543d;
+  }
+
+  .badge-warning {
+    background: #feebc8;
+    color: #7c2d12;
+  }
+
+  .badge-danger {
+    background: #fed7d7;
+    color: #742a2a;
+  }
+
+  .badge-info {
+    background: #bee3f8;
+    color: #2c5282;
+  }
+
+  .badge-secondary {
+    background: #e2e8f0;
+    color: #2d3748;
+  }
+
+  .text-muted {
+    color: #a0aec0;
+  }
+
+  .danger-zone {
+    background: #fff5f5;
+    border: 2px solid #fc8181;
+    padding: 2rem;
+    border-radius: 1rem;
+  }
+
+  .danger-zone h3 {
+    color: #c53030;
+    margin-bottom: 1rem;
+  }
+
+  .danger-zone p {
+    color: #742a2a;
+    margin-bottom: 1.5rem;
+  }
+</style>
+
+<%- include('../includes/dashboard-footer') %>

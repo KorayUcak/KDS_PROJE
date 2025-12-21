@@ -867,6 +867,19 @@ body {
 }
 
 /* ===========================================
+   CONTENT WRAPPER (for pages with sidebar)
+   =========================================== */
+.content-wrapper {
+  flex: 1;
+  margin-left: 260px;
+  padding: 2rem;
+  background: #f0f2f5;
+  min-height: 100vh;
+  width: calc(100% - 260px);
+  box-sizing: border-box;
+}
+
+/* ===========================================
    TOPBAR
    =========================================== */
 .topbar {
@@ -1399,8 +1412,10 @@ body {
     transform: translateX(0);
   }
 
-  .main-wrapper {
+  .main-wrapper,
+  .content-wrapper {
     margin-left: 0;
+    width: 100%;
   }
 
   .menu-toggle {

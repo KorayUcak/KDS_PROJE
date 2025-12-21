@@ -11,6 +11,7 @@ const router = express.Router();
 // Sayfa Route'ları (GET - Views)
 router.get('/dashboard', analysisController.getDashboard);
 router.get('/new', analysisController.getNewAnalysisPage);
+router.get('/:id/detail', analysisController.getAnalysisDetailPage);
 
 // API Route'ları
 // Özel route'lar (parametreli route'lardan önce)

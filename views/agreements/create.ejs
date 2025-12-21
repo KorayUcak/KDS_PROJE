@@ -1,0 +1,124 @@
+<%- include('../includes/dashboard-header') %>
+
+<div class="dashboard-container">
+  
+  <div class="page-header">
+    <h1>➕ Yeni Anlaşma Tipi Ekle</h1>
+  </div>
+
+  <div class="form-container">
+    <form action="/agreements/create" method="POST" class="data-form">
+      
+      <div class="form-section">
+        <h3>📋 Anlaşma Bilgileri</h3>
+        
+        <div class="form-group">
+          <label for="anlasma_adi">Anlaşma Adı *</label>
+          <input type="text" id="anlasma_adi" name="anlasma_adi" class="form-control" 
+                 placeholder="Örn: Serbest Ticaret Anlaşması" required>
+        </div>
+
+        <div class="form-group">
+          <label for="anlasma_kodu">Anlaşma Kodu *</label>
+          <input type="text" id="anlasma_kodu" name="anlasma_kodu" class="form-control" 
+                 placeholder="Örn: STA" required maxlength="20">
+          <small>Kısa kod (max 20 karakter). Örn: STA, GB, AB, EFTA</small>
+        </div>
+      </div>
+
+      <div class="info-box">
+        <strong>💡 Bilgi:</strong> Anlaşma tipi oluşturduktan sonra, lojistik verileri sayfasından ülkelere bu anlaşmayı atayabilirsiniz.
+      </div>
+
+      <div class="form-actions">
+        <button type="submit" class="btn btn-primary">💾 Kaydet</button>
+        <a href="/agreements" class="btn btn-secondary">İptal</a>
+      </div>
+    </form>
+  </div>
+
+</div>
+
+<style>
+  .form-container {
+    max-width: 800px;
+    margin: 0 auto;
+  }
+
+  .data-form {
+    background: #fff;
+    padding: 2.5rem;
+    border-radius: 1rem;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+  }
+
+  .form-section {
+    margin-bottom: 2rem;
+  }
+
+  .form-section h3 {
+    font-size: 1.6rem;
+    color: #2d3748;
+    margin-bottom: 1.5rem;
+    padding-bottom: 1rem;
+    border-bottom: 2px solid #e2e8f0;
+  }
+
+  .form-group {
+    margin-bottom: 1.5rem;
+  }
+
+  .form-group label {
+    display: block;
+    font-size: 1.3rem;
+    font-weight: 600;
+    color: #2d3748;
+    margin-bottom: 0.5rem;
+  }
+
+  .form-control {
+    width: 100%;
+    padding: 1rem;
+    font-size: 1.4rem;
+    border: 2px solid #e2e8f0;
+    border-radius: 0.8rem;
+    outline: none;
+    transition: border-color 0.3s;
+    font-family: inherit;
+  }
+
+  .form-control:focus {
+    border-color: #4299e1;
+  }
+
+  textarea.form-control {
+    resize: vertical;
+    min-height: 100px;
+  }
+
+  .form-group small {
+    display: block;
+    font-size: 1.1rem;
+    color: #718096;
+    margin-top: 0.3rem;
+  }
+
+  .info-box {
+    background: #ebf8ff;
+    border-left: 4px solid #4299e1;
+    padding: 1.2rem;
+    border-radius: 0.5rem;
+    margin-bottom: 2rem;
+    font-size: 1.3rem;
+    color: #2c5282;
+  }
+
+  .form-actions {
+    display: flex;
+    gap: 1rem;
+    padding-top: 2rem;
+    border-top: 2px solid #e2e8f0;
+  }
+</style>
+
+<%- include('../includes/dashboard-footer') %>

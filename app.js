@@ -15,6 +15,8 @@ const logRoutes = require('./routes/logRoutes');
 const sectorRoutes = require('./routes/sectorRoutes');
 const economyRoutes = require('./routes/economyRoutes');
 const countryRoutes = require('./routes/countryRoutes');
+const logisticsRoutes = require('./routes/logisticsRoutes');
+const agreementRoutes = require('./routes/agreementRoutes');
 
 // Express uygulaması oluştur
 const app = express();
@@ -59,6 +61,12 @@ app.use('/economics', economyRoutes);
 
 // Ülke İncele Route'ları
 app.use('/countries', countryRoutes);
+
+// Lojistik Verileri Route'ları
+app.use('/logistics', logisticsRoutes);
+
+// Anlaşma Tipleri Route'ları
+app.use('/agreements', agreementRoutes);
 
 // Log API Route'ları
 app.use('/api/logs', logRoutes);

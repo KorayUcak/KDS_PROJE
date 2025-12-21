@@ -69,13 +69,10 @@ const getLogisticsData = async (ulkeId) => {
 
     const [rows] = await pool.query(`
       SELECT 
-        l.lpi_skoru,
+        l.lpi_skoru_ham as lpi_skoru,
         l.gumruk_bekleme_suresi_gun,
-        l.konteyner_ihracat_maliyeti_usd,
-        a.anlasma_adi,
-        a.anlasma_kodu
+        l.konteyner_ihracat_maliyeti_usd
       FROM lojistik_verileri l
-      LEFT JOIN anlasma_tipleri a ON l.anlasma_id = a.anlasma_id
       WHERE l.ulke_id = ?
     `, [ulkeId]);
     
@@ -85,8 +82,8 @@ const getLogisticsData = async (ulkeId) => {
         lpiSkoru: parseFloat(data.lpi_skoru) || 0,
         gumrukSuresi: parseFloat(data.gumruk_bekleme_suresi_gun) || 0,
         konteynerMaliyeti: parseFloat(data.konteyner_ihracat_maliyeti_usd) || 0,
-        anlasmaAdi: data.anlasma_adi || null,
-        anlasmaKodu: data.anlasma_kodu || null,
+        anlasmaAdi: null,
+        anlasmaKodu: null,
         hasData: true
       };
     }

@@ -6,6 +6,31 @@
     <p class="page-subtitle">Sektör ve ülke bazlı pazar araştırma raporu oluşturun</p>
   </div>
 
+  <!-- İstatistik Kartları -->
+  <div class="stats-grid">
+    <div class="stat-card">
+      <div class="stat-icon">🌍</div>
+      <div class="stat-content">
+        <div class="stat-value"><%= countries.length %></div>
+        <div class="stat-label">Ülke Seçeneği</div>
+      </div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-icon">🏭</div>
+      <div class="stat-content">
+        <div class="stat-value"><%= sectors.length %></div>
+        <div class="stat-label">Sektör Seçeneği</div>
+      </div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-icon">📊</div>
+      <div class="stat-content">
+        <div class="stat-value">∞</div>
+        <div class="stat-label">Analiz Kombinasyonu</div>
+      </div>
+    </div>
+  </div>
+
   <section class="form-section">
     <div class="form-card">
       <form id="analysisForm" class="analysis-form">
@@ -79,8 +104,53 @@
 </div>
 
 <style>
+  .stats-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 2rem;
+    margin-bottom: 3rem;
+  }
+
+  .stat-card {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    border-radius: 12px;
+    padding: 2rem;
+    display: flex;
+    align-items: center;
+    gap: 1.5rem;
+    box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+  }
+
+  .stat-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 8px 25px rgba(102, 126, 234, 0.4);
+  }
+
+  .stat-icon {
+    font-size: 3.5rem;
+    opacity: 0.9;
+  }
+
+  .stat-content {
+    flex: 1;
+    color: white;
+  }
+
+  .stat-value {
+    font-size: 2.8rem;
+    font-weight: 700;
+    margin-bottom: 0.3rem;
+  }
+
+  .stat-label {
+    font-size: 1.3rem;
+    opacity: 0.9;
+    font-weight: 500;
+  }
+
   .form-section {
-    max-width: 700px;
+    max-width: 800px;
     margin: 0 auto;
   }
 
@@ -103,9 +173,13 @@
   }
 
   .step-title {
-    font-size: 1.6rem;
-    color: #2c5282;
+    font-size: 1.8rem;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
     margin-bottom: 1.5rem;
+    font-weight: 700;
   }
 
   .form-group {
@@ -135,7 +209,8 @@
   .form-group select:focus,
   .form-group textarea:focus {
     outline: none;
-    border-color: #2c5282;
+    border-color: #667eea;
+    box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
   }
 
   .form-actions {
@@ -200,8 +275,8 @@
       const data = await response.json();
 
       if (data.status === 'success') {
-        alert('Rapor başarıyla oluşturuldu!');
-        window.location.href = '/dashboard';
+        alert('✅ Rapor başarıyla oluşturuldu!');
+        window.location.href = '/analyses/dashboard';
       } else {
         alert(data.message || 'Rapor oluşturulamadı');
       }

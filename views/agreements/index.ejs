@@ -1,0 +1,242 @@
+<%- include('../includes/dashboard-header') %>
+
+<div class="dashboard-container">
+  
+  <div class="page-header">
+    <h1>📋 Anlaşma Tipleri</h1>
+    <p class="page-subtitle">Türkiye'nin ticaret anlaşmaları ve gümrük düzenlemeleri</p>
+  </div>
+
+  <div class="action-bar">
+    <a href="/agreements/create" class="btn btn-primary">+ Yeni Anlaşma Ekle</a>
+  </div>
+
+  <% if (hasData) { %>
+    
+    <div class="agreements-grid">
+      <% statistics.forEach(function(stat) { %>
+        <div class="agreement-card">
+          <div class="agreement-header">
+            <div class="agreement-badge">
+              <span class="badge-code"><%= stat.anlasma_kodu %></span>
+            </div>
+            <div class="agreement-count">
+              <span class="count-value"><%= stat.ulke_sayisi %></span>
+              <span class="count-label">Ülke</span>
+            </div>
+          </div>
+          <h3><%= stat.anlasma_adi %></h3>
+          <div class="agreement-actions">
+            <a href="/agreements/<%= stat.anlasma_id %>" class="btn btn-sm btn-outline">Detay →</a>
+          </div>
+        </div>
+      <% }); %>
+    </div>
+
+    <div class="table-section">
+      <h2>📊 Tüm Anlaşmalar</h2>
+      <div class="table-container">
+        <table class="data-table">
+          <thead>
+            <tr>
+              <th>Kod</th>
+              <th>Anlaşma Adı</th>
+              <th>İşlemler</th>
+            </tr>
+          </thead>
+          <tbody>
+            <% agreements.forEach(function(agreement) { %>
+              <tr>
+                <td><span class="badge badge-primary"><%= agreement.anlasma_kodu %></span></td>
+                <td><strong><%= agreement.anlasma_adi %></strong></td>
+                <td>
+                  <div class="action-buttons">
+                    <a href="/agreements/<%= agreement.anlasma_id %>" class="btn-icon" title="Detay">👁️</a>
+                    <a href="/agreements/<%= agreement.anlasma_id %>/edit" class="btn-icon" title="Düzenle">✏️</a>
+                  </div>
+                </td>
+              </tr>
+            <% }); %>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+  <% } else { %>
+    <div class="empty-state-card">
+      <div class="empty-state-icon">📋</div>
+      <h2>Anlaşma Bulunamadı</h2>
+      <p>Henüz anlaşma tipi eklenmemiş.</p>
+      <a href="/agreements/create" class="btn btn-primary">İlk Anlaşmayı Ekle</a>
+    </div>
+  <% } %>
+
+</div>
+
+<style>
+  .action-bar {
+    display: flex;
+    justify-content: flex-end;
+    margin-bottom: 2rem;
+  }
+
+  .agreements-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 1.5rem;
+    margin-bottom: 3rem;
+  }
+
+  .agreement-card {
+    background: #fff;
+    padding: 2rem;
+    border-radius: 1rem;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+    transition: all 0.3s ease;
+    border: 2px solid transparent;
+  }
+
+  .agreement-card:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 8px 20px rgba(0,0,0,0.1);
+    border-color: #4299e1;
+  }
+
+  .agreement-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1.5rem;
+  }
+
+  .agreement-badge {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    padding: 0.8rem 1.2rem;
+    border-radius: 0.8rem;
+  }
+
+  .badge-code {
+    color: #fff;
+    font-weight: 700;
+    font-size: 1.4rem;
+  }
+
+  .agreement-count {
+    text-align: right;
+  }
+
+  .count-value {
+    display: block;
+    font-size: 2rem;
+    font-weight: 700;
+    color: #2d3748;
+  }
+
+  .count-label {
+    font-size: 1.1rem;
+    color: #718096;
+  }
+
+  .agreement-card h3 {
+    font-size: 1.5rem;
+    color: #2d3748;
+    margin-bottom: 1.5rem;
+    min-height: 3rem;
+  }
+
+  .agreement-actions {
+    display: flex;
+    justify-content: flex-end;
+  }
+
+  .btn-sm {
+    padding: 0.6rem 1.2rem;
+    font-size: 1.2rem;
+  }
+
+  .btn-outline {
+    background: transparent;
+    border: 2px solid #4299e1;
+    color: #4299e1;
+  }
+
+  .btn-outline:hover {
+    background: #4299e1;
+    color: #fff;
+  }
+
+  .table-section {
+    margin-top: 3rem;
+  }
+
+  .table-section h2 {
+    font-size: 1.8rem;
+    color: #2d3748;
+    margin-bottom: 1.5rem;
+  }
+
+  .table-container {
+    background: #fff;
+    border-radius: 1rem;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+    overflow: hidden;
+  }
+
+  .data-table {
+    width: 100%;
+    border-collapse: collapse;
+  }
+
+  .data-table thead {
+    background: #f7fafc;
+  }
+
+  .data-table th {
+    padding: 1.2rem;
+    text-align: left;
+    font-weight: 600;
+    color: #2d3748;
+    font-size: 1.3rem;
+    border-bottom: 2px solid #e2e8f0;
+  }
+
+  .data-table td {
+    padding: 1.2rem;
+    border-bottom: 1px solid #e2e8f0;
+    font-size: 1.3rem;
+  }
+
+  .data-table tbody tr:hover {
+    background: #f7fafc;
+  }
+
+  .badge {
+    display: inline-block;
+    padding: 0.4rem 0.8rem;
+    border-radius: 0.5rem;
+    font-size: 1.2rem;
+    font-weight: 600;
+  }
+
+  .badge-primary {
+    background: #bee3f8;
+    color: #2c5282;
+  }
+
+  .action-buttons {
+    display: flex;
+    gap: 0.5rem;
+  }
+
+  .btn-icon {
+    font-size: 1.6rem;
+    text-decoration: none;
+    transition: transform 0.2s;
+  }
+
+  .btn-icon:hover {
+    transform: scale(1.2);
+  }
+</style>
+
+<%- include('../includes/dashboard-footer') %>
