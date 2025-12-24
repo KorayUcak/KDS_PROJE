@@ -1,10 +1,7 @@
-/**
- * MySQL Veritabanı Bağlantı Havuzu
- * mysql2/promise kullanarak async/await desteği sağlar
- */
+
 const mysql = require('mysql2/promise');
 
-// Bağlantı havuzu oluştur
+
 const pool = mysql.createPool({
   host: process.env.DB_HOST,
   port: process.env.DB_PORT || 3306,
@@ -18,10 +15,7 @@ const pool = mysql.createPool({
   keepAliveInitialDelay: 0
 });
 
-/**
- * Veritabanı bağlantısını test et
- * Basit bir SELECT 1 sorgusu ile bağlantıyı doğrular
- */
+
 const testConnection = async () => {
   try {
     await pool.query('SELECT 1');

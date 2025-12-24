@@ -33,4 +33,7 @@ router
 // Analiz sonuçlarını kaydet
 router.patch('/:id/results', analysisController.saveResults);
 
+// Analiz skoru hesapla
+router.post('/:id/calculate-score', analysisController.calculateAndSaveScore);
+
 module.exports = router;

@@ -18,6 +18,107 @@ const AppError = require('../utils/AppError');
 // ============================================
 
 /**
+ * Pazar skoru hesaplama algoritması
+ * Ekonomik veriler ve sektörel metrikler kullanılarak hesaplanır
+ * @param {number} ulkeId - Ülke ID
+ * @param {number} sektorId - Sektör ID
+ * @returns {Promise<number>} - Hesaplanan skor (0-100 arası)
+ */
+const calculateMarketScore = async (ulkeId, sektorId) => {
+  try {
+    const { pool } = require('../config/db');
+    
+    // Ekonomik verileri çek
+    const [ekonomiData] = await pool.query(`
+      SELECT * FROM ekonomi_guncel WHERE ulke_id = ?
+    `, [ulkeId]);
+    
+    // Sektörel verileri çek
+    const [sektorData] = await pool.query(`
+      SELECT * FROM ulke_sektor_verileri 
+      WHERE ulke_id = ? AND sektor_id = ?
+    `, [ulkeId, sektorId]);
+    
+    if (!ekonomiData.length || !sektorData.length) {
+      // Veri yoksa orta değer döndür
+      return 50.0;
+    }
+    
+    const ekonomi = ekonomiData[0];
+    const sektor = sektorData[0];
+    
+    // Skor hesaplama (ağırlıklı ortalama)
+    let skor = 0;
+    let toplamAgirlik = 0;
+    
+    // 1. GSYİH Büyüklüğü (Ağırlık: 20%)
+    const gsyih = parseFloat(ekonomi.toplam_gsyh_milyar_dolar) || 0;
+    if (gsyih > 0) {
+      const gsyihSkor = Math.min((gsyih / 5000) * 100, 100); // 5 trilyon üzeri = 100 puan
+      skor += gsyihSkor * 0.20;
+      toplamAgirlik += 0.20;
+    }
+    
+    // 2. Büyüme Oranı (Ağırlık: 15%)
+    const buyume = parseFloat(ekonomi.buyume_orani_yuzde) || 0;
+    if (buyume !== 0) {
+      const buyumeSkor = Math.min(Math.max((buyume + 5) * 10, 0), 100); // -5% = 0, 5% = 100
+      skor += buyumeSkor * 0.15;
+      toplamAgirlik += 0.15;
+    }
+    
+    // 3. Enflasyon (Ters oran - düşük enflasyon iyi) (Ağırlık: 10%)
+    const enflasyon = parseFloat(ekonomi.enflasyon_orani_yuzde) || 0;
+    if (enflasyon >= 0) {
+      const enflasyonSkor = Math.max(100 - (enflasyon * 5), 0); // Her %1 enflasyon -5 puan
+      skor += enflasyonSkor * 0.10;
+      toplamAgirlik += 0.10;
+    }
+    
+    // 4. Sektörel İhracat (Ağırlık: 20%)
+    const ihracat = parseFloat(sektor.sektorel_ihracat_milyon_usd) || 0;
+    if (ihracat > 0) {
+      const ihracatSkor = Math.min((ihracat / 10000) * 100, 100); // 10 milyar üzeri = 100 puan
+      skor += ihracatSkor * 0.20;
+      toplamAgirlik += 0.20;
+    }
+    
+    // 5. Sektörel Büyüme (Ağırlık: 15%)
+    const sektorelBuyume = parseFloat(sektor.sektorel_buyume_orani_yuzde) || 0;
+    if (sektorelBuyume !== 0) {
+      const sektorelBuyumeSkor = Math.min(Math.max((sektorelBuyume + 5) * 10, 0), 100);
+      skor += sektorelBuyumeSkor * 0.15;
+      toplamAgirlik += 0.15;
+    }
+    
+    // 6. Yerli Üretim Karşılama Oranı (Ağırlık: 10%)
+    const yerliUretim = parseFloat(sektor.yerli_uretim_karsilama_orani_yuzde) || 0;
+    if (yerliUretim > 0) {
+      // Düşük oran = yüksek ithalat fırsatı
+      const yerliUretimSkor = 100 - yerliUretim; // %0 = 100 puan (tam ithalat), %100 = 0 puan
+      skor += yerliUretimSkor * 0.10;
+      toplamAgirlik += 0.10;
+    }
+    
+    // 7. Risk Notu (Ağırlık: 10%)
+    const riskNotu = parseFloat(ekonomi.risk_notu_todu) || 5;
+    if (riskNotu > 0) {
+      const riskSkor = (riskNotu / 10) * 100; // 10 üzerinden değerlendirme
+      skor += riskSkor * 0.10;
+      toplamAgirlik += 0.10;
+    }
+    
+    // Normalize et
+    const finalSkor = toplamAgirlik > 0 ? (skor / toplamAgirlik) * 100 : 50.0;
+    
+    return Math.round(finalSkor * 100) / 100; // 2 ondalık basamak
+  } catch (error) {
+    console.error('Skor hesaplama hatası:', error);
+    return 50.0; // Hata durumunda orta değer
+  }
+};
+
+/**
  * Ham analiz verisinden KPI'ları hesapla
  * YENİ ŞEMA: analiz_id, kullanici_id, hedef_ulke_id, hedef_sektor_id, hesaplanan_skor, yonetici_notu, olusturulma_tarihi
  * JOIN: ulke_adi, ulke_kodu, sektor_adi, olusturan_kullanici
@@ -403,11 +504,30 @@ exports.createAnalysis = catchAsync(async (req, res, next) => {
     return next(new AppError('Ülke ve sektör seçimi zorunludur', 400));
   }
 
+  // Veritabanı kontrolü: Ülke ve sektör var mı?
+  const CountryModel = require('../models/countryModel');
+  const SectorModel = require('../models/sectorModel');
+  
+  const country = await CountryModel.getAll();
+  const sector = await SectorModel.getAll();
+  
+  const countryExists = country.find(c => c.ulke_id === parseInt(parametreler.hedef_ulke_id));
+  const sectorExists = sector.find(s => s.sektor_id === parseInt(parametreler.hedef_sektor_id));
+  
+  if (!countryExists) {
+    return next(new AppError('Seçilen ülke bulunamadı', 400));
+  }
+  
+  if (!sectorExists) {
+    return next(new AppError('Seçilen sektör bulunamadı', 400));
+  }
+
+  // Analiz oluştur
   const newAnalysisId = await AnalysisModel.create({
     kullanici_id: parseInt(kullanici_id) || 1,
     hedef_ulke_id: parseInt(parametreler.hedef_ulke_id),
     hedef_sektor_id: parseInt(parametreler.hedef_sektor_id),
-    hesaplanan_skor: null,
+    hesaplanan_skor: null, // Başlangıçta null, sonra hesaplanacak
     yonetici_notu: parametreler.yonetici_notu || null,
     aciklama: parametreler.aciklama || null
   });
@@ -415,7 +535,7 @@ exports.createAnalysis = catchAsync(async (req, res, next) => {
   // Log kaydet
   await LogModel.info(
     'ANALYSIS_CREATE', 
-    `Yeni analiz oluşturuldu: Ülke ${parametreler.ulke}, Sektör ${parametreler.sektor}`, 
+    `Yeni analiz oluşturuldu: Ülke ${parametreler.ulke || countryExists.ulke_adi}, Sektör ${parametreler.sektor || sectorExists.sektor_adi}`, 
     kullanici_id
   );
 
@@ -519,5 +639,45 @@ exports.getAnalysesByType = catchAsync(async (req, res, next) => {
     status: 'success',
     results: analyses.length,
     data: { analyses }
+  });
+});
+
+// Analiz skoru hesapla ve kaydet
+exports.calculateAndSaveScore = catchAsync(async (req, res, next) => {
+  const { id } = req.params;
+  
+  // Analizi bul
+  const analysis = await AnalysisModel.getById(id);
+  
+  if (!analysis) {
+    return next(new AppError('Bu ID ile analiz bulunamadı', 404));
+  }
+  
+  // Skoru hesapla
+  const hesaplananSkor = await calculateMarketScore(
+    analysis.hedef_ulke_id, 
+    analysis.hedef_sektor_id
+  );
+  
+  // Skoru kaydet
+  await AnalysisModel.saveScore(id, hesaplananSkor);
+  
+  // Log kaydet
+  await LogModel.info(
+    'ANALYSIS_SCORE_CALCULATED', 
+    `Analiz skoru hesaplandı: ID ${id}, Skor: ${hesaplananSkor}`, 
+    analysis.kullanici_id
+  );
+  
+  // Güncellenmiş analizi getir
+  const updatedAnalysis = await AnalysisModel.getById(id);
+  
+  res.status(200).json({
+    status: 'success',
+    message: 'Analiz skoru başarıyla hesaplandı',
+    data: { 
+      analysis: updatedAnalysis,
+      score: hesaplananSkor
+    }
   });
 });

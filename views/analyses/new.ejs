@@ -2,8 +2,8 @@
 
 <div class="dashboard-container">
   <div class="page-header">
-    <h1>📋 Yeni Rapor Oluştur</h1>
-    <p class="page-subtitle">Sektör ve ülke bazlı pazar araştırma raporu oluşturun</p>
+    <h1>📋 Yeni Analiz Ekle</h1>
+    <p class="page-subtitle">Sektör ve ülke bazlı pazar analizi oluşturun</p>
   </div>
 
   <!-- İstatistik Kartları -->
@@ -25,9 +25,18 @@
     <div class="stat-card">
       <div class="stat-icon">📊</div>
       <div class="stat-content">
-        <div class="stat-value">∞</div>
+        <div class="stat-value"><%= countries.length * sectors.length %></div>
         <div class="stat-label">Analiz Kombinasyonu</div>
       </div>
+    </div>
+  </div>
+
+  <!-- Bilgilendirme Kartı -->
+  <div class="info-banner">
+    <div class="info-icon">💡</div>
+    <div class="info-content">
+      <h4>Analiz Oluşturma Rehberi</h4>
+      <p>Hedef ülke ve sektör seçerek detaylı pazar analizi oluşturabilirsiniz. Sistem otomatik olarak ekonomik verileri, sektörel metrikleri ve pazar fırsatlarını analiz edecektir.</p>
     </div>
   </div>
 
@@ -35,68 +44,130 @@
     <div class="form-card">
       <form id="analysisForm" class="analysis-form">
         <!-- ADIM 1: Sektör Seçimi -->
-        <div class="form-step">
-          <h3 class="step-title">1️⃣ Sektör Seçimi</h3>
+        <div class="form-step" id="step1">
+          <div class="step-header">
+            <div class="step-number">1</div>
+            <h3 class="step-title">Sektör Seçimi</h3>
+          </div>
           <div class="form-group">
-            <label for="sektor_id">Hedef Sektör *</label>
+            <label for="sektor_id">
+              Hedef Sektör <span class="required">*</span>
+              <span class="field-hint">Analiz yapmak istediğiniz sektörü seçin</span>
+            </label>
             <select id="sektor_id" name="sektor_id" required>
-              <option value="">Sektör Seçiniz...</option>
+              <option value="">-- Sektör Seçiniz --</option>
               <% if (typeof sectors !== 'undefined' && sectors.length > 0) { %>
                 <% sectors.forEach(function(sector) { %>
                   <option value="<%= sector.sektor_id %>"><%= sector.sektor_adi %></option>
                 <% }); %>
+              <% } else { %>
+                <option value="" disabled>Sektör verisi bulunamadı</option>
               <% } %>
             </select>
+            <div class="validation-message" id="sektor-error"></div>
           </div>
         </div>
 
         <!-- ADIM 2: Ülke Seçimi -->
-        <div class="form-step">
-          <h3 class="step-title">2️⃣ Ülke Seçimi</h3>
+        <div class="form-step" id="step2">
+          <div class="step-header">
+            <div class="step-number">2</div>
+            <h3 class="step-title">Ülke Seçimi</h3>
+          </div>
           <div class="form-group">
-            <label for="ulke_id">Hedef Ülke *</label>
-            <select id="ulke_id" name="ulke_id" required>
-              <option value="">Ülke Seçiniz...</option>
+            <label for="ulke_id">
+              Hedef Ülke <span class="required">*</span>
+              <span class="field-hint">Analiz yapmak istediğiniz ülkeyi seçin</span>
+            </label>
+            <div class="search-wrapper">
+              <input 
+                type="text" 
+                id="ulke_search" 
+                placeholder="🔍 Ülke ara..."
+                class="search-input"
+              >
+            </div>
+            <select id="ulke_id" name="ulke_id" required size="8" class="country-select">
               <% if (typeof countries !== 'undefined' && countries.length > 0) { %>
                 <% countries.forEach(function(country) { %>
-                  <option value="<%= country.ulke_id %>" data-iso="<%= country.ISO_KODU %>">
+                  <option 
+                    value="<%= country.ulke_id %>" 
+                    data-iso="<%= country.ISO_KODU %>"
+                    data-name="<%= country.ulke_adi.toLowerCase() %>">
                     <%= country.ulke_adi %> (<%= country.ISO_KODU %>)
                   </option>
                 <% }); %>
+              <% } else { %>
+                <option value="" disabled>Ülke verisi bulunamadı</option>
               <% } %>
             </select>
+            <div class="validation-message" id="ulke-error"></div>
           </div>
         </div>
 
-        <!-- ADIM 3: Rapor Detayları -->
-        <div class="form-step">
-          <h3 class="step-title">3️⃣ Rapor Detayları</h3>
+        <!-- ADIM 3: Analiz Detayları -->
+        <div class="form-step" id="step3">
+          <div class="step-header">
+            <div class="step-number">3</div>
+            <h3 class="step-title">Analiz Detayları</h3>
+          </div>
           
           <div class="form-group">
-            <label for="analiz_adi">Rapor Adı *</label>
-            <input 
-              type="text" 
-              id="analiz_adi" 
-              name="analiz_adi" 
-              placeholder="Örn: Almanya Otomotiv Sektörü 2024 Raporu"
-              required
-            >
-          </div>
-
-          <div class="form-group">
-            <label for="aciklama">Açıklama / Notlar</label>
+            <label for="aciklama">
+              Açıklama / Notlar
+              <span class="field-hint">Analiz hakkında ek bilgiler ekleyebilirsiniz (opsiyonel)</span>
+            </label>
             <textarea 
               id="aciklama" 
               name="aciklama" 
-              rows="3"
-              placeholder="Rapor hakkında ek notlar..."
+              rows="4"
+              maxlength="500"
+              placeholder="Örn: 2024 yılı için otomotiv sektörü yatırım fırsatları analizi..."
             ></textarea>
+            <div class="char-counter">
+              <span id="char-count">0</span> / 500 karakter
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label for="yonetici_notu">
+              Yönetici Notu
+              <span class="field-hint">Analiz için özel notlar (opsiyonel)</span>
+            </label>
+            <textarea 
+              id="yonetici_notu" 
+              name="yonetici_notu" 
+              rows="3"
+              maxlength="300"
+              placeholder="Yönetici için özel notlar..."
+            ></textarea>
+            <div class="char-counter">
+              <span id="note-count">0</span> / 300 karakter
+            </div>
+          </div>
+        </div>
+
+        <!-- Seçim Özeti -->
+        <div class="selection-summary" id="summary" style="display: none;">
+          <h4>📋 Seçim Özeti</h4>
+          <div class="summary-grid">
+            <div class="summary-item">
+              <span class="summary-label">Sektör:</span>
+              <span class="summary-value" id="summary-sektor">-</span>
+            </div>
+            <div class="summary-item">
+              <span class="summary-label">Ülke:</span>
+              <span class="summary-value" id="summary-ulke">-</span>
+            </div>
           </div>
         </div>
 
         <div class="form-actions">
-          <a href="/dashboard" class="btn btn-secondary">← İptal</a>
-          <button type="submit" class="btn btn-primary">📊 Rapor Oluştur</button>
+          <a href="/analyses/dashboard" class="btn btn-secondary">← İptal</a>
+          <button type="submit" class="btn btn-primary" id="submitBtn">
+            <span class="btn-icon">📊</span>
+            <span class="btn-text">Analiz Oluştur</span>
+          </button>
         </div>
       </form>
     </div>
@@ -108,7 +179,7 @@
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
     gap: 2rem;
-    margin-bottom: 3rem;
+    margin-bottom: 2rem;
   }
 
   .stat-card {
@@ -149,8 +220,37 @@
     font-weight: 500;
   }
 
+  .info-banner {
+    background: linear-gradient(135deg, #e0f2fe 0%, #dbeafe 100%);
+    border-left: 4px solid #3b82f6;
+    border-radius: 12px;
+    padding: 2rem;
+    margin-bottom: 3rem;
+    display: flex;
+    gap: 1.5rem;
+    align-items: flex-start;
+  }
+
+  .info-icon {
+    font-size: 2.5rem;
+    flex-shrink: 0;
+  }
+
+  .info-content h4 {
+    color: #1e40af;
+    margin: 0 0 0.5rem 0;
+    font-size: 1.6rem;
+  }
+
+  .info-content p {
+    color: #1e3a8a;
+    margin: 0;
+    font-size: 1.4rem;
+    line-height: 1.6;
+  }
+
   .form-section {
-    max-width: 800px;
+    max-width: 900px;
     margin: 0 auto;
   }
 
@@ -162,36 +262,67 @@
   }
 
   .form-step {
-    margin-bottom: 2.5rem;
-    padding-bottom: 2rem;
-    border-bottom: 1px solid #e2e8f0;
+    margin-bottom: 3rem;
+    padding-bottom: 2.5rem;
+    border-bottom: 2px solid #e2e8f0;
   }
 
   .form-step:last-of-type {
     border-bottom: none;
-    margin-bottom: 1.5rem;
+    margin-bottom: 2rem;
+  }
+
+  .step-header {
+    display: flex;
+    align-items: center;
+    gap: 1.5rem;
+    margin-bottom: 2rem;
+  }
+
+  .step-number {
+    width: 40px;
+    height: 40px;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.8rem;
+    font-weight: 700;
+    flex-shrink: 0;
   }
 
   .step-title {
-    font-size: 1.8rem;
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-    background-clip: text;
-    margin-bottom: 1.5rem;
+    font-size: 2rem;
+    color: #2d3748;
+    margin: 0;
     font-weight: 700;
   }
 
   .form-group {
-    margin-bottom: 1.5rem;
+    margin-bottom: 2rem;
   }
 
   .form-group label {
     display: block;
     font-weight: 600;
-    margin-bottom: 0.5rem;
+    margin-bottom: 0.8rem;
     color: #2d3748;
-    font-size: 1.4rem;
+    font-size: 1.5rem;
+  }
+
+  .required {
+    color: #ef4444;
+    font-weight: 700;
+  }
+
+  .field-hint {
+    display: block;
+    font-size: 1.2rem;
+    color: #718096;
+    font-weight: 400;
+    margin-top: 0.3rem;
   }
 
   .form-group input,
@@ -202,7 +333,8 @@
     font-size: 1.4rem;
     border: 2px solid #e2e8f0;
     border-radius: 0.8rem;
-    transition: border-color 0.2s;
+    transition: all 0.2s;
+    font-family: inherit;
   }
 
   .form-group input:focus,
@@ -213,56 +345,291 @@
     box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
   }
 
+  .form-group textarea {
+    resize: vertical;
+    min-height: 100px;
+  }
+
+  .search-wrapper {
+    margin-bottom: 1rem;
+  }
+
+  .search-input {
+    width: 100%;
+    padding: 1rem 1.5rem;
+    font-size: 1.4rem;
+    border: 2px solid #e2e8f0;
+    border-radius: 0.8rem;
+    transition: all 0.2s;
+  }
+
+  .search-input:focus {
+    outline: none;
+    border-color: #667eea;
+    box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+  }
+
+  .country-select {
+    height: auto !important;
+    min-height: 300px;
+    overflow-y: auto;
+  }
+
+  .country-select option {
+    padding: 1rem;
+    cursor: pointer;
+  }
+
+  .country-select option:hover {
+    background: #f3f4f6;
+  }
+
+  .country-select option:checked {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+  }
+
+  .char-counter {
+    text-align: right;
+    font-size: 1.2rem;
+    color: #718096;
+    margin-top: 0.5rem;
+  }
+
+  .validation-message {
+    color: #ef4444;
+    font-size: 1.3rem;
+    margin-top: 0.5rem;
+    display: none;
+  }
+
+  .validation-message.show {
+    display: block;
+  }
+
+  .selection-summary {
+    background: linear-gradient(135deg, #f0fdf4 0%, #dcfce7 100%);
+    border-left: 4px solid #22c55e;
+    border-radius: 12px;
+    padding: 2rem;
+    margin-bottom: 2rem;
+  }
+
+  .selection-summary h4 {
+    color: #15803d;
+    margin: 0 0 1.5rem 0;
+    font-size: 1.6rem;
+  }
+
+  .summary-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 1.5rem;
+  }
+
+  .summary-item {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+  }
+
+  .summary-label {
+    font-size: 1.2rem;
+    color: #166534;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+  }
+
+  .summary-value {
+    font-size: 1.5rem;
+    color: #15803d;
+    font-weight: 700;
+  }
+
   .form-actions {
     display: flex;
     justify-content: space-between;
     gap: 1rem;
     margin-top: 2rem;
   }
+
+  .btn {
+    padding: 1.2rem 2.5rem;
+    font-size: 1.5rem;
+    font-weight: 600;
+    border-radius: 0.8rem;
+    cursor: pointer;
+    transition: all 0.3s;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.8rem;
+    text-decoration: none;
+  }
+
+  .btn-primary {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    border: none;
+  }
+
+  .btn-primary:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(102, 126, 234, 0.4);
+  }
+
+  .btn-primary:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+    transform: none;
+  }
+
+  .btn-secondary {
+    background: #f3f4f6;
+    color: #374151;
+    border: 2px solid #e5e7eb;
+  }
+
+  .btn-secondary:hover {
+    background: #e5e7eb;
+  }
+
+  .btn-icon {
+    font-size: 1.8rem;
+  }
+
+  @media (max-width: 768px) {
+    .stats-grid {
+      grid-template-columns: 1fr;
+    }
+
+    .form-card {
+      padding: 2rem;
+    }
+
+    .form-actions {
+      flex-direction: column;
+    }
+
+    .btn {
+      width: 100%;
+      justify-content: center;
+    }
+  }
 </style>
 
 <script>
-  document.getElementById('analysisForm').addEventListener('submit', async (e) => {
+  // Karakter sayacı
+  const aciklamaTextarea = document.getElementById('aciklama');
+  const charCount = document.getElementById('char-count');
+  const yoneticiNotuTextarea = document.getElementById('yonetici_notu');
+  const noteCount = document.getElementById('note-count');
+
+  aciklamaTextarea.addEventListener('input', () => {
+    charCount.textContent = aciklamaTextarea.value.length;
+  });
+
+  yoneticiNotuTextarea.addEventListener('input', () => {
+    noteCount.textContent = yoneticiNotuTextarea.value.length;
+  });
+
+  // Ülke arama fonksiyonu
+  const ulkeSearch = document.getElementById('ulke_search');
+  const ulkeSelect = document.getElementById('ulke_id');
+  const allOptions = Array.from(ulkeSelect.options);
+
+  ulkeSearch.addEventListener('input', (e) => {
+    const searchTerm = e.target.value.toLowerCase();
+    
+    allOptions.forEach(option => {
+      const countryName = option.dataset.name || '';
+      if (countryName.includes(searchTerm)) {
+        option.style.display = '';
+      } else {
+        option.style.display = 'none';
+      }
+    });
+  });
+
+  // Seçim özeti güncelleme
+  const sektorSelect = document.getElementById('sektor_id');
+  const summaryDiv = document.getElementById('summary');
+  const summarySektorSpan = document.getElementById('summary-sektor');
+  const summaryUlkeSpan = document.getElementById('summary-ulke');
+
+  function updateSummary() {
+    const sektorText = sektorSelect.options[sektorSelect.selectedIndex]?.text || '-';
+    const ulkeText = ulkeSelect.options[ulkeSelect.selectedIndex]?.text || '-';
+    
+    if (sektorSelect.value && ulkeSelect.value) {
+      summarySektorSpan.textContent = sektorText;
+      summaryUlkeSpan.textContent = ulkeText;
+      summaryDiv.style.display = 'block';
+    } else {
+      summaryDiv.style.display = 'none';
+    }
+  }
+
+  sektorSelect.addEventListener('change', updateSummary);
+  ulkeSelect.addEventListener('change', updateSummary);
+
+  // Form validasyonu ve gönderimi
+  const form = document.getElementById('analysisForm');
+  const submitBtn = document.getElementById('submitBtn');
+  const sektorError = document.getElementById('sektor-error');
+  const ulkeError = document.getElementById('ulke-error');
+
+  form.addEventListener('submit', async (e) => {
     e.preventDefault();
 
+    // Validasyon mesajlarını temizle
+    sektorError.classList.remove('show');
+    ulkeError.classList.remove('show');
+
     // Seçilen sektör bilgilerini al
-    const sektorSelect = document.getElementById('sektor_id');
     const sektorId = sektorSelect.value;
     const sektorAdi = sektorSelect.options[sektorSelect.selectedIndex].text;
 
     // Seçilen ülke bilgilerini al
-    const ulkeSelect = document.getElementById('ulke_id');
     const ulkeId = ulkeSelect.value;
     const ulkeOption = ulkeSelect.options[ulkeSelect.selectedIndex];
-    const ulkeAdi = ulkeOption.text.split(' (')[0]; // "Türkiye (TR)" -> "Türkiye"
-    const ulkeKodu = ulkeOption.dataset.iso; // data-iso attribute
+    const ulkeAdi = ulkeOption.text.split(' (')[0];
+    const ulkeKodu = ulkeOption.dataset.iso;
 
     // Validasyon
-    if (!sektorId || !ulkeId) {
-      alert('Lütfen sektör ve ülke seçiniz.');
+    let hasError = false;
+
+    if (!sektorId) {
+      sektorError.textContent = '⚠️ Lütfen bir sektör seçiniz.';
+      sektorError.classList.add('show');
+      hasError = true;
+    }
+
+    if (!ulkeId) {
+      ulkeError.textContent = '⚠️ Lütfen bir ülke seçiniz.';
+      ulkeError.classList.add('show');
+      hasError = true;
+    }
+
+    if (hasError) {
       return;
     }
 
+    // Buton durumunu değiştir
+    submitBtn.disabled = true;
+    submitBtn.innerHTML = '<span class="btn-icon">⏳</span><span class="btn-text">Oluşturuluyor...</span>';
+
     const formData = {
-      analiz_adi: document.getElementById('analiz_adi').value || `${ulkeAdi} - ${sektorAdi} Raporu`,
-      analiz_tipi: 'detayli_rapor', // Otomatik atanıyor
+      kullanici_id: 1, // TODO: Session'dan alınacak
       parametreler: {
         hedef_sektor_id: parseInt(sektorId),
         hedef_ulke_id: parseInt(ulkeId),
         sektor: sektorAdi,
         ulke: ulkeAdi,
         ulke_kodu: ulkeKodu,
-        aciklama: document.getElementById('aciklama').value || ''
-      },
-      // Sonuçlar - ISO kodu ile birlikte (harita için)
-      sonuclar: {
-        ulke: ulkeAdi,
-        ulke_kodu: ulkeKodu,
-        sektor: sektorAdi,
-        pazar_skoru: 0
-      },
-      // TODO: Session'dan kullanıcı ID'si alınacak
-      kullanici_id: 1
+        aciklama: aciklamaTextarea.value.trim() || null,
+        yonetici_notu: yoneticiNotuTextarea.value.trim() || null
+      }
     };
 
     try {
@@ -275,13 +642,23 @@
       const data = await response.json();
 
       if (data.status === 'success') {
-        alert('✅ Rapor başarıyla oluşturuldu!');
-        window.location.href = '/analyses/dashboard';
+        // Başarılı mesajı göster
+        submitBtn.innerHTML = '<span class="btn-icon">✅</span><span class="btn-text">Başarılı!</span>';
+        
+        // Kısa bir gecikme sonrası yönlendir
+        setTimeout(() => {
+          window.location.href = '/analyses/dashboard';
+        }, 1000);
       } else {
-        alert(data.message || 'Rapor oluşturulamadı');
+        throw new Error(data.message || 'Analiz oluşturulamadı');
       }
     } catch (error) {
-      alert('Bir hata oluştu: ' + error.message);
+      console.error('Hata:', error);
+      alert('❌ Bir hata oluştu: ' + error.message);
+      
+      // Buton durumunu eski haline getir
+      submitBtn.disabled = false;
+      submitBtn.innerHTML = '<span class="btn-icon">📊</span><span class="btn-text">Analiz Oluştur</span>';
     }
   });
 </script>
