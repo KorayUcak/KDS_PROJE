@@ -685,15 +685,10 @@
           yatirim: 'Yatırım (Milyon $)'
         };
         
-        // Renkleri en yüksek 3'ü vurgula
+        // Her ülkeye benzersiz renk ata
         const getColors = (data) => {
-          const sorted = [...data].sort((a, b) => b - a);
-          const top3 = sorted.slice(0, 3);
-          return data.map(val => {
-            if (val === top3[0]) return 'rgba(72, 187, 120, 0.9)';
-            if (val === top3[1]) return 'rgba(102, 126, 234, 0.9)';
-            if (val === top3[2]) return 'rgba(237, 137, 54, 0.9)';
-            return 'rgba(160, 174, 192, 0.7)';
+          return data.map((val, idx) => {
+            return pastelColors[idx % pastelColors.length];
           });
         };
         
