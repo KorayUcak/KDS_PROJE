@@ -1,0 +1,537 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title><%= title %></title>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    
+    body {
+      font-family: 'Outfit', sans-serif;
+      background: #1a1a2e;
+      color: #fff;
+      min-height: 100vh;
+      padding: 2rem;
+    }
+
+    .container {
+      max-width: 1200px;
+      margin: 0 auto;
+    }
+
+    /* Breadcrumb */
+    .breadcrumb {
+      display: flex;
+      gap: 0.5rem;
+      font-size: 0.9rem;
+      margin-bottom: 1.5rem;
+    }
+
+    .breadcrumb a {
+      color: rgba(255,255,255,0.5);
+      text-decoration: none;
+    }
+
+    .breadcrumb a:hover { color: #4cc9f0; }
+    .breadcrumb span { color: rgba(255,255,255,0.3); }
+
+    /* Hero */
+    .hero {
+      display: grid;
+      grid-template-columns: 1fr 300px;
+      gap: 2rem;
+      margin-bottom: 2rem;
+    }
+
+    .hero-info {
+      background: linear-gradient(135deg, rgba(76,201,240,0.1), rgba(76,201,240,0.02));
+      border: 1px solid rgba(76,201,240,0.2);
+      border-radius: 1.5rem;
+      padding: 2rem;
+    }
+
+    .hero-name { font-size: 2.5rem; font-weight: 700; margin-bottom: 0.5rem; }
+    .hero-region { font-size: 1rem; color: rgba(255,255,255,0.5); margin-bottom: 1.5rem; }
+
+    .hero-tags {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.8rem;
+    }
+
+    .tag {
+      padding: 0.5rem 1rem;
+      background: rgba(255,255,255,0.05);
+      border: 1px solid rgba(255,255,255,0.1);
+      border-radius: 2rem;
+      font-size: 0.85rem;
+    }
+
+    /* Score Box */
+    .score-box {
+      background: #16213e;
+      border: 1px solid rgba(255,255,255,0.1);
+      border-radius: 1.5rem;
+      padding: 2rem;
+      text-align: center;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+    }
+
+    .score-ring {
+      width: 150px;
+      height: 150px;
+      margin: 0 auto 1rem;
+      position: relative;
+    }
+
+    .score-ring svg {
+      width: 100%;
+      height: 100%;
+      transform: rotate(-90deg);
+    }
+
+    .score-ring circle {
+      fill: none;
+      stroke-width: 10;
+    }
+
+    .score-ring .bg { stroke: rgba(255,255,255,0.1); }
+    .score-ring .fill { stroke-linecap: round; }
+
+    .score-num {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      font-size: 3rem;
+      font-weight: 700;
+    }
+
+    .score-label {
+      font-size: 0.9rem;
+      color: rgba(255,255,255,0.5);
+      margin-bottom: 0.8rem;
+    }
+
+    .recommendation {
+      display: inline-block;
+      padding: 0.6rem 1.5rem;
+      border-radius: 2rem;
+      font-size: 0.95rem;
+      font-weight: 600;
+    }
+
+    .rec-excellent { background: rgba(0,255,136,0.2); color: #00ff88; }
+    .rec-good { background: rgba(76,201,240,0.2); color: #4cc9f0; }
+    .rec-moderate { background: rgba(255,193,7,0.2); color: #ffc107; }
+    .rec-risky { background: rgba(255,152,0,0.2); color: #ff9800; }
+    .rec-poor { background: rgba(244,67,54,0.2); color: #f44336; }
+
+    /* Score Cards */
+    .scores-row {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 1rem;
+      margin-bottom: 2rem;
+    }
+
+    .score-card {
+      background: rgba(255,255,255,0.02);
+      border: 1px solid rgba(255,255,255,0.08);
+      border-radius: 1rem;
+      padding: 1.5rem;
+      text-align: center;
+    }
+
+    .score-card .icon { font-size: 1.5rem; margin-bottom: 0.5rem; }
+    .score-card .val { font-size: 2rem; font-weight: 700; color: #4cc9f0; }
+    .score-card .lbl { font-size: 0.8rem; color: rgba(255,255,255,0.5); }
+
+    .progress-bar {
+      height: 6px;
+      background: rgba(255,255,255,0.1);
+      border-radius: 3px;
+      margin-top: 0.8rem;
+      overflow: hidden;
+    }
+
+    .progress-fill {
+      height: 100%;
+      background: linear-gradient(90deg, #4cc9f0, #00ff88);
+      border-radius: 3px;
+    }
+
+    /* Charts Row */
+    .charts-row {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 1.5rem;
+      margin-bottom: 2rem;
+    }
+
+    .chart-box {
+      background: rgba(255,255,255,0.02);
+      border: 1px solid rgba(255,255,255,0.08);
+      border-radius: 1rem;
+      padding: 1.5rem;
+    }
+
+    .chart-box h3 {
+      font-size: 1rem;
+      font-weight: 600;
+      margin-bottom: 1rem;
+    }
+
+    .chart-area { height: 250px; }
+
+    /* Logistics */
+    .logistics-row {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 1rem;
+      margin-bottom: 2rem;
+    }
+
+    .logistics-card {
+      background: linear-gradient(135deg, rgba(76,201,240,0.08), rgba(76,201,240,0.02));
+      border: 1px solid rgba(76,201,240,0.15);
+      border-radius: 1rem;
+      padding: 1.5rem;
+      text-align: center;
+    }
+
+    .logistics-card .icon { font-size: 2rem; margin-bottom: 0.5rem; }
+    .logistics-card .val { font-size: 2rem; font-weight: 700; color: #4cc9f0; }
+    .logistics-card .lbl { font-size: 0.85rem; color: rgba(255,255,255,0.5); margin-bottom: 0.8rem; }
+
+    .status {
+      display: inline-block;
+      padding: 0.4rem 1rem;
+      border-radius: 2rem;
+      font-size: 0.8rem;
+      font-weight: 500;
+    }
+
+    .status-good { background: rgba(0,255,136,0.2); color: #00ff88; }
+    .status-avg { background: rgba(255,193,7,0.2); color: #ffc107; }
+    .status-bad { background: rgba(244,67,54,0.2); color: #f44336; }
+
+    /* Summary */
+    .summary-row {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 1.5rem;
+      margin-bottom: 2rem;
+    }
+
+    .summary-card {
+      border-radius: 1rem;
+      padding: 1.5rem;
+    }
+
+    .summary-pros {
+      background: linear-gradient(135deg, rgba(0,255,136,0.1), rgba(0,255,136,0.02));
+      border: 1px solid rgba(0,255,136,0.2);
+    }
+
+    .summary-cons {
+      background: linear-gradient(135deg, rgba(244,67,54,0.1), rgba(244,67,54,0.02));
+      border: 1px solid rgba(244,67,54,0.2);
+    }
+
+    .summary-card h3 {
+      font-size: 1rem;
+      font-weight: 600;
+      margin-bottom: 1rem;
+    }
+
+    .summary-card h3.green { color: #00ff88; }
+    .summary-card h3.red { color: #f44336; }
+
+    .summary-list {
+      list-style: none;
+    }
+
+    .summary-list li {
+      padding: 0.5rem 0;
+      font-size: 0.9rem;
+      color: rgba(255,255,255,0.8);
+    }
+
+    /* Actions */
+    .actions {
+      display: flex;
+      gap: 1rem;
+    }
+
+    .btn {
+      padding: 0.8rem 1.5rem;
+      border-radius: 0.5rem;
+      font-size: 0.9rem;
+      font-weight: 600;
+      text-decoration: none;
+      transition: all 0.2s;
+    }
+
+    .btn-primary {
+      background: linear-gradient(135deg, #4cc9f0, #00ff88);
+      color: #000;
+    }
+
+    .btn-secondary {
+      background: rgba(255,255,255,0.05);
+      border: 1px solid rgba(255,255,255,0.1);
+      color: #fff;
+    }
+
+    .btn:hover {
+      transform: scale(1.02);
+    }
+
+    @media (max-width: 900px) {
+      .hero { grid-template-columns: 1fr; }
+      .scores-row { grid-template-columns: repeat(2, 1fr); }
+      .charts-row { grid-template-columns: 1fr; }
+      .logistics-row { grid-template-columns: 1fr; }
+      .summary-row { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <!-- Breadcrumb -->
+    <nav class="breadcrumb">
+      <a href="/">🌍 Harita</a> <span>›</span>
+      <a href="/sector/<%= sector.sektor_id %>/rankings"><%= sector.sektor_adi %></a> <span>›</span>
+      <%= country.ulke_adi %>
+    </nav>
+
+    <!-- Hero -->
+    <div class="hero">
+      <div class="hero-info">
+        <h1 class="hero-name"><%= country.ulke_adi %></h1>
+        <p class="hero-region"><%= country.bolge_adi || 'N/A' %> • <%= country.ISO_KODU %></p>
+        <div class="hero-tags">
+          <span class="tag">👥 <%= country.nufus_milyon ? parseFloat(country.nufus_milyon).toFixed(1) : '0' %>M</span>
+          <span class="tag">💰 $<%= country.toplam_gsyh_milyar_dolar ? parseFloat(country.toplam_gsyh_milyar_dolar).toFixed(0) : '0' %>B GSYİH</span>
+          <span class="tag">📊 Risk: <%= country.risk_notu_kodu || 'N/A' %></span>
+        </div>
+      </div>
+
+      <% if (countryRank) { %>
+      <div class="score-box">
+        <div class="score-ring">
+          <svg viewBox="0 0 100 100">
+            <circle class="bg" cx="50" cy="50" r="42"/>
+            <circle class="fill" cx="50" cy="50" r="42"
+              stroke="<%= countryRank.totalScore >= 65 ? '#00ff88' : countryRank.totalScore >= 50 ? '#ffc107' : '#f44336' %>"
+              stroke-dasharray="264"
+              stroke-dashoffset="<%= 264 * (1 - countryRank.totalScore / 100) %>"
+            />
+          </svg>
+          <div class="score-num" style="color: <%= countryRank.totalScore >= 65 ? '#00ff88' : countryRank.totalScore >= 50 ? '#ffc107' : '#f44336' %>">
+            <%= countryRank.totalScore %>
+          </div>
+        </div>
+        <div class="score-label">Toplam Skor</div>
+        <span class="recommendation rec-<%= countryRank.recommendation.class %>">
+          <%= countryRank.recommendation.text %>
+        </span>
+      </div>
+      <% } %>
+    </div>
+
+    <!-- Score Cards -->
+    <% if (countryRank) { %>
+    <div class="scores-row">
+      <div class="score-card">
+        <div class="icon">📊</div>
+        <div class="val"><%= countryRank.scores.marketPotential %></div>
+        <div class="lbl">Pazar Potansiyeli</div>
+        <div class="progress-bar"><div class="progress-fill" style="width: <%= countryRank.scores.marketPotential %>%"></div></div>
+      </div>
+      <div class="score-card">
+        <div class="icon">💰</div>
+        <div class="val"><%= countryRank.scores.economicStability %></div>
+        <div class="lbl">Ekonomik İstikrar</div>
+        <div class="progress-bar"><div class="progress-fill" style="width: <%= countryRank.scores.economicStability %>%"></div></div>
+      </div>
+      <div class="score-card">
+        <div class="icon">🚚</div>
+        <div class="val"><%= countryRank.scores.logisticsEase %></div>
+        <div class="lbl">Lojistik Kolaylığı</div>
+        <div class="progress-bar"><div class="progress-fill" style="width: <%= countryRank.scores.logisticsEase %>%"></div></div>
+      </div>
+      <div class="score-card">
+        <div class="icon">📈</div>
+        <div class="val"><%= countryRank.scores.sectorGrowth %></div>
+        <div class="lbl">Sektörel Büyüme</div>
+        <div class="progress-bar"><div class="progress-fill" style="width: <%= countryRank.scores.sectorGrowth %>%"></div></div>
+      </div>
+    </div>
+    <% } %>
+
+    <!-- Logistics -->
+    <div class="logistics-row">
+      <div class="logistics-card">
+        <div class="icon">📊</div>
+        <div class="val"><%= country.lpi_skoru ? parseFloat(country.lpi_skoru).toFixed(2) : 'N/A' %></div>
+        <div class="lbl">LPI Skoru</div>
+        <% const lpi = parseFloat(country.lpi_skoru) || 0; %>
+        <span class="status <%= lpi >= 3.5 ? 'status-good' : lpi >= 2.5 ? 'status-avg' : 'status-bad' %>">
+          <%= lpi >= 3.5 ? 'İyi' : lpi >= 2.5 ? 'Ortalama' : 'Zayıf' %>
+        </span>
+      </div>
+      <div class="logistics-card">
+        <div class="icon">⏱️</div>
+        <div class="val"><%= country.gumruk_bekleme_suresi_gun || 'N/A' %></div>
+        <div class="lbl">Gümrük Süresi (Gün)</div>
+        <% const customs = parseInt(country.gumruk_bekleme_suresi_gun) || 99; %>
+        <span class="status <%= customs <= 5 ? 'status-good' : customs <= 10 ? 'status-avg' : 'status-bad' %>">
+          <%= customs <= 5 ? 'Hızlı' : customs <= 10 ? 'Ortalama' : 'Yavaş' %>
+        </span>
+      </div>
+      <div class="logistics-card">
+        <div class="icon">📦</div>
+        <div class="val">$<%= country.konteyner_ihracat_maliyeti_usd ? parseInt(country.konteyner_ihracat_maliyeti_usd).toLocaleString() : 'N/A' %></div>
+        <div class="lbl">Konteyner Maliyeti</div>
+        <% const cost = parseInt(country.konteyner_ihracat_maliyeti_usd) || 9999; %>
+        <span class="status <%= cost <= 1500 ? 'status-good' : cost <= 3000 ? 'status-avg' : 'status-bad' %>">
+          <%= cost <= 1500 ? 'Ekonomik' : cost <= 3000 ? 'Ortalama' : 'Pahalı' %>
+        </span>
+      </div>
+    </div>
+
+    <!-- Charts -->
+    <div class="charts-row">
+      <div class="chart-box">
+        <h3>🎯 Skor Analizi</h3>
+        <div class="chart-area">
+          <canvas id="radarChart"></canvas>
+        </div>
+      </div>
+      <div class="chart-box">
+        <h3>💹 Ekonomik Göstergeler</h3>
+        <div class="chart-area">
+          <canvas id="barChart"></canvas>
+        </div>
+      </div>
+    </div>
+
+    <!-- Summary -->
+    <div class="summary-row">
+      <div class="summary-card summary-pros">
+        <h3 class="green">✅ Güçlü Yönler</h3>
+        <ul class="summary-list">
+          <% if (parseFloat(country.sektorel_ithalat_milyon_usd || 0) > 500) { %>
+            <li>📥 Yüksek ithalat talebi</li>
+          <% } %>
+          <% if (parseFloat(country.lpi_skoru || 0) >= 3) { %>
+            <li>🚚 İyi lojistik altyapısı</li>
+          <% } %>
+          <% if (parseFloat(country.sektorel_buyume_orani_yuzde || 0) > 3) { %>
+            <li>📈 Güçlü sektörel büyüme</li>
+          <% } %>
+          <% if (parseFloat(country.gsyh_kisi_basi_usd || 0) > 10000) { %>
+            <li>💰 Yüksek satın alma gücü</li>
+          <% } %>
+          <% if (country.agreements && country.agreements.length > 0) { %>
+            <li>📜 Aktif ticaret anlaşmaları</li>
+          <% } %>
+        </ul>
+      </div>
+      <div class="summary-card summary-cons">
+        <h3 class="red">⚠️ Dikkat Edilecekler</h3>
+        <ul class="summary-list">
+          <% if (parseFloat(country.enflasyon_orani_yuzde || 0) > 10) { %>
+            <li>💸 Yüksek enflasyon riski</li>
+          <% } %>
+          <% if (parseInt(country.gumruk_bekleme_suresi_gun || 0) > 10) { %>
+            <li>⏱️ Uzun gümrük süreleri</li>
+          <% } %>
+          <% if (parseInt(country.konteyner_ihracat_maliyeti_usd || 0) > 3000) { %>
+            <li>📦 Yüksek nakliye maliyeti</li>
+          <% } %>
+          <% if (['CCC', 'CC', 'C', 'D', 'B-', 'B', 'B+'].includes(country.risk_notu_kodu)) { %>
+            <li>⚠️ Düşük ülke risk notu</li>
+          <% } %>
+        </ul>
+      </div>
+    </div>
+
+    <!-- Actions -->
+    <div class="actions">
+      <a href="/sector/<%= sector.sektor_id %>/rankings" class="btn btn-secondary">← Sıralamaya Dön</a>
+      <a href="/" class="btn btn-secondary">🌍 Haritaya Dön</a>
+    </div>
+  </div>
+
+  <script>
+    <% if (countryRank) { %>
+    // Radar Chart
+    new Chart(document.getElementById('radarChart'), {
+      type: 'radar',
+      data: {
+        labels: ['Pazar', 'Ekonomi', 'Lojistik', 'Büyüme'],
+        datasets: [{
+          label: '<%= country.ulke_adi %>',
+          data: [<%= countryRank.scores.marketPotential %>, <%= countryRank.scores.economicStability %>, <%= countryRank.scores.logisticsEase %>, <%= countryRank.scores.sectorGrowth %>],
+          backgroundColor: 'rgba(76, 201, 240, 0.2)',
+          borderColor: '#4cc9f0',
+          borderWidth: 2,
+          pointBackgroundColor: '#4cc9f0'
+        }]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        scales: {
+          r: {
+            beginAtZero: true,
+            max: 100,
+            ticks: { color: 'rgba(255,255,255,0.5)', backdropColor: 'transparent' },
+            grid: { color: 'rgba(255,255,255,0.1)' },
+            pointLabels: { color: 'rgba(255,255,255,0.7)' }
+          }
+        },
+        plugins: { legend: { display: false } }
+      }
+    });
+    <% } %>
+
+    // Bar Chart
+    new Chart(document.getElementById('barChart'), {
+      type: 'bar',
+      data: {
+        labels: ['GSYİH', 'Büyüme %', 'Enflasyon %', 'İşsizlik %'],
+        datasets: [{
+          data: [
+            <%= parseFloat(country.toplam_gsyh_milyar_dolar || 0) %>,
+            <%= parseFloat(country.buyume_orani_yuzde || 0) %>,
+            <%= parseFloat(country.enflasyon_orani_yuzde || 0) %>,
+            <%= parseFloat(country.issizlik_orani_yuzde || 0) %>
+          ],
+          backgroundColor: ['#4cc9f099', '#00ff8899', '#ffc10799', '#ff980099'],
+          borderColor: ['#4cc9f0', '#00ff88', '#ffc107', '#ff9800'],
+          borderWidth: 2,
+          borderRadius: 6
+        }]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: { legend: { display: false } },
+        scales: {
+          y: { grid: { color: 'rgba(255,255,255,0.05)' }, ticks: { color: 'rgba(255,255,255,0.5)' } },
+          x: { grid: { display: false }, ticks: { color: 'rgba(255,255,255,0.7)' } }
+        }
+      }
+    });
+  </script>
+</body>
+</html>

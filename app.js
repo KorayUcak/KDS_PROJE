@@ -9,14 +9,17 @@ const { testConnection } = require('./config/db');
 const AppError = require('./utils/AppError');
 
 // Route dosyaları
-const userRoutes = require('./routes/userRoutes');
-const analysisRoutes = require('./routes/analysisRoutes');
-const logRoutes = require('./routes/logRoutes');
-const sectorRoutes = require('./routes/sectorRoutes');
-const economyRoutes = require('./routes/economyRoutes');
-const countryRoutes = require('./routes/countryRoutes');
-const logisticsRoutes = require('./routes/logisticsRoutes');
-const agreementRoutes = require('./routes/agreementRoutes');
+const {
+  userRoutes,
+  analysisRoutes,
+  logRoutes,
+  sectorRoutes,
+  economyRoutes,
+  countryRoutes,
+  logisticsRoutes,
+  agreementRoutes,
+  decisionRoutes
+} = require('./routes');
 
 // Express uygulaması oluştur
 const app = express();
@@ -40,12 +43,8 @@ app.set('views', path.join(__dirname, 'views'));
 // ROUTE'LAR
 // ===========================================
 
-// Ana sayfa - Landing Page
-app.get('/', (req, res) => {
-  res.render('index', {
-    title: 'KDS - Küresel Pazar Araştırması Karar Destek Sistemi'
-  });
-});
+// Ana sayfa - Karar Destek Sistemi (Sektör Seçimi)
+app.use('/', decisionRoutes);
 
 // Kullanıcı Route'ları (Auth)
 app.use('/users', userRoutes);

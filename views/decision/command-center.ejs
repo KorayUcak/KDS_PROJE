@@ -1,0 +1,1333 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title><%= title %></title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+  <style>
+    /* ==================== CSS RESET ==================== */
+    *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+    html { height: 100%; }
+    body { 
+      height: 100%; 
+      font-family: 'Inter', -apple-system, sans-serif;
+      background: #0f172a;
+      color: #f1f5f9;
+      overflow: hidden;
+    }
+
+    /* ==================== CSS VARIABLES ==================== */
+    :root {
+      --topbar-h: 56px;
+      --filter-h: 60px;
+      --bg-dark: #0f172a;
+      --bg-card: #1e293b;
+      --bg-input: #334155;
+      --border: rgba(148,163,184,0.15);
+      --text: #f1f5f9;
+      --text-dim: #94a3b8;
+      --text-muted: #64748b;
+      --accent: #3b82f6;
+      --success: #22c55e;
+      --warning: #eab308;
+      --danger: #ef4444;
+      --purple: #a855f7;
+    }
+
+    /* ==================== APP SHELL ==================== */
+    .app {
+      display: flex;
+      flex-direction: column;
+      height: 100vh;
+      width: 100vw;
+      overflow: hidden;
+    }
+
+    /* ==================== TOPBAR ==================== */
+    .topbar {
+      height: var(--topbar-h);
+      background: var(--bg-card);
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      padding: 0 16px;
+      gap: 24px;
+      flex-shrink: 0;
+      z-index: 100;
+    }
+
+    .logo { display: flex; align-items: center; gap: 8px; font-weight: 700; }
+    .logo-icon {
+      width: 32px; height: 32px;
+      background: linear-gradient(135deg, var(--accent), var(--purple));
+      border-radius: 8px;
+      display: grid; place-items: center;
+      font-size: 14px;
+    }
+
+    .nav-tabs { display: flex; gap: 4px; }
+    .nav-tab {
+      padding: 8px 14px;
+      background: transparent;
+      border: none;
+      color: var(--text-dim);
+      font-size: 13px;
+      font-weight: 500;
+      cursor: pointer;
+      border-radius: 6px;
+      transition: all 0.15s;
+    }
+    .nav-tab:hover { background: var(--bg-input); color: var(--text); }
+    .nav-tab.active { background: var(--accent); color: #fff; }
+
+    .topbar-filters {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      margin-left: auto;
+    }
+
+    .filter-group { display: flex; align-items: center; gap: 6px; }
+    .filter-label {
+      font-size: 10px;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      color: var(--text-muted);
+    }
+
+    .filter-select {
+      background: var(--bg-input);
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      color: var(--text);
+      padding: 6px 10px;
+      font-size: 13px;
+      cursor: pointer;
+    }
+    .filter-select:focus { outline: none; border-color: var(--accent); }
+
+    /* ==================== MAIN AREA ==================== */
+    .main {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+      position: relative;
+    }
+
+    /* ==================== VIEWS ==================== */
+    .view {
+      display: none;
+      position: absolute;
+      top: 0; left: 0; right: 0; bottom: 0;
+      overflow: hidden;
+    }
+    .view.active { display: flex; }
+
+    /* ==================== CRITERIA FILTER BAR ==================== */
+    .criteria-bar {
+      height: var(--filter-h);
+      background: var(--bg-card);
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      padding: 0 16px;
+      gap: 20px;
+      flex-shrink: 0;
+    }
+
+    .criteria-item {
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+    }
+
+    .criteria-label {
+      font-size: 9px;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: var(--text-muted);
+    }
+
+    .criteria-control {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .criteria-select {
+      background: var(--bg-input);
+      border: 1px solid var(--border);
+      border-radius: 4px;
+      color: var(--text);
+      padding: 4px 8px;
+      font-size: 12px;
+      min-width: 80px;
+    }
+
+    .criteria-slider {
+      width: 100px;
+      height: 4px;
+      -webkit-appearance: none;
+      background: var(--bg-input);
+      border-radius: 2px;
+    }
+    .criteria-slider::-webkit-slider-thumb {
+      -webkit-appearance: none;
+      width: 14px; height: 14px;
+      background: var(--accent);
+      border-radius: 50%;
+      cursor: pointer;
+    }
+
+    .criteria-value {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 11px;
+      color: var(--accent);
+      min-width: 40px;
+    }
+
+    .reset-btn {
+      margin-left: auto;
+      padding: 6px 12px;
+      background: transparent;
+      border: 1px solid var(--border);
+      border-radius: 4px;
+      color: var(--text-dim);
+      font-size: 11px;
+      cursor: pointer;
+      transition: all 0.15s;
+    }
+    .reset-btn:hover { border-color: var(--accent); color: var(--accent); }
+
+    .match-count {
+      font-size: 12px;
+      color: var(--text-dim);
+    }
+    .match-count strong { color: var(--success); font-weight: 600; }
+
+    /* ==================== DASHBOARD VIEW ==================== */
+    .dashboard-view {
+      flex-direction: column;
+    }
+
+    .dashboard-content {
+      flex: 1;
+      display: grid;
+      grid-template-columns: 1fr 360px;
+      overflow: hidden;
+    }
+
+    /* Map */
+    .map-wrap {
+      position: relative;
+      background: var(--bg-dark);
+    }
+
+    #map {
+      position: absolute;
+      top: 0; left: 0; right: 0; bottom: 0;
+    }
+
+    .leaflet-container { background: #0f172a !important; }
+
+    .map-legend {
+      position: absolute;
+      bottom: 16px; left: 16px;
+      background: rgba(30,41,59,0.95);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 10px 14px;
+      font-size: 11px;
+      z-index: 500;
+    }
+
+    .legend-title { font-weight: 600; margin-bottom: 6px; }
+    .legend-item { display: flex; align-items: center; gap: 6px; margin: 3px 0; color: var(--text-dim); }
+    .legend-dot { width: 10px; height: 10px; border-radius: 50%; }
+
+    /* Decision Panel */
+    .decision-panel {
+      background: var(--bg-card);
+      border-left: 1px solid var(--border);
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+    }
+
+    .panel-header {
+      padding: 14px 16px;
+      background: var(--bg-input);
+      border-bottom: 1px solid var(--border);
+      flex-shrink: 0;
+    }
+
+    .panel-label { font-size: 9px; text-transform: uppercase; letter-spacing: 0.1em; color: var(--text-muted); margin-bottom: 4px; }
+    .country-row { display: flex; align-items: center; gap: 10px; }
+    .country-name { font-size: 20px; font-weight: 700; }
+
+    .badge {
+      padding: 3px 10px;
+      border-radius: 4px;
+      font-size: 10px;
+      font-weight: 700;
+      text-transform: uppercase;
+    }
+    .badge-go { background: rgba(34,197,94,0.2); color: var(--success); border: 1px solid var(--success); }
+    .badge-caution { background: rgba(234,179,8,0.2); color: var(--warning); border: 1px solid var(--warning); }
+    .badge-nogo { background: rgba(239,68,68,0.2); color: var(--danger); border: 1px solid var(--danger); }
+
+    .decisions-scroll {
+      flex: 1;
+      overflow-y: auto;
+      padding: 12px;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    .decision-card {
+      background: var(--bg-input);
+      border-radius: 8px;
+      padding: 10px 12px;
+      border: 1px solid var(--border);
+    }
+
+    .decision-head { display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px; }
+    .decision-q { font-size: 12px; font-weight: 600; }
+    .decision-a { font-size: 10px; font-weight: 600; padding: 2px 6px; border-radius: 3px; }
+    .a-yes { background: rgba(34,197,94,0.2); color: var(--success); }
+    .a-no { background: rgba(239,68,68,0.2); color: var(--danger); }
+    .a-maybe { background: rgba(234,179,8,0.2); color: var(--warning); }
+
+    .chart-box { height: 60px; }
+
+    .gauge { height: 6px; background: var(--bg-dark); border-radius: 3px; margin-top: 6px; overflow: hidden; }
+    .gauge-fill { height: 100%; border-radius: 3px; }
+    .gauge-labels { display: flex; justify-content: space-between; font-size: 9px; color: var(--text-muted); margin-top: 2px; font-family: 'JetBrains Mono', monospace; }
+
+    .traffic { display: flex; gap: 6px; align-items: center; margin-top: 6px; }
+    .traffic-dot { width: 20px; height: 20px; border-radius: 50%; opacity: 0.25; }
+    .traffic-dot.on { opacity: 1; box-shadow: 0 0 10px currentColor; }
+    .t-green { background: var(--success); color: var(--success); }
+    .t-yellow { background: var(--warning); color: var(--warning); }
+    .t-red { background: var(--danger); color: var(--danger); }
+    .traffic-text { font-size: 11px; font-weight: 600; margin-left: 6px; }
+
+    .fta-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      padding: 5px 10px;
+      border-radius: 4px;
+      font-size: 11px;
+      margin-top: 6px;
+    }
+    .fta-yes { background: rgba(34,197,94,0.15); color: var(--success); border: 1px solid rgba(34,197,94,0.3); }
+    .fta-no { background: var(--bg-dark); color: var(--text-muted); border: 1px solid var(--border); }
+
+    .panel-actions {
+      padding: 12px 16px;
+      border-top: 1px solid var(--border);
+      display: flex;
+      gap: 8px;
+      flex-shrink: 0;
+    }
+
+    .action-btn {
+      flex: 1;
+      padding: 10px;
+      border-radius: 6px;
+      font-size: 12px;
+      font-weight: 600;
+      cursor: pointer;
+      border: none;
+      transition: all 0.15s;
+    }
+    .btn-primary { background: var(--accent); color: #fff; }
+    .btn-secondary { background: var(--bg-input); color: var(--text-dim); border: 1px solid var(--border); }
+    .action-btn:hover { transform: translateY(-1px); }
+
+    .panel-empty {
+      flex: 1;
+      display: grid;
+      place-items: center;
+      text-align: center;
+      color: var(--text-muted);
+      padding: 32px;
+    }
+    .empty-icon { font-size: 48px; margin-bottom: 12px; opacity: 0.4; }
+
+    /* ==================== DEEP DIVE VIEW (FIXED LAYOUT) ==================== */
+    .deepdive-view {
+      flex-direction: column;
+      background: var(--bg-dark);
+      overflow-y: auto;
+      padding: 24px;
+      padding-top: 24px;
+    }
+
+    .dd-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      margin-bottom: 24px;
+      flex-shrink: 0;
+    }
+
+    .dd-title-area { display: flex; align-items: center; gap: 16px; }
+    .dd-title { font-size: 28px; font-weight: 700; }
+    .dd-score-badge {
+      padding: 8px 16px;
+      border-radius: 8px;
+      font-size: 14px;
+      font-weight: 700;
+    }
+
+    .back-btn {
+      padding: 8px 16px;
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      color: var(--text-dim);
+      font-size: 13px;
+      cursor: pointer;
+    }
+    .back-btn:hover { color: var(--text); border-color: var(--text-dim); }
+
+    /* Stats Grid - 4 columns */
+    .dd-stats {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 16px;
+      margin-bottom: 24px;
+      flex-shrink: 0;
+    }
+
+    .stat-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 16px;
+      text-align: center;
+    }
+
+    .stat-icon { font-size: 20px; margin-bottom: 6px; }
+    .stat-val { font-family: 'JetBrains Mono', monospace; font-size: 24px; font-weight: 700; color: var(--accent); }
+    .stat-label { font-size: 10px; text-transform: uppercase; color: var(--text-muted); margin-top: 4px; }
+
+    /* Charts Grid - 2x2 + full width */
+    .dd-charts {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 16px;
+      flex-shrink: 0;
+    }
+
+    .chart-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 16px;
+      min-height: 280px;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .chart-card.full { grid-column: 1 / -1; }
+
+    .chart-title { font-size: 14px; font-weight: 600; margin-bottom: 12px; display: flex; align-items: center; gap: 8px; }
+    .chart-area { flex: 1; min-height: 200px; position: relative; }
+
+    /* ==================== COMPARE VIEW (FIXED TABLE LAYOUT) ==================== */
+    .compare-view {
+      flex-direction: column;
+      background: var(--bg-dark);
+      overflow-y: auto;
+      padding: 24px;
+    }
+
+    .cmp-header { margin-bottom: 24px; flex-shrink: 0; }
+    .cmp-title { font-size: 24px; font-weight: 700; margin-bottom: 16px; }
+
+    .cmp-selectors {
+      display: flex;
+      gap: 16px;
+      align-items: center;
+    }
+
+    .cmp-selector {
+      flex: 1;
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 12px 16px;
+    }
+
+    .cmp-selector-label { font-size: 10px; text-transform: uppercase; color: var(--text-muted); margin-bottom: 6px; }
+    .cmp-select {
+      width: 100%;
+      background: var(--bg-input);
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      color: var(--text);
+      padding: 8px 12px;
+      font-size: 14px;
+    }
+
+    .vs-circle {
+      width: 40px; height: 40px;
+      background: var(--accent);
+      border-radius: 50%;
+      display: grid; place-items: center;
+      font-weight: 700;
+      font-size: 14px;
+      flex-shrink: 0;
+    }
+
+    /* Comparison Table */
+    .cmp-table-wrap {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      overflow: hidden;
+      margin-bottom: 24px;
+    }
+
+    .cmp-table {
+      width: 100%;
+      border-collapse: collapse;
+    }
+
+    .cmp-table th,
+    .cmp-table td {
+      padding: 14px 16px;
+      text-align: left;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .cmp-table th {
+      background: var(--bg-input);
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--text);
+    }
+
+    .cmp-table th:first-child { width: 200px; }
+
+    .cmp-table td {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 14px;
+    }
+
+    .cmp-table tr:nth-child(even) td { background: rgba(255,255,255,0.02); }
+    .cmp-table tr:last-child td { border-bottom: none; }
+
+    .metric-label { font-family: 'Inter', sans-serif; color: var(--text-dim); font-size: 13px; }
+    .val-better { color: var(--success); font-weight: 600; }
+    .val-worse { color: var(--danger); }
+
+    /* Comparison Charts */
+    .cmp-charts {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 16px;
+    }
+
+    /* ==================== SCROLLBAR ==================== */
+    ::-webkit-scrollbar { width: 6px; height: 6px; }
+    ::-webkit-scrollbar-track { background: var(--bg-dark); }
+    ::-webkit-scrollbar-thumb { background: var(--bg-input); border-radius: 3px; }
+  </style>
+</head>
+<body>
+  <div class="app">
+    <!-- TOPBAR -->
+    <nav class="topbar">
+      <div class="logo">
+        <div class="logo-icon">📊</div>
+        <span>KDS</span>
+      </div>
+
+      <div class="nav-tabs">
+        <button class="nav-tab active" data-view="dashboard">🗺️ Dashboard</button>
+        <button class="nav-tab" data-view="deepdive">📈 Deep Dive</button>
+        <button class="nav-tab" data-view="compare">⚖️ Compare</button>
+      </div>
+
+      <div class="topbar-filters">
+        <div class="filter-group">
+          <span class="filter-label">Sector</span>
+          <select class="filter-select" id="globalSector">
+            <% if (sectors && sectors.length > 0) { %>
+              <% sectors.forEach((s, i) => { %>
+                <option value="<%= s.sektor_id %>" <%= i === 0 ? 'selected' : '' %>><%= s.sektor_adi %></option>
+              <% }); %>
+            <% } else { %>
+              <option value="1">Default</option>
+            <% } %>
+          </select>
+        </div>
+      </div>
+    </nav>
+
+    <!-- MAIN -->
+    <main class="main">
+      <!-- ==================== DASHBOARD VIEW ==================== -->
+      <div class="view dashboard-view active" id="dashboardView">
+        <!-- CRITERIA FILTER BAR -->
+        <div class="criteria-bar">
+          <div class="criteria-item">
+            <span class="criteria-label">Max Risk</span>
+            <div class="criteria-control">
+              <select class="criteria-select" id="filterRisk" onchange="applyFilters()">
+                <option value="all">All</option>
+                <option value="AAA">AAA Only</option>
+                <option value="A">A or Better</option>
+                <option value="BBB">BBB or Better</option>
+                <option value="BB">BB or Better</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="criteria-item">
+            <span class="criteria-label">Min LPI Score</span>
+            <div class="criteria-control">
+              <input type="range" class="criteria-slider" id="filterLPI" min="1" max="5" step="0.1" value="1" oninput="updateSlider('LPI')">
+              <span class="criteria-value" id="filterLPIVal">1.0</span>
+            </div>
+          </div>
+
+          <div class="criteria-item">
+            <span class="criteria-label">Max Inflation %</span>
+            <div class="criteria-control">
+              <input type="range" class="criteria-slider" id="filterInflation" min="0" max="50" step="1" value="50" oninput="updateSlider('Inflation')">
+              <span class="criteria-value" id="filterInflationVal">50%</span>
+            </div>
+          </div>
+
+          <div class="criteria-item">
+            <span class="criteria-label">Min Growth %</span>
+            <div class="criteria-control">
+              <input type="range" class="criteria-slider" id="filterGrowth" min="0" max="10" step="0.5" value="0" oninput="updateSlider('Growth')">
+              <span class="criteria-value" id="filterGrowthVal">0%</span>
+            </div>
+          </div>
+
+          <div class="criteria-item">
+            <span class="criteria-label">Max Shipping $</span>
+            <div class="criteria-control">
+              <input type="range" class="criteria-slider" id="filterShipping" min="500" max="5000" step="100" value="5000" oninput="updateSlider('Shipping')">
+              <span class="criteria-value" id="filterShippingVal">$5000</span>
+            </div>
+          </div>
+
+          <button class="reset-btn" onclick="resetFilters()">↺ Reset</button>
+          <span class="match-count"><strong id="matchCount">0</strong> markets match</span>
+        </div>
+
+        <!-- DASHBOARD CONTENT -->
+        <div class="dashboard-content">
+          <section class="map-wrap">
+            <div id="map"></div>
+            <div class="map-legend">
+              <div class="legend-title">Market Status</div>
+              <div class="legend-item"><div class="legend-dot" style="background:#22c55e;"></div> GO (65+)</div>
+              <div class="legend-item"><div class="legend-dot" style="background:#eab308;"></div> Caution (50-64)</div>
+              <div class="legend-item"><div class="legend-dot" style="background:#ef4444;"></div> No-Go (&lt;50)</div>
+            </div>
+          </section>
+
+          <aside class="decision-panel">
+            <div class="panel-empty" id="panelEmpty">
+              <div>
+                <div class="empty-icon">🎯</div>
+                <p>Click a country to analyze</p>
+              </div>
+            </div>
+
+            <div id="panelContent" style="display:none; flex-direction:column; height:100%;">
+              <div class="panel-header">
+                <div class="panel-label">Selected Market</div>
+                <div class="country-row">
+                  <span class="country-name" id="pName">-</span>
+                  <span class="badge badge-go" id="pBadge">GO</span>
+                </div>
+              </div>
+
+              <div class="decisions-scroll">
+                <!-- D1: Logistics -->
+                <div class="decision-card">
+                  <div class="decision-head">
+                    <span class="decision-q">🚚 Logistics efficient?</span>
+                    <span class="decision-a a-yes" id="d1a">-</span>
+                  </div>
+                  <div class="chart-box"><canvas id="c1"></canvas></div>
+                </div>
+
+                <!-- D2: Shipping -->
+                <div class="decision-card">
+                  <div class="decision-head">
+                    <span class="decision-q">📦 Shipping affordable?</span>
+                    <span class="decision-a a-yes" id="d2a">-</span>
+                  </div>
+                  <div class="gauge"><div class="gauge-fill" id="g2"></div></div>
+                  <div class="gauge-labels"><span>$0</span><span id="g2v">-</span><span>$3k+</span></div>
+                </div>
+
+                <!-- D3: Growth -->
+                <div class="decision-card">
+                  <div class="decision-head">
+                    <span class="decision-q">📈 Market growing?</span>
+                    <span class="decision-a a-yes" id="d3a">-</span>
+                  </div>
+                  <div class="chart-box"><canvas id="c3"></canvas></div>
+                </div>
+
+                <!-- D4: Economy -->
+                <div class="decision-card">
+                  <div class="decision-head">
+                    <span class="decision-q">💰 Economy stable?</span>
+                    <span class="decision-a a-yes" id="d4a">-</span>
+                  </div>
+                  <div class="chart-box"><canvas id="c4"></canvas></div>
+                </div>
+
+                <!-- D5: Saturation -->
+                <div class="decision-card">
+                  <div class="decision-head">
+                    <span class="decision-q">🏭 Market saturated?</span>
+                    <span class="decision-a a-no" id="d5a">-</span>
+                  </div>
+                  <div class="chart-box"><canvas id="c5"></canvas></div>
+                </div>
+
+                <!-- D6: Risk -->
+                <div class="decision-card">
+                  <div class="decision-head">
+                    <span class="decision-q">⚠️ Risk acceptable?</span>
+                    <span class="decision-a a-yes" id="d6a">-</span>
+                  </div>
+                  <div class="traffic">
+                    <div class="traffic-dot t-green" id="t1"></div>
+                    <div class="traffic-dot t-yellow" id="t2"></div>
+                    <div class="traffic-dot t-red" id="t3"></div>
+                    <span class="traffic-text" id="tTxt">-</span>
+                  </div>
+                </div>
+
+                <!-- D7: FTA -->
+                <div class="decision-card">
+                  <div class="decision-head">
+                    <span class="decision-q">📜 Trade advantages?</span>
+                    <span class="decision-a a-yes" id="d7a">-</span>
+                  </div>
+                  <div class="fta-badge fta-no" id="fta"><span id="ftaTxt">-</span></div>
+                </div>
+              </div>
+
+              <div class="panel-actions">
+                <button class="action-btn btn-secondary" onclick="goDeepDive()">📈 Deep Dive</button>
+                <button class="action-btn btn-primary" onclick="addCompare()">⚖️ Compare</button>
+              </div>
+            </div>
+          </aside>
+        </div>
+      </div>
+
+      <!-- ==================== DEEP DIVE VIEW (FIXED) ==================== -->
+      <div class="view deepdive-view" id="deepdiveView">
+        <div class="dd-header">
+          <div class="dd-title-area">
+            <h1 class="dd-title" id="ddTitle">📊 Select a Country</h1>
+            <span class="dd-score-badge badge-go" id="ddBadge">-</span>
+          </div>
+          <button class="back-btn" onclick="switchView('dashboard')">← Back to Map</button>
+        </div>
+
+        <div class="dd-stats">
+          <div class="stat-card">
+            <div class="stat-icon">🎯</div>
+            <div class="stat-val" id="ddScore">-</div>
+            <div class="stat-label">Total Score</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-icon">💰</div>
+            <div class="stat-val" id="ddGDP">-</div>
+            <div class="stat-label">GDP/Capita</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-icon">👥</div>
+            <div class="stat-val" id="ddPop">-</div>
+            <div class="stat-label">Population</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-icon">⚠️</div>
+            <div class="stat-val" id="ddRisk">-</div>
+            <div class="stat-label">Risk Rating</div>
+          </div>
+        </div>
+
+        <div class="dd-charts">
+          <div class="chart-card">
+            <div class="chart-title">🚚 Logistics Performance (LPI)</div>
+            <div class="chart-area"><canvas id="ddC1"></canvas></div>
+          </div>
+          <div class="chart-card">
+            <div class="chart-title">📦 Shipping Cost Comparison</div>
+            <div class="chart-area"><canvas id="ddC2"></canvas></div>
+          </div>
+          <div class="chart-card">
+            <div class="chart-title">📈 Sector Growth Rate</div>
+            <div class="chart-area"><canvas id="ddC3"></canvas></div>
+          </div>
+          <div class="chart-card">
+            <div class="chart-title">💰 Economic Health</div>
+            <div class="chart-area"><canvas id="ddC4"></canvas></div>
+          </div>
+          <div class="chart-card full">
+            <div class="chart-title">🏭 Market Composition: Import Need vs Local Production</div>
+            <div class="chart-area"><canvas id="ddC5"></canvas></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ==================== COMPARE VIEW (FIXED TABLE) ==================== -->
+      <div class="view compare-view" id="compareView">
+        <div class="cmp-header">
+          <h1 class="cmp-title">⚖️ Head-to-Head Comparison</h1>
+          <div class="cmp-selectors">
+            <div class="cmp-selector">
+              <div class="cmp-selector-label">Country A</div>
+              <select class="cmp-select" id="cmpA" onchange="updateCompare()"></select>
+            </div>
+            <div class="vs-circle">VS</div>
+            <div class="cmp-selector">
+              <div class="cmp-selector-label">Country B</div>
+              <select class="cmp-select" id="cmpB" onchange="updateCompare()"></select>
+            </div>
+          </div>
+        </div>
+
+        <!-- Comparison Table -->
+        <div class="cmp-table-wrap">
+          <table class="cmp-table" id="cmpTable">
+            <thead>
+              <tr>
+                <th>Metric</th>
+                <th id="cmpThA">Country A</th>
+                <th id="cmpThB">Country B</th>
+              </tr>
+            </thead>
+            <tbody id="cmpBody">
+              <tr><td colspan="3" style="text-align:center; color:var(--text-muted); padding:40px;">Select two countries to compare</td></tr>
+            </tbody>
+          </table>
+        </div>
+
+        <!-- Comparison Charts -->
+        <div class="cmp-charts">
+          <div class="chart-card">
+            <div class="chart-title">📊 Score Breakdown</div>
+            <div class="chart-area"><canvas id="cmpC1"></canvas></div>
+          </div>
+          <div class="chart-card">
+            <div class="chart-title">💹 Economic Indicators</div>
+            <div class="chart-area"><canvas id="cmpC2"></canvas></div>
+          </div>
+        </div>
+      </div>
+    </main>
+  </div>
+
+  <script>
+    // ========================================
+    // MOCK DATA (Fallback)
+    // ========================================
+    const MOCK = [
+      { ulke_id:1, ulke_adi:'Germany', ISO_KODU:'DE', totalScore:82, lpi_skoru:4.2, gumruk_suresi:2, konteyner_maliyeti:750, sektorel_buyume:3.5, enflasyon:2.1, issizlik:3.2, yerli_uretim_orani:35, risk_notu:'AAA', anlasma_sayisi:5, gsyh_kisi_basi:45000, nufus:83 },
+      { ulke_id:2, ulke_adi:'France', ISO_KODU:'FR', totalScore:75, lpi_skoru:3.9, gumruk_suresi:3, konteyner_maliyeti:920, sektorel_buyume:2.8, enflasyon:2.5, issizlik:7.4, yerli_uretim_orani:42, risk_notu:'AA', anlasma_sayisi:4, gsyh_kisi_basi:39000, nufus:67 },
+      { ulke_id:3, ulke_adi:'USA', ISO_KODU:'US', totalScore:78, lpi_skoru:3.85, gumruk_suresi:4, konteyner_maliyeti:1100, sektorel_buyume:4.2, enflasyon:3.4, issizlik:3.7, yerli_uretim_orani:55, risk_notu:'AA+', anlasma_sayisi:3, gsyh_kisi_basi:63000, nufus:331 },
+      { ulke_id:4, ulke_adi:'Turkey', ISO_KODU:'TR', totalScore:52, lpi_skoru:3.15, gumruk_suresi:8, konteyner_maliyeti:1850, sektorel_buyume:5.5, enflasyon:42, issizlik:10.5, yerli_uretim_orani:65, risk_notu:'B', anlasma_sayisi:2, gsyh_kisi_basi:9500, nufus:85 },
+      { ulke_id:5, ulke_adi:'UK', ISO_KODU:'GB', totalScore:71, lpi_skoru:3.75, gumruk_suresi:3, konteyner_maliyeti:980, sektorel_buyume:1.5, enflasyon:4.2, issizlik:4.1, yerli_uretim_orani:38, risk_notu:'AA-', anlasma_sayisi:2, gsyh_kisi_basi:41000, nufus:67 },
+      { ulke_id:6, ulke_adi:'China', ISO_KODU:'CN', totalScore:68, lpi_skoru:3.65, gumruk_suresi:6, konteyner_maliyeti:580, sektorel_buyume:5.2, enflasyon:0.9, issizlik:5.2, yerli_uretim_orani:85, risk_notu:'A', anlasma_sayisi:1, gsyh_kisi_basi:12500, nufus:1400 },
+      { ulke_id:7, ulke_adi:'Japan', ISO_KODU:'JP', totalScore:74, lpi_skoru:4.0, gumruk_suresi:2, konteyner_maliyeti:890, sektorel_buyume:1.2, enflasyon:2.8, issizlik:2.6, yerli_uretim_orani:48, risk_notu:'A+', anlasma_sayisi:2, gsyh_kisi_basi:34000, nufus:125 },
+      { ulke_id:8, ulke_adi:'Brazil', ISO_KODU:'BR', totalScore:48, lpi_skoru:2.9, gumruk_suresi:12, konteyner_maliyeti:2200, sektorel_buyume:2.1, enflasyon:5.8, issizlik:9.3, yerli_uretim_orani:72, risk_notu:'BB', anlasma_sayisi:1, gsyh_kisi_basi:8500, nufus:215 }
+    ];
+
+    // ========================================
+    // STATE
+    // ========================================
+    const state = {
+      all: [],
+      filtered: [],
+      selected: null,
+      cmpA: null,
+      cmpB: null,
+      avg: { lpi: 3.5, shipping: 1200, growth: 3.0 }
+    };
+
+    const coords = {
+      'TR':[39,35],'DE':[51,9],'FR':[46,2],'GB':[54,-2],'IT':[42,12],'ES':[40,-4],'NL':[52,5],
+      'US':[38,-97],'CA':[56,-106],'MX':[23,-102],'BR':[-14,-51],'AR':[-34,-64],
+      'CN':[35,105],'JP':[36,138],'KR':[36,128],'IN':[20,77],'AU':[-27,133],
+      'RU':[60,100],'ZA':[-30,25],'EG':[27,30],'AE':[24,54],'SA':[24,45]
+    };
+
+    let map, markers = [], charts = {};
+
+    // ========================================
+    // RISK LEVELS
+    // ========================================
+    const riskOrder = ['AAA','AA+','AA','AA-','A+','A','A-','BBB+','BBB','BBB-','BB+','BB','BB-','B+','B','B-','CCC','CC','C','D'];
+    function riskIndex(r) { return riskOrder.indexOf(r); }
+    function isRiskOK(r, max) {
+      if (max === 'all') return true;
+      const maxIdx = riskIndex(max);
+      const rIdx = riskIndex(r);
+      return rIdx <= maxIdx + 2; // Allow 2 levels below
+    }
+    function isLowRisk(r) { return riskIndex(r) <= 6; }
+    function isMedRisk(r) { return riskIndex(r) > 6 && riskIndex(r) <= 11; }
+
+    // ========================================
+    // INIT MAP
+    // ========================================
+    function initMap() {
+      const el = document.getElementById('map');
+      if (!el || map) return;
+      map = L.map('map', { center: [30, 20], zoom: 2.5, minZoom: 2 });
+      L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png').addTo(map);
+      setTimeout(() => map.invalidateSize(), 100);
+    }
+
+    // ========================================
+    // NAV
+    // ========================================
+    document.querySelectorAll('.nav-tab').forEach(t => {
+      t.addEventListener('click', () => switchView(t.dataset.view));
+    });
+
+    function switchView(v) {
+      document.querySelectorAll('.nav-tab').forEach(t => t.classList.toggle('active', t.dataset.view === v));
+      document.querySelectorAll('.view').forEach(el => el.classList.toggle('active', el.id === v + 'View'));
+      if (v === 'dashboard' && map) setTimeout(() => map.invalidateSize(), 50);
+      if (v === 'deepdive' && state.selected) renderDeepDive(state.selected);
+      if (v === 'compare') populateCmpSelects();
+    }
+
+    // ========================================
+    // LOAD DATA
+    // ========================================
+    async function loadData() {
+      const sektorId = document.getElementById('globalSector')?.value || 1;
+      try {
+        const res = await fetch(`/api/sector/${sektorId}/rankings`);
+        if (!res.ok) throw new Error();
+        const data = await res.json();
+        if (data.status === 'success' && data.data?.rankings?.length) {
+          state.all = data.data.rankings;
+        } else {
+          state.all = MOCK;
+        }
+      } catch {
+        state.all = MOCK;
+      }
+
+      // Calc averages
+      const len = state.all.length || 1;
+      state.avg.lpi = state.all.reduce((s,c) => s + parseFloat(c.lpi_skoru||0), 0) / len;
+      state.avg.shipping = state.all.reduce((s,c) => s + parseInt(c.konteyner_maliyeti||0), 0) / len;
+      state.avg.growth = state.all.reduce((s,c) => s + parseFloat(c.sektorel_buyume||0), 0) / len;
+
+      applyFilters();
+    }
+
+    // ========================================
+    // FILTER LOGIC
+    // ========================================
+    function updateSlider(name) {
+      const el = document.getElementById('filter' + name);
+      const valEl = document.getElementById('filter' + name + 'Val');
+      if (!el || !valEl) return;
+      const v = parseFloat(el.value);
+      if (name === 'Shipping') valEl.textContent = '$' + v;
+      else if (name === 'LPI') valEl.textContent = v.toFixed(1);
+      else valEl.textContent = v + '%';
+      applyFilters();
+    }
+
+    function resetFilters() {
+      document.getElementById('filterRisk').value = 'all';
+      document.getElementById('filterLPI').value = 1;
+      document.getElementById('filterInflation').value = 50;
+      document.getElementById('filterGrowth').value = 0;
+      document.getElementById('filterShipping').value = 5000;
+      ['LPI','Inflation','Growth','Shipping'].forEach(updateSlider);
+      applyFilters();
+    }
+
+    function applyFilters() {
+      const risk = document.getElementById('filterRisk')?.value || 'all';
+      const minLPI = parseFloat(document.getElementById('filterLPI')?.value || 1);
+      const maxInf = parseFloat(document.getElementById('filterInflation')?.value || 50);
+      const minGrowth = parseFloat(document.getElementById('filterGrowth')?.value || 0);
+      const maxShip = parseInt(document.getElementById('filterShipping')?.value || 5000);
+
+      state.filtered = state.all.filter(c => {
+        if (!isRiskOK(c.risk_notu, risk)) return false;
+        if (parseFloat(c.lpi_skoru||0) < minLPI) return false;
+        if (parseFloat(c.enflasyon||0) > maxInf) return false;
+        if (parseFloat(c.sektorel_buyume||0) < minGrowth) return false;
+        if (parseInt(c.konteyner_maliyeti||0) > maxShip) return false;
+        return true;
+      });
+
+      document.getElementById('matchCount').textContent = state.filtered.length;
+      updateMap();
+    }
+
+    // ========================================
+    // MAP
+    // ========================================
+    function updateMap() {
+      if (!map) return;
+      markers.forEach(m => { try { map.removeLayer(m); } catch {} });
+      markers = [];
+
+      state.filtered.forEach(c => {
+        const pos = coords[c.ISO_KODU];
+        if (!pos) return;
+        const score = c.totalScore || 50;
+        let color = score >= 65 ? '#22c55e' : score >= 50 ? '#eab308' : '#ef4444';
+
+        const m = L.circleMarker(pos, {
+          radius: 7 + score / 15,
+          fillColor: color,
+          fillOpacity: 0.85,
+          color: '#fff',
+          weight: 2
+        }).addTo(map);
+
+        m.bindTooltip(`${c.ulke_adi}: ${score}`, { direction: 'top' });
+        m.on('click', () => selectCountry(c));
+        markers.push(m);
+      });
+    }
+
+    // ========================================
+    // SELECT COUNTRY
+    // ========================================
+    function selectCountry(c) {
+      state.selected = c;
+      document.getElementById('panelEmpty').style.display = 'none';
+      const panel = document.getElementById('panelContent');
+      panel.style.display = 'flex';
+
+      document.getElementById('pName').textContent = c.ulke_adi || '-';
+
+      const score = c.totalScore || 50;
+      const badge = document.getElementById('pBadge');
+      if (score >= 65) { badge.textContent = 'GO'; badge.className = 'badge badge-go'; }
+      else if (score >= 50) { badge.textContent = 'CAUTION'; badge.className = 'badge badge-caution'; }
+      else { badge.textContent = 'NO-GO'; badge.className = 'badge badge-nogo'; }
+
+      // D1: LPI
+      const lpi = parseFloat(c.lpi_skoru || 0);
+      setAns('d1a', lpi >= 3 ? 'YES' : lpi >= 2.5 ? 'MAYBE' : 'NO');
+      renderBar('c1', '1', [c.ulke_adi, 'Avg'], [lpi, state.avg.lpi], 5);
+
+      // D2: Shipping
+      const ship = parseInt(c.konteyner_maliyeti || 0);
+      setAns('d2a', ship <= 1500 ? 'YES' : ship <= 2500 ? 'MAYBE' : 'NO');
+      const pct = Math.min(100, ship / 3000 * 100);
+      const gColor = ship <= 1500 ? '#22c55e' : ship <= 2500 ? '#eab308' : '#ef4444';
+      document.getElementById('g2').style.cssText = `width:${pct}%;background:${gColor}`;
+      document.getElementById('g2v').textContent = '$' + ship.toLocaleString();
+
+      // D3: Growth
+      const growth = parseFloat(c.sektorel_buyume || 0);
+      setAns('d3a', growth >= 3 ? 'YES' : growth >= 1 ? 'MAYBE' : 'NO');
+      renderBar('c3', '3', [c.ulke_adi, 'Avg'], [growth, state.avg.growth]);
+
+      // D4: Economy
+      const inf = parseFloat(c.enflasyon || 0);
+      const unemp = parseFloat(c.issizlik || 0);
+      setAns('d4a', inf <= 5 && unemp <= 8 ? 'YES' : inf <= 10 ? 'MAYBE' : 'NO');
+      renderDonut('c4', '4', inf, unemp);
+
+      // D5: Saturation
+      const local = parseFloat(c.yerli_uretim_orani || 50);
+      setAns('d5a', local >= 80 ? 'YES' : 'NO');
+      renderPie('c5', '5', local);
+
+      // D6: Risk
+      const risk = c.risk_notu || 'B';
+      setAns('d6a', isLowRisk(risk) ? 'YES' : isMedRisk(risk) ? 'MAYBE' : 'NO');
+      renderTraffic(risk);
+
+      // D7: FTA
+      const fta = parseInt(c.anlasma_sayisi || 0);
+      setAns('d7a', fta > 0 ? 'YES' : 'NO');
+      const ftaEl = document.getElementById('fta');
+      const ftaTxt = document.getElementById('ftaTxt');
+      if (fta > 0) {
+        ftaEl.className = 'fta-badge fta-yes';
+        ftaTxt.textContent = '✓ ' + fta + ' Agreement' + (fta > 1 ? 's' : '');
+      } else {
+        ftaEl.className = 'fta-badge fta-no';
+        ftaTxt.textContent = '✗ No Agreements';
+      }
+    }
+
+    function setAns(id, val) {
+      const el = document.getElementById(id);
+      if (!el) return;
+      el.textContent = val;
+      el.className = 'decision-a ' + (val === 'YES' ? 'a-yes' : val === 'NO' ? 'a-no' : 'a-maybe');
+    }
+
+    // ========================================
+    // CHARTS
+    // ========================================
+    function destroy(k) { if (charts[k]) { try { charts[k].destroy(); } catch {} charts[k] = null; } }
+
+    function renderBar(canvasId, key, labels, data, max) {
+      destroy(key);
+      const ctx = document.getElementById(canvasId);
+      if (!ctx) return;
+      charts[key] = new Chart(ctx, {
+        type: 'bar',
+        data: { labels, datasets: [{ data, backgroundColor: [data[0] >= data[1] ? '#22c55e' : '#eab308', '#64748b'], borderRadius: 3 }] },
+        options: { indexAxis: 'y', responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } }, scales: { x: { max, grid: { color: 'rgba(255,255,255,0.05)' }, ticks: { color: '#64748b', font: { size: 9 } } }, y: { grid: { display: false }, ticks: { color: '#94a3b8', font: { size: 9 } } } } }
+      });
+    }
+
+    function renderDonut(canvasId, key, inf, unemp) {
+      destroy(key);
+      const ctx = document.getElementById(canvasId);
+      if (!ctx) return;
+      const stable = Math.max(0, 100 - inf - unemp);
+      charts[key] = new Chart(ctx, {
+        type: 'doughnut',
+        data: { labels: ['Stable', 'Inflation', 'Unemploy'], datasets: [{ data: [stable, inf, unemp], backgroundColor: ['#22c55e', '#ef4444', '#eab308'], borderWidth: 0 }] },
+        options: { responsive: true, maintainAspectRatio: false, cutout: '60%', plugins: { legend: { display: false } } }
+      });
+    }
+
+    function renderPie(canvasId, key, local) {
+      destroy(key);
+      const ctx = document.getElementById(canvasId);
+      if (!ctx) return;
+      charts[key] = new Chart(ctx, {
+        type: 'pie',
+        data: { labels: ['Import Need', 'Local'], datasets: [{ data: [100 - local, local], backgroundColor: ['#22c55e', '#ef4444'], borderWidth: 0 }] },
+        options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } } }
+      });
+    }
+
+    function renderTraffic(risk) {
+      ['t1', 't2', 't3'].forEach(id => document.getElementById(id)?.classList.remove('on'));
+      const txt = document.getElementById('tTxt');
+      if (isLowRisk(risk)) {
+        document.getElementById('t1')?.classList.add('on');
+        if (txt) { txt.textContent = 'Low (' + risk + ')'; txt.style.color = '#22c55e'; }
+      } else if (isMedRisk(risk)) {
+        document.getElementById('t2')?.classList.add('on');
+        if (txt) { txt.textContent = 'Medium (' + risk + ')'; txt.style.color = '#eab308'; }
+      } else {
+        document.getElementById('t3')?.classList.add('on');
+        if (txt) { txt.textContent = 'High (' + risk + ')'; txt.style.color = '#ef4444'; }
+      }
+    }
+
+    // ========================================
+    // DEEP DIVE
+    // ========================================
+    function goDeepDive() { if (state.selected) switchView('deepdive'); }
+
+    function renderDeepDive(c) {
+      if (!c) return;
+      document.getElementById('ddTitle').textContent = '📊 ' + c.ulke_adi;
+      const score = c.totalScore || 50;
+      const ddBadge = document.getElementById('ddBadge');
+      ddBadge.textContent = score;
+      ddBadge.className = 'dd-score-badge ' + (score >= 65 ? 'badge-go' : score >= 50 ? 'badge-caution' : 'badge-nogo');
+
+      document.getElementById('ddScore').textContent = score;
+      document.getElementById('ddGDP').textContent = '$' + Math.round(parseFloat(c.gsyh_kisi_basi || 0) / 1000) + 'k';
+      document.getElementById('ddPop').textContent = parseFloat(c.nufus || 0).toFixed(0) + 'M';
+      document.getElementById('ddRisk').textContent = c.risk_notu || '-';
+
+      // Charts
+      renderDDBar('ddC1', 'dd1', [c.ulke_adi, 'Average', 'Best'], [parseFloat(c.lpi_skoru || 0), state.avg.lpi, 4.2], 5);
+      renderDDBar('ddC2', 'dd2', [c.ulke_adi, 'Average', 'Cheapest'], [parseInt(c.konteyner_maliyeti || 0), state.avg.shipping, 500]);
+      renderDDBar('ddC3', 'dd3', [c.ulke_adi, 'Average'], [parseFloat(c.sektorel_buyume || 0), state.avg.growth]);
+
+      // Economy donut
+      destroy('dd4');
+      const ctx4 = document.getElementById('ddC4');
+      if (ctx4) {
+        const inf = parseFloat(c.enflasyon || 0), unemp = parseFloat(c.issizlik || 0);
+        charts.dd4 = new Chart(ctx4, {
+          type: 'doughnut',
+          data: { labels: ['Stable %', 'Inflation %', 'Unemployment %'], datasets: [{ data: [Math.max(0, 100 - inf - unemp), inf, unemp], backgroundColor: ['#22c55e', '#ef4444', '#eab308'], borderWidth: 0 }] },
+          options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'right', labels: { color: '#94a3b8' } } } }
+        });
+      }
+
+      // Saturation pie
+      destroy('dd5');
+      const ctx5 = document.getElementById('ddC5');
+      if (ctx5) {
+        const local = parseFloat(c.yerli_uretim_orani || 50);
+        charts.dd5 = new Chart(ctx5, {
+          type: 'pie',
+          data: { labels: ['Import Need (' + (100 - local).toFixed(0) + '%)', 'Local Production (' + local.toFixed(0) + '%)'], datasets: [{ data: [100 - local, local], backgroundColor: ['#22c55e', '#ef4444'], borderWidth: 0 }] },
+          options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'right', labels: { color: '#94a3b8' } } } }
+        });
+      }
+    }
+
+    function renderDDBar(canvasId, key, labels, data, max) {
+      destroy(key);
+      const ctx = document.getElementById(canvasId);
+      if (!ctx) return;
+      charts[key] = new Chart(ctx, {
+        type: 'bar',
+        data: { labels, datasets: [{ data, backgroundColor: ['#3b82f6', '#64748b', '#22c55e'], borderRadius: 4 }] },
+        options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } }, scales: { y: { max, grid: { color: 'rgba(255,255,255,0.05)' }, ticks: { color: '#64748b' } }, x: { grid: { display: false }, ticks: { color: '#94a3b8' } } } }
+      });
+    }
+
+    // ========================================
+    // COMPARE
+    // ========================================
+    function addCompare() {
+      if (!state.selected) return;
+      if (!state.cmpA) state.cmpA = state.selected;
+      else if (!state.cmpB && state.selected.ulke_id !== state.cmpA.ulke_id) state.cmpB = state.selected;
+      switchView('compare');
+    }
+
+    function populateCmpSelects() {
+      const selA = document.getElementById('cmpA');
+      const selB = document.getElementById('cmpB');
+      if (!selA || !selB) return;
+
+      let opts = '<option value="">Select</option>';
+      state.all.forEach(c => opts += `<option value="${c.ulke_id}">${c.ulke_adi}</option>`);
+      selA.innerHTML = opts;
+      selB.innerHTML = opts;
+
+      if (state.cmpA) selA.value = state.cmpA.ulke_id;
+      if (state.cmpB) selB.value = state.cmpB.ulke_id;
+      updateCompare();
+    }
+
+    function updateCompare() {
+      const aId = document.getElementById('cmpA')?.value;
+      const bId = document.getElementById('cmpB')?.value;
+      state.cmpA = state.all.find(c => c.ulke_id == aId) || null;
+      state.cmpB = state.all.find(c => c.ulke_id == bId) || null;
+
+      if (state.cmpA && state.cmpB) renderCompare();
+    }
+
+    function renderCompare() {
+      const a = state.cmpA, b = state.cmpB;
+      if (!a || !b) return;
+
+      document.getElementById('cmpThA').textContent = a.ulke_adi;
+      document.getElementById('cmpThB').textContent = b.ulke_adi;
+
+      const metrics = [
+        { label: 'Total Score', a: a.totalScore, b: b.totalScore, better: 'high' },
+        { label: 'LPI Score', a: parseFloat(a.lpi_skoru||0).toFixed(2), b: parseFloat(b.lpi_skoru||0).toFixed(2), better: 'high' },
+        { label: 'Customs Days', a: a.gumruk_suresi || '-', b: b.gumruk_suresi || '-', better: 'low' },
+        { label: 'Shipping Cost', a: '$' + parseInt(a.konteyner_maliyeti||0).toLocaleString(), b: '$' + parseInt(b.konteyner_maliyeti||0).toLocaleString(), better: 'low', rawA: a.konteyner_maliyeti, rawB: b.konteyner_maliyeti },
+        { label: 'Sector Growth %', a: parseFloat(a.sektorel_buyume||0).toFixed(1) + '%', b: parseFloat(b.sektorel_buyume||0).toFixed(1) + '%', better: 'high', rawA: a.sektorel_buyume, rawB: b.sektorel_buyume },
+        { label: 'Inflation %', a: parseFloat(a.enflasyon||0).toFixed(1) + '%', b: parseFloat(b.enflasyon||0).toFixed(1) + '%', better: 'low', rawA: a.enflasyon, rawB: b.enflasyon },
+        { label: 'Unemployment %', a: parseFloat(a.issizlik||0).toFixed(1) + '%', b: parseFloat(b.issizlik||0).toFixed(1) + '%', better: 'low', rawA: a.issizlik, rawB: b.issizlik },
+        { label: 'GDP/Capita', a: '$' + Math.round(parseFloat(a.gsyh_kisi_basi||0)).toLocaleString(), b: '$' + Math.round(parseFloat(b.gsyh_kisi_basi||0)).toLocaleString(), better: 'high', rawA: a.gsyh_kisi_basi, rawB: b.gsyh_kisi_basi },
+        { label: 'Local Production %', a: parseFloat(a.yerli_uretim_orani||0).toFixed(0) + '%', b: parseFloat(b.yerli_uretim_orani||0).toFixed(0) + '%', better: 'low', rawA: a.yerli_uretim_orani, rawB: b.yerli_uretim_orani },
+        { label: 'Risk Rating', a: a.risk_notu || '-', b: b.risk_notu || '-', better: 'custom' },
+        { label: 'Trade Agreements', a: a.anlasma_sayisi || 0, b: b.anlasma_sayisi || 0, better: 'high' }
+      ];
+
+      let html = '';
+      metrics.forEach(m => {
+        let aClass = '', bClass = '';
+        const rawA = m.rawA !== undefined ? parseFloat(m.rawA) : parseFloat(m.a);
+        const rawB = m.rawB !== undefined ? parseFloat(m.rawB) : parseFloat(m.b);
+
+        if (m.better === 'high' && rawA > rawB) { aClass = 'val-better'; bClass = 'val-worse'; }
+        else if (m.better === 'high' && rawB > rawA) { bClass = 'val-better'; aClass = 'val-worse'; }
+        else if (m.better === 'low' && rawA < rawB) { aClass = 'val-better'; bClass = 'val-worse'; }
+        else if (m.better === 'low' && rawB < rawA) { bClass = 'val-better'; aClass = 'val-worse'; }
+        else if (m.better === 'custom') {
+          if (riskIndex(a.risk_notu) < riskIndex(b.risk_notu)) { aClass = 'val-better'; bClass = 'val-worse'; }
+          else if (riskIndex(b.risk_notu) < riskIndex(a.risk_notu)) { bClass = 'val-better'; aClass = 'val-worse'; }
+        }
+
+        html += `<tr><td class="metric-label">${m.label}</td><td class="${aClass}">${m.a}</td><td class="${bClass}">${m.b}</td></tr>`;
+      });
+
+      document.getElementById('cmpBody').innerHTML = html;
+
+      // Charts
+      destroy('cmp1');
+      const ctx1 = document.getElementById('cmpC1');
+      if (ctx1) {
+        charts.cmp1 = new Chart(ctx1, {
+          type: 'radar',
+          data: {
+            labels: ['Score', 'LPI', 'Growth', 'Economy', 'Logistics'],
+            datasets: [
+              { label: a.ulke_adi, data: [a.totalScore/100*100, parseFloat(a.lpi_skoru||0)/5*100, Math.min(100, parseFloat(a.sektorel_buyume||0)*10), Math.max(0, 100-parseFloat(a.enflasyon||0)), Math.max(0, 100-parseInt(a.konteyner_maliyeti||0)/50)], backgroundColor: 'rgba(59,130,246,0.2)', borderColor: '#3b82f6', pointBackgroundColor: '#3b82f6' },
+              { label: b.ulke_adi, data: [b.totalScore/100*100, parseFloat(b.lpi_skoru||0)/5*100, Math.min(100, parseFloat(b.sektorel_buyume||0)*10), Math.max(0, 100-parseFloat(b.enflasyon||0)), Math.max(0, 100-parseInt(b.konteyner_maliyeti||0)/50)], backgroundColor: 'rgba(168,85,247,0.2)', borderColor: '#a855f7', pointBackgroundColor: '#a855f7' }
+            ]
+          },
+          options: { responsive: true, maintainAspectRatio: false, scales: { r: { beginAtZero: true, max: 100, ticks: { color: '#64748b', backdropColor: 'transparent' }, grid: { color: 'rgba(255,255,255,0.1)' }, pointLabels: { color: '#94a3b8' } } }, plugins: { legend: { position: 'bottom', labels: { color: '#94a3b8' } } } }
+        });
+      }
+
+      destroy('cmp2');
+      const ctx2 = document.getElementById('cmpC2');
+      if (ctx2) {
+        charts.cmp2 = new Chart(ctx2, {
+          type: 'bar',
+          data: {
+            labels: ['GDP/Cap ($k)', 'Inflation %', 'Unemployment %'],
+            datasets: [
+              { label: a.ulke_adi, data: [parseFloat(a.gsyh_kisi_basi||0)/1000, parseFloat(a.enflasyon||0), parseFloat(a.issizlik||0)], backgroundColor: '#3b82f6', borderRadius: 4 },
+              { label: b.ulke_adi, data: [parseFloat(b.gsyh_kisi_basi||0)/1000, parseFloat(b.enflasyon||0), parseFloat(b.issizlik||0)], backgroundColor: '#a855f7', borderRadius: 4 }
+            ]
+          },
+          options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'top', labels: { color: '#94a3b8' } } }, scales: { y: { grid: { color: 'rgba(255,255,255,0.05)' }, ticks: { color: '#64748b' } }, x: { grid: { display: false }, ticks: { color: '#94a3b8' } } } }
+        });
+      }
+    }
+
+    // ========================================
+    // EVENTS & INIT
+    // ========================================
+    document.getElementById('globalSector')?.addEventListener('change', loadData);
+
+    document.addEventListener('DOMContentLoaded', () => {
+      initMap();
+      loadData();
+    });
+
+    if (document.readyState !== 'loading') {
+      setTimeout(() => { if (!map) { initMap(); loadData(); } }, 200);
+    }
+  </script>
+</body>
+</html>

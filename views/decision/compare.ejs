@@ -1,0 +1,250 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title><%= title %></title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    html { font-size: 62.5%; }
+    
+    body {
+      font-family: 'Outfit', sans-serif;
+      background: #0a0a1a;
+      color: #fff;
+      min-height: 100vh;
+      padding: 3rem;
+    }
+
+    .container {
+      max-width: 1400px;
+      margin: 0 auto;
+    }
+
+    .header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 3rem;
+    }
+
+    .header h1 {
+      font-size: 3rem;
+      font-weight: 700;
+    }
+
+    .back-btn {
+      padding: 1rem 2rem;
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 1rem;
+      color: #fff;
+      text-decoration: none;
+      font-size: 1.4rem;
+      transition: all 0.3s ease;
+    }
+
+    .back-btn:hover {
+      background: rgba(255, 255, 255, 0.1);
+    }
+
+    .comparison-table {
+      width: 100%;
+      background: rgba(255, 255, 255, 0.02);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      border-radius: 1.5rem;
+      overflow: hidden;
+      margin-bottom: 3rem;
+    }
+
+    .comparison-table th,
+    .comparison-table td {
+      padding: 1.5rem 2rem;
+      text-align: left;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+    }
+
+    .comparison-table th {
+      background: rgba(0, 217, 255, 0.1);
+      font-size: 1.3rem;
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      color: rgba(255, 255, 255, 0.7);
+    }
+
+    .comparison-table td {
+      font-size: 1.5rem;
+    }
+
+    .metric-label {
+      color: rgba(255, 255, 255, 0.6);
+      font-weight: 500;
+    }
+
+    .country-name {
+      font-size: 1.8rem;
+      font-weight: 600;
+      color: #00d9ff;
+    }
+
+    .best-value {
+      color: #00ff88;
+      font-weight: 700;
+    }
+
+    .chart-section {
+      background: rgba(255, 255, 255, 0.02);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      border-radius: 1.5rem;
+      padding: 2rem;
+    }
+
+    .chart-section h2 {
+      font-size: 1.8rem;
+      margin-bottom: 2rem;
+    }
+
+    .chart-container {
+      height: 400px;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <header class="header">
+      <h1>🔄 Ülke Karşılaştırması - <%= sector.sektor_adi %></h1>
+      <a href="/sector/<%= sector.sektor_id %>/rankings" class="back-btn">← Sıralamaya Dön</a>
+    </header>
+
+    <table class="comparison-table">
+      <thead>
+        <tr>
+          <th>Metrik</th>
+          <% countries.forEach(c => { %>
+            <th class="country-name"><%= c.ulke_adi %></th>
+          <% }); %>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td class="metric-label">Toplam Skor</td>
+          <% const maxScore = Math.max(...countries.map(c => parseFloat(c.totalScore || 0))); %>
+          <% countries.forEach(c => { %>
+            <td class="<%= parseFloat(c.totalScore || 0) === maxScore ? 'best-value' : '' %>"><%= c.totalScore || 0 %></td>
+          <% }); %>
+        </tr>
+        <tr>
+          <td class="metric-label">Sektörel İthalat</td>
+          <% const maxImport = Math.max(...countries.map(c => parseFloat(c.sektorel_ithalat || 0))); %>
+          <% countries.forEach(c => { %>
+            <td class="<%= parseFloat(c.sektorel_ithalat || 0) === maxImport ? 'best-value' : '' %>">$<%= c.sektorel_ithalat || 0 %>M</td>
+          <% }); %>
+        </tr>
+        <tr>
+          <td class="metric-label">Sektörel Büyüme</td>
+          <% const maxGrowth = Math.max(...countries.map(c => parseFloat(c.sektorel_buyume || 0))); %>
+          <% countries.forEach(c => { %>
+            <td class="<%= parseFloat(c.sektorel_buyume || 0) === maxGrowth ? 'best-value' : '' %>">%<%= c.sektorel_buyume || 0 %></td>
+          <% }); %>
+        </tr>
+        <tr>
+          <td class="metric-label">GSYİH (Milyar $)</td>
+          <% countries.forEach(c => { %>
+            <td>$<%= c.gsyh || 0 %>B</td>
+          <% }); %>
+        </tr>
+        <tr>
+          <td class="metric-label">Kişi Başı GSYİH</td>
+          <% const maxGDP = Math.max(...countries.map(c => parseFloat(c.gsyh_kisi_basi || 0))); %>
+          <% countries.forEach(c => { %>
+            <td class="<%= parseFloat(c.gsyh_kisi_basi || 0) === maxGDP ? 'best-value' : '' %>">$<%= Math.round(parseFloat(c.gsyh_kisi_basi || 0)).toLocaleString() %></td>
+          <% }); %>
+        </tr>
+        <tr>
+          <td class="metric-label">Risk Notu</td>
+          <% countries.forEach(c => { %>
+            <td><%= c.risk_notu || 'N/A' %></td>
+          <% }); %>
+        </tr>
+        <tr>
+          <td class="metric-label">LPI Skoru</td>
+          <% const maxLPI = Math.max(...countries.map(c => parseFloat(c.lpi_skoru || 0))); %>
+          <% countries.forEach(c => { %>
+            <td class="<%= parseFloat(c.lpi_skoru || 0) === maxLPI ? 'best-value' : '' %>"><%= c.lpi_skoru ? parseFloat(c.lpi_skoru).toFixed(2) : 'N/A' %></td>
+          <% }); %>
+        </tr>
+        <tr>
+          <td class="metric-label">Gümrük Süresi (Gün)</td>
+          <% const minCustoms = Math.min(...countries.map(c => parseInt(c.gumruk_suresi || 999))); %>
+          <% countries.forEach(c => { %>
+            <td class="<%= parseInt(c.gumruk_suresi || 999) === minCustoms ? 'best-value' : '' %>"><%= c.gumruk_suresi || 'N/A' %></td>
+          <% }); %>
+        </tr>
+        <tr>
+          <td class="metric-label">Konteyner Maliyeti</td>
+          <% const minCost = Math.min(...countries.map(c => parseInt(c.konteyner_maliyeti || 99999))); %>
+          <% countries.forEach(c => { %>
+            <td class="<%= parseInt(c.konteyner_maliyeti || 99999) === minCost ? 'best-value' : '' %>">$<%= c.konteyner_maliyeti ? parseInt(c.konteyner_maliyeti).toLocaleString() : 'N/A' %></td>
+          <% }); %>
+        </tr>
+      </tbody>
+    </table>
+
+    <div class="chart-section">
+      <h2>📊 Radar Karşılaştırması</h2>
+      <div class="chart-container">
+        <canvas id="comparisonChart"></canvas>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const countries = <%- JSON.stringify(countries) %>;
+    const colors = ['#00d9ff', '#00ff88', '#ffc107', '#ff6b6b', '#a855f7'];
+
+    new Chart(document.getElementById('comparisonChart'), {
+      type: 'radar',
+      data: {
+        labels: ['Pazar Potansiyeli', 'Ekonomik İstikrar', 'Lojistik Kolaylığı', 'Sektörel Büyüme'],
+        datasets: countries.map((c, i) => ({
+          label: c.ulke_adi,
+          data: [
+            c.scores?.marketPotential || 0,
+            c.scores?.economicStability || 0,
+            c.scores?.logisticsEase || 0,
+            c.scores?.sectorGrowth || 0
+          ],
+          backgroundColor: colors[i] + '33',
+          borderColor: colors[i],
+          borderWidth: 2,
+          pointBackgroundColor: colors[i]
+        }))
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        scales: {
+          r: {
+            beginAtZero: true,
+            max: 100,
+            ticks: { color: 'rgba(255,255,255,0.5)', backdropColor: 'transparent' },
+            grid: { color: 'rgba(255,255,255,0.1)' },
+            pointLabels: { color: 'rgba(255,255,255,0.8)', font: { size: 14 } }
+          }
+        },
+        plugins: {
+          legend: {
+            position: 'bottom',
+            labels: { color: '#fff', font: { size: 14 }, padding: 20 }
+          }
+        }
+      }
+    });
+  </script>
+</body>
+</html>
+
