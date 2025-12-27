@@ -51,6 +51,37 @@
       background: rgba(255,255,255,0.1);
     }
 
+    /* Navigation */
+    .nav-bar {
+      display: flex;
+      gap: 0.5rem;
+      margin-bottom: 2rem;
+      flex-wrap: wrap;
+    }
+
+    .nav-link {
+      padding: 0.6rem 1.2rem;
+      background: rgba(255,255,255,0.05);
+      border: 1px solid rgba(255,255,255,0.1);
+      border-radius: 2rem;
+      color: rgba(255,255,255,0.7);
+      text-decoration: none;
+      font-size: 1.1rem;
+      transition: all 0.2s;
+    }
+
+    .nav-link:hover {
+      background: rgba(76, 201, 240, 0.1);
+      border-color: rgba(76, 201, 240, 0.3);
+      color: #4cc9f0;
+    }
+
+    .nav-link.active {
+      background: rgba(76, 201, 240, 0.2);
+      border-color: rgba(76, 201, 240, 0.4);
+      color: #4cc9f0;
+    }
+
     /* Stats Row */
     .stats-row {
       display: grid;
@@ -214,6 +245,14 @@
       <h1>📊 <span><%= sector.sektor_adi %></span> Sektörü</h1>
       <a href="/" class="back-btn">← Filtrelere Dön</a>
     </header>
+
+    <!-- Navigation -->
+    <nav class="nav-bar">
+      <a href="/" class="nav-link">🗺️ Harita</a>
+      <a href="/scenario-builder" class="nav-link">🔬 Senaryo</a>
+      <a href="/sector/<%= sector.sektor_id %>/rankings" class="nav-link active">📊 Sıralama</a>
+      <a href="/decisions" class="nav-link">📋 Kayıtlı Kararlar</a>
+    </nav>
 
     <!-- Stats -->
     <div class="stats-row">

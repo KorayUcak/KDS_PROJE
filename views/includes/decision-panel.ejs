@@ -1,0 +1,795 @@
+<!-- ============================================== -->
+<!-- DECISION ACTION MODAL - Enterprise Grade      -->
+<!-- Saves decisions to kayitli_analizler table    -->
+<!-- ============================================== -->
+
+<style>
+  /* Modal Overlay */
+  .decision-overlay {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.85);
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+    z-index: 9999;
+    justify-content: center;
+    align-items: center;
+    opacity: 0;
+    transition: opacity 0.3s ease;
+  }
+
+  .decision-overlay.active {
+    display: flex;
+    opacity: 1;
+  }
+
+  /* Modal Container */
+  .decision-modal {
+    background: linear-gradient(145deg, #0f172a, #1e293b);
+    border: 1px solid #334155;
+    border-radius: 1.5rem;
+    width: 95%;
+    max-width: 520px;
+    max-height: 90vh;
+    overflow-y: auto;
+    position: relative;
+    transform: scale(0.95) translateY(20px);
+    transition: transform 0.3s ease;
+    box-shadow: 
+      0 25px 50px -12px rgba(0, 0, 0, 0.6),
+      0 0 0 1px rgba(255, 255, 255, 0.05),
+      inset 0 1px 0 rgba(255, 255, 255, 0.05);
+  }
+
+  .decision-overlay.active .decision-modal {
+    transform: scale(1) translateY(0);
+  }
+
+  /* Close Button */
+  .modal-close {
+    position: absolute;
+    top: 1.5rem;
+    right: 1.5rem;
+    width: 3rem;
+    height: 3rem;
+    border: 1px solid #475569;
+    background: #1e293b;
+    border-radius: 0.75rem;
+    color: #94a3b8;
+    font-size: 1.4rem;
+    cursor: pointer;
+    transition: all 0.2s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .modal-close:hover {
+    background: #334155;
+    border-color: #64748b;
+    color: #fff;
+  }
+
+  /* Modal Header */
+  .modal-header {
+    padding: 2rem 2rem 1.5rem;
+    border-bottom: 1px solid #334155;
+  }
+
+  .modal-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    background: linear-gradient(135deg, rgba(59, 130, 246, 0.2), rgba(147, 51, 234, 0.2));
+    border: 1px solid rgba(59, 130, 246, 0.3);
+    padding: 0.4rem 1rem;
+    border-radius: 2rem;
+    font-size: 1rem;
+    color: #93c5fd;
+    margin-bottom: 1rem;
+  }
+
+  .modal-title {
+    font-size: 1.8rem;
+    font-weight: 700;
+    color: #f1f5f9;
+    margin-bottom: 0.5rem;
+    line-height: 1.3;
+  }
+
+  .modal-subtitle {
+    font-size: 1.1rem;
+    color: #64748b;
+  }
+
+  /* Country Hero */
+  .country-hero {
+    display: flex;
+    align-items: center;
+    gap: 1.5rem;
+    padding: 1.5rem 2rem;
+    background: linear-gradient(90deg, rgba(59, 130, 246, 0.08), transparent);
+    border-bottom: 1px solid #334155;
+  }
+
+  .country-flag-large {
+    font-size: 3.5rem;
+    line-height: 1;
+  }
+
+  .country-info h3 {
+    font-size: 1.6rem;
+    font-weight: 700;
+    color: #f1f5f9;
+    margin-bottom: 0.3rem;
+  }
+
+  .country-info p {
+    font-size: 1.1rem;
+    color: #64748b;
+  }
+
+  .score-pill {
+    margin-left: auto;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    background: linear-gradient(135deg, #059669, #10b981);
+    padding: 1rem 1.5rem;
+    border-radius: 1rem;
+    min-width: 80px;
+  }
+
+  .score-pill .value {
+    font-size: 2.2rem;
+    font-weight: 800;
+    color: #fff;
+    line-height: 1;
+  }
+
+  .score-pill .label {
+    font-size: 0.85rem;
+    color: rgba(255, 255, 255, 0.8);
+    margin-top: 0.2rem;
+  }
+
+  /* Modal Body */
+  .modal-body {
+    padding: 2rem;
+  }
+
+  /* Form Group */
+  .form-group {
+    margin-bottom: 1.8rem;
+  }
+
+  .form-label {
+    display: block;
+    font-size: 1.1rem;
+    font-weight: 600;
+    color: #e2e8f0;
+    margin-bottom: 0.6rem;
+  }
+
+  .form-label .required {
+    color: #f87171;
+    margin-left: 0.3rem;
+  }
+
+  .form-hint {
+    font-size: 0.95rem;
+    color: #64748b;
+    margin-top: 0.4rem;
+  }
+
+  /* Select Input */
+  .form-select {
+    width: 100%;
+    padding: 1rem 1.2rem;
+    background: #1e293b;
+    border: 1px solid #475569;
+    border-radius: 0.75rem;
+    color: #f1f5f9;
+    font-size: 1.1rem;
+    font-family: inherit;
+    cursor: pointer;
+    transition: all 0.2s;
+    appearance: none;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24' fill='none' stroke='%2394a3b8' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6,9 12,15 18,9'%3E%3C/polyline%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 1rem center;
+    background-size: 1.5rem;
+  }
+
+  .form-select:focus {
+    outline: none;
+    border-color: #3b82f6;
+    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.2);
+  }
+
+  .form-select option {
+    background: #1e293b;
+    color: #f1f5f9;
+    padding: 1rem;
+  }
+
+  /* Textarea */
+  .form-textarea {
+    width: 100%;
+    padding: 1rem 1.2rem;
+    background: #1e293b;
+    border: 1px solid #475569;
+    border-radius: 0.75rem;
+    color: #f1f5f9;
+    font-size: 1.1rem;
+    font-family: inherit;
+    min-height: 120px;
+    resize: vertical;
+    transition: all 0.2s;
+    line-height: 1.5;
+  }
+
+  .form-textarea:focus {
+    outline: none;
+    border-color: #3b82f6;
+    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.2);
+  }
+
+  .form-textarea::placeholder {
+    color: #64748b;
+  }
+
+  .char-counter {
+    display: flex;
+    justify-content: flex-end;
+    font-size: 0.95rem;
+    color: #64748b;
+    margin-top: 0.5rem;
+  }
+
+  .char-counter.warning { color: #fbbf24; }
+  .char-counter.error { color: #f87171; }
+  .char-counter.valid { color: #34d399; }
+
+  /* Read-Only Score Display */
+  .score-display {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    background: linear-gradient(135deg, rgba(16, 185, 129, 0.1), rgba(59, 130, 246, 0.1));
+    border: 1px solid rgba(16, 185, 129, 0.3);
+    padding: 1.2rem 1.5rem;
+    border-radius: 0.75rem;
+  }
+
+  .score-display .info {
+    display: flex;
+    flex-direction: column;
+  }
+
+  .score-display .info .title {
+    font-size: 1rem;
+    color: #94a3b8;
+  }
+
+  .score-display .info .desc {
+    font-size: 0.9rem;
+    color: #64748b;
+  }
+
+  .score-display .score-value {
+    font-size: 2.5rem;
+    font-weight: 800;
+    background: linear-gradient(135deg, #10b981, #3b82f6);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+
+  /* Modal Footer */
+  .modal-footer {
+    padding: 1.5rem 2rem 2rem;
+    display: flex;
+    gap: 1rem;
+    border-top: 1px solid #334155;
+  }
+
+  .btn {
+    flex: 1;
+    padding: 1rem 1.5rem;
+    border-radius: 0.75rem;
+    font-size: 1.1rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s;
+    font-family: inherit;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+  }
+
+  .btn-ghost {
+    background: transparent;
+    border: 1px solid #475569;
+    color: #94a3b8;
+  }
+
+  .btn-ghost:hover {
+    background: #334155;
+    border-color: #64748b;
+    color: #f1f5f9;
+  }
+
+  .btn-primary {
+    background: linear-gradient(135deg, #3b82f6, #8b5cf6);
+    border: none;
+    color: #fff;
+    box-shadow: 0 4px 15px rgba(59, 130, 246, 0.3);
+  }
+
+  .btn-primary:hover:not(:disabled) {
+    transform: translateY(-1px);
+    box-shadow: 0 6px 20px rgba(59, 130, 246, 0.4);
+  }
+
+  .btn-primary:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+    transform: none;
+  }
+
+  /* Loading Spinner */
+  .spinner {
+    width: 1.4rem;
+    height: 1.4rem;
+    border: 2px solid rgba(255, 255, 255, 0.3);
+    border-top-color: #fff;
+    border-radius: 50%;
+    animation: spin 0.8s linear infinite;
+  }
+
+  @keyframes spin {
+    to { transform: rotate(360deg); }
+  }
+
+  /* Toast Notification */
+  .toast {
+    position: fixed;
+    bottom: 2rem;
+    right: 2rem;
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    padding: 1.2rem 1.8rem;
+    background: linear-gradient(135deg, #059669, #10b981);
+    color: #fff;
+    border-radius: 1rem;
+    font-size: 1.2rem;
+    font-weight: 600;
+    z-index: 10001;
+    transform: translateY(100px);
+    opacity: 0;
+    transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+    box-shadow: 0 10px 40px rgba(16, 185, 129, 0.4);
+  }
+
+  .toast.error {
+    background: linear-gradient(135deg, #dc2626, #ef4444);
+    box-shadow: 0 10px 40px rgba(239, 68, 68, 0.4);
+  }
+
+  .toast.show {
+    transform: translateY(0);
+    opacity: 1;
+  }
+
+  .toast-icon {
+    font-size: 1.5rem;
+  }
+
+  /* Validation States */
+  .form-group.error .form-textarea,
+  .form-group.error .form-select {
+    border-color: #f87171;
+  }
+
+  .error-message {
+    display: none;
+    font-size: 0.95rem;
+    color: #f87171;
+    margin-top: 0.4rem;
+  }
+
+  .form-group.error .error-message {
+    display: block;
+  }
+
+  /* Decision Type Cards */
+  .decision-types {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 0.8rem;
+  }
+
+  .decision-type {
+    position: relative;
+  }
+
+  .decision-type input {
+    position: absolute;
+    opacity: 0;
+    width: 0;
+    height: 0;
+  }
+
+  .decision-type label {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.4rem;
+    padding: 1rem;
+    background: #1e293b;
+    border: 2px solid #334155;
+    border-radius: 0.75rem;
+    cursor: pointer;
+    transition: all 0.2s;
+    text-align: center;
+  }
+
+  .decision-type label:hover {
+    border-color: #475569;
+    background: #334155;
+  }
+
+  .decision-type input:checked + label {
+    border-color: #3b82f6;
+    background: rgba(59, 130, 246, 0.1);
+  }
+
+  .decision-type .icon {
+    font-size: 1.8rem;
+  }
+
+  .decision-type .text {
+    font-size: 1rem;
+    font-weight: 600;
+    color: #e2e8f0;
+  }
+
+  .decision-type .desc {
+    font-size: 0.85rem;
+    color: #64748b;
+  }
+
+  /* Priority type colors */
+  .decision-type.priority input:checked + label { border-color: #10b981; background: rgba(16, 185, 129, 0.1); }
+  .decision-type.watchlist input:checked + label { border-color: #3b82f6; background: rgba(59, 130, 246, 0.1); }
+  .decision-type.pilot input:checked + label { border-color: #f59e0b; background: rgba(245, 158, 11, 0.1); }
+  .decision-type.avoid input:checked + label { border-color: #ef4444; background: rgba(239, 68, 68, 0.1); }
+</style>
+
+<!-- Decision Modal -->
+<div id="decisionOverlay" class="decision-overlay">
+  <div class="decision-modal">
+    <button class="modal-close" onclick="closeDecisionModal()" aria-label="Close">×</button>
+    
+    <!-- Header -->
+    <div class="modal-header">
+      <span class="modal-badge">📋 Strateji Kararı</span>
+      <h2 class="modal-title">Hedef Pazar Stratejisini Onayla</h2>
+      <p class="modal-subtitle">Bu karar veritabanına kaydedilecektir</p>
+    </div>
+
+    <!-- Country Hero -->
+    <div class="country-hero">
+      <div class="country-flag-large" id="modalFlag">🏳️</div>
+      <div class="country-info">
+        <h3 id="modalCountryName">Ülke Adı</h3>
+        <p id="modalSectorName">Sektör Adı</p>
+      </div>
+      <div class="score-pill">
+        <span class="value" id="modalScoreValue">0</span>
+        <span class="label">/ 100</span>
+      </div>
+    </div>
+
+    <!-- Form -->
+    <form id="decisionForm" onsubmit="submitDecision(event)">
+      <input type="hidden" id="inputUlkeId" name="ulke_id">
+      <input type="hidden" id="inputUlkeAdi" name="ulke_adi">
+      <input type="hidden" id="inputSektorId" name="sektor_id">
+      <input type="hidden" id="inputSektorAdi" name="sektor_adi">
+      <input type="hidden" id="inputHesaplananSkor" name="hesaplanan_skor">
+
+      <div class="modal-body">
+        <!-- Calculated Score (Read-Only) -->
+        <div class="form-group">
+          <label class="form-label">Hesaplanan Skor</label>
+          <div class="score-display">
+            <div class="info">
+              <span class="title">Analiz Sonucu</span>
+              <span class="desc">Ağırlıklı değerlendirme skoru</span>
+            </div>
+            <span class="score-value" id="displayScore">85</span>
+          </div>
+        </div>
+
+        <!-- Decision Type -->
+        <div class="form-group">
+          <label class="form-label">Karar Türü<span class="required">*</span></label>
+          <div class="decision-types">
+            <div class="decision-type priority">
+              <input type="radio" name="karar_turu" id="typePriority" value="Priority Target" checked>
+              <label for="typePriority">
+                <span class="icon">🎯</span>
+                <span class="text">Öncelikli Hedef</span>
+                <span class="desc">Yüksek Odak</span>
+              </label>
+            </div>
+            <div class="decision-type watchlist">
+              <input type="radio" name="karar_turu" id="typeWatchlist" value="Watchlist">
+              <label for="typeWatchlist">
+                <span class="icon">👁️</span>
+                <span class="text">İzleme Listesi</span>
+                <span class="desc">Takipte</span>
+              </label>
+            </div>
+            <div class="decision-type pilot">
+              <input type="radio" name="karar_turu" id="typePilot" value="Pilot Project">
+              <label for="typePilot">
+                <span class="icon">🧪</span>
+                <span class="text">Pilot Proje</span>
+                <span class="desc">Test Aşaması</span>
+              </label>
+            </div>
+            <div class="decision-type avoid">
+              <input type="radio" name="karar_turu" id="typeAvoid" value="Do Not Enter">
+              <label for="typeAvoid">
+                <span class="icon">⛔</span>
+                <span class="text">Girme</span>
+                <span class="desc">Riskli/Uygun Değil</span>
+              </label>
+            </div>
+          </div>
+        </div>
+
+        <!-- Manager's Note -->
+        <div class="form-group" id="noteGroup">
+          <label class="form-label">Yönetici Notu<span class="required">*</span></label>
+          <textarea 
+            class="form-textarea" 
+            id="inputNote" 
+            name="yonetici_notu"
+            placeholder="Bu pazarı neden seçiyoruz? Örn: 'Lojistik maliyetlerine rağmen yüksek büyüme potansiyeli...'"
+            oninput="updateCharCount()"
+            minlength="10"
+          ></textarea>
+          <div class="char-counter" id="charCounter">
+            <span id="charCount">0</span> / 500 karakter (min: 10)
+          </div>
+          <span class="error-message">Lütfen en az 10 karakter girin</span>
+        </div>
+      </div>
+
+      <!-- Footer -->
+      <div class="modal-footer">
+        <button type="button" class="btn btn-ghost" onclick="closeDecisionModal()">
+          İptal
+        </button>
+        <button type="submit" class="btn btn-primary" id="submitBtn">
+          <span id="submitText">✓ Stratejiyi Onayla & Kaydet</span>
+          <span id="submitSpinner" class="spinner" style="display: none;"></span>
+        </button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- Toast Notification -->
+<div id="decisionToast" class="toast">
+  <span class="toast-icon" id="toastIcon">✓</span>
+  <span id="toastMessage">Strateji veritabanına kaydedildi!</span>
+</div>
+
+<script>
+  // ===== Decision Modal Controller =====
+  
+  let currentDecisionData = {};
+
+  /**
+   * Opens the decision modal with country data
+   * @param {Object} data - Country and sector data
+   */
+  function openDecisionPanel(data) {
+    currentDecisionData = data;
+    
+    // Populate hidden fields
+    document.getElementById('inputUlkeId').value = data.ulke_id || '';
+    document.getElementById('inputUlkeAdi').value = data.ulke_adi || '';
+    document.getElementById('inputSektorId').value = data.sektor_id || '';
+    document.getElementById('inputSektorAdi').value = data.sektor_adi || '';
+    document.getElementById('inputHesaplananSkor').value = data.skor || 0;
+    
+    // Populate display fields
+    document.getElementById('modalFlag').textContent = data.flag || '🏳️';
+    document.getElementById('modalCountryName').textContent = data.ulke_adi || 'Ülke';
+    document.getElementById('modalSectorName').textContent = data.sektor_adi || 'Sektör';
+    document.getElementById('modalScoreValue').textContent = Math.round(data.skor || 0);
+    document.getElementById('displayScore').textContent = Math.round(data.skor || 0);
+    
+    // Reset form state
+    document.getElementById('inputNote').value = '';
+    document.getElementById('typePriority').checked = true;
+    document.getElementById('charCount').textContent = '0';
+    document.getElementById('charCounter').className = 'char-counter';
+    document.getElementById('noteGroup').classList.remove('error');
+    
+    // Show modal
+    const overlay = document.getElementById('decisionOverlay');
+    overlay.classList.add('active');
+    document.body.style.overflow = 'hidden';
+    
+    // Focus on textarea after animation
+    setTimeout(() => {
+      document.getElementById('inputNote').focus();
+    }, 300);
+  }
+
+  /**
+   * Closes the decision modal
+   */
+  function closeDecisionModal() {
+    const overlay = document.getElementById('decisionOverlay');
+    overlay.classList.remove('active');
+    document.body.style.overflow = '';
+  }
+
+  /**
+   * Updates the character counter
+   */
+  function updateCharCount() {
+    const textarea = document.getElementById('inputNote');
+    const counter = document.getElementById('charCounter');
+    const countSpan = document.getElementById('charCount');
+    const length = textarea.value.length;
+    
+    countSpan.textContent = length;
+    
+    // Remove error state when typing
+    document.getElementById('noteGroup').classList.remove('error');
+    
+    // Update counter color
+    if (length < 10) {
+      counter.className = 'char-counter error';
+    } else if (length > 450) {
+      counter.className = 'char-counter warning';
+    } else {
+      counter.className = 'char-counter valid';
+    }
+  }
+
+  /**
+   * Validates the form
+   * @returns {boolean}
+   */
+  function validateForm() {
+    const note = document.getElementById('inputNote').value.trim();
+    const noteGroup = document.getElementById('noteGroup');
+    
+    if (note.length < 10) {
+      noteGroup.classList.add('error');
+      document.getElementById('inputNote').focus();
+      return false;
+    }
+    
+    return true;
+  }
+
+  /**
+   * Handles form submission
+   * @param {Event} event
+   */
+  async function submitDecision(event) {
+    event.preventDefault();
+    
+    // Validate
+    if (!validateForm()) {
+      showToast('Lütfen tüm alanları doldurun (min. 10 karakter)', true);
+      return;
+    }
+    
+    // Get form data
+    const formData = {
+      ulke_id: document.getElementById('inputUlkeId').value,
+      ulke_adi: document.getElementById('inputUlkeAdi').value,
+      sektor_id: document.getElementById('inputSektorId').value,
+      sektor_adi: document.getElementById('inputSektorAdi').value,
+      hesaplanan_skor: document.getElementById('inputHesaplananSkor').value,
+      karar_durumu: document.querySelector('input[name="karar_turu"]:checked').value,
+      yonetici_notu: document.getElementById('inputNote').value.trim()
+    };
+    
+    // Show loading state
+    const submitBtn = document.getElementById('submitBtn');
+    const submitText = document.getElementById('submitText');
+    const submitSpinner = document.getElementById('submitSpinner');
+    
+    submitBtn.disabled = true;
+    submitText.style.display = 'none';
+    submitSpinner.style.display = 'block';
+    
+    try {
+      // POST to API
+      const response = await fetch('/api/decisions', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(formData)
+      });
+      
+      const result = await response.json();
+      
+      if (result.status === 'success') {
+        showToast('✓ Strateji veritabanına kaydedildi!', false);
+        closeDecisionModal();
+        
+        // Optional: Redirect to dashboard after delay
+        // setTimeout(() => { window.location.href = '/analyses/dashboard'; }, 2000);
+      } else {
+        showToast('Hata: ' + (result.message || 'Kaydedilemedi'), true);
+      }
+    } catch (error) {
+      console.error('Decision save error:', error);
+      showToast('Sunucu bağlantı hatası!', true);
+    } finally {
+      // Reset button state
+      submitBtn.disabled = false;
+      submitText.style.display = 'inline';
+      submitSpinner.style.display = 'none';
+    }
+  }
+
+  /**
+   * Shows a toast notification
+   * @param {string} message
+   * @param {boolean} isError
+   */
+  function showToast(message, isError = false) {
+    const toast = document.getElementById('decisionToast');
+    const toastIcon = document.getElementById('toastIcon');
+    const toastMessage = document.getElementById('toastMessage');
+    
+    toastMessage.textContent = message;
+    toastIcon.textContent = isError ? '✕' : '✓';
+    toast.className = isError ? 'toast error' : 'toast';
+    
+    // Show toast
+    setTimeout(() => {
+      toast.classList.add('show');
+    }, 10);
+    
+    // Hide after 4 seconds
+    setTimeout(() => {
+      toast.classList.remove('show');
+    }, 4000);
+  }
+
+  // ===== Event Listeners =====
+  
+  // Close on overlay click
+  document.getElementById('decisionOverlay').addEventListener('click', function(e) {
+    if (e.target === this) {
+      closeDecisionModal();
+    }
+  });
+
+  // Close on Escape key
+  document.addEventListener('keydown', function(e) {
+    if (e.key === 'Escape') {
+      closeDecisionModal();
+    }
+  });
+</script>

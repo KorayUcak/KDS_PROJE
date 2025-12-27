@@ -1,0 +1,1038 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title><%= title %></title>
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <style>
+    :root {
+      --bg-primary: #0a0e17;
+      --bg-secondary: #111827;
+      --bg-card: #1e2433;
+      --bg-hover: #252d3d;
+      --accent-green: #00ff88;
+      --accent-blue: #4cc9f0;
+      --accent-purple: #7c3aed;
+      --accent-orange: #f59e0b;
+      --accent-red: #f44336;
+      --text-primary: #ffffff;
+      --text-secondary: #9ca3af;
+      --border-color: #374151;
+      --topbar-height: 60px;
+    }
+
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+      background: var(--bg-primary);
+      color: var(--text-primary);
+      min-height: 100vh;
+    }
+
+    /* ==================== TOP NAVIGATION ==================== */
+    .topbar {
+      height: var(--topbar-height);
+      background: linear-gradient(135deg, var(--bg-secondary) 0%, var(--bg-card) 100%);
+      border-bottom: 1px solid var(--border-color);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 24px;
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      z-index: 1000;
+    }
+
+    .topbar-left {
+      display: flex;
+      align-items: center;
+      gap: 20px;
+    }
+
+    .topbar-brand {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      text-decoration: none;
+      color: var(--text-primary);
+    }
+
+    .topbar-brand-icon {
+      width: 36px;
+      height: 36px;
+      background: linear-gradient(135deg, var(--accent-green), var(--accent-blue));
+      border-radius: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 20px;
+    }
+
+    .topbar-brand-text {
+      font-size: 18px;
+      font-weight: 700;
+      letter-spacing: -0.5px;
+    }
+
+    .breadcrumb {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 14px;
+    }
+
+    .breadcrumb a {
+      color: var(--text-secondary);
+      text-decoration: none;
+      transition: color 0.2s;
+    }
+
+    .breadcrumb a:hover {
+      color: var(--accent-green);
+    }
+
+    .breadcrumb span {
+      color: var(--text-secondary);
+    }
+
+    .breadcrumb .current {
+      color: var(--accent-green);
+      font-weight: 600;
+    }
+
+    .topbar-actions {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .btn {
+      padding: 10px 20px;
+      border-radius: 8px;
+      font-size: 14px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.3s;
+      text-decoration: none;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      border: none;
+    }
+
+    .btn-primary {
+      background: linear-gradient(135deg, var(--accent-green), #00cc6a);
+      color: var(--bg-primary);
+    }
+
+    .btn-primary:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 4px 20px rgba(0, 255, 136, 0.3);
+    }
+
+    .btn-secondary {
+      background: var(--bg-card);
+      color: var(--text-primary);
+      border: 1px solid var(--border-color);
+    }
+
+    .btn-secondary:hover {
+      background: var(--bg-hover);
+      border-color: var(--accent-green);
+    }
+
+    /* ==================== MAIN LAYOUT ==================== */
+    .main-content {
+      margin-top: var(--topbar-height);
+      min-height: calc(100vh - var(--topbar-height));
+      padding: 24px;
+    }
+
+    /* ==================== WIZARD HEADER ==================== */
+    .wizard-header {
+      background: linear-gradient(135deg, var(--bg-card) 0%, var(--bg-secondary) 100%);
+      border-radius: 16px;
+      border: 1px solid var(--border-color);
+      padding: 24px;
+      margin-bottom: 24px;
+      display: grid;
+      grid-template-columns: auto 1fr auto;
+      gap: 24px;
+      align-items: center;
+    }
+
+    .country-flag {
+      width: 80px;
+      height: 80px;
+      background: var(--bg-hover);
+      border-radius: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 48px;
+    }
+
+    .country-info h1 {
+      font-size: 28px;
+      font-weight: 700;
+      margin-bottom: 8px;
+    }
+
+    .country-info .sector-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      background: var(--accent-purple);
+      color: white;
+      padding: 6px 12px;
+      border-radius: 20px;
+      font-size: 13px;
+      font-weight: 600;
+    }
+
+    .score-section {
+      text-align: center;
+    }
+
+    .score-circle {
+      width: 100px;
+      height: 100px;
+      border-radius: 50%;
+      background: conic-gradient(
+        var(--accent-green) calc(var(--score) * 3.6deg),
+        var(--bg-hover) 0deg
+      );
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin: 0 auto 8px;
+    }
+
+    .score-inner {
+      width: 80px;
+      height: 80px;
+      background: var(--bg-card);
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 24px;
+      font-weight: 700;
+    }
+
+    .score-label {
+      font-size: 13px;
+      color: var(--text-secondary);
+    }
+
+    /* ==================== ADVANCED METRICS ==================== */
+    .metrics-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 16px;
+      margin-bottom: 24px;
+    }
+
+    .metric-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border-color);
+      border-radius: 12px;
+      padding: 16px;
+      text-align: center;
+      transition: all 0.3s;
+    }
+
+    .metric-card:hover {
+      border-color: var(--accent-green);
+      transform: translateY(-2px);
+    }
+
+    .metric-icon {
+      font-size: 24px;
+      margin-bottom: 8px;
+    }
+
+    .metric-value {
+      font-size: 24px;
+      font-weight: 700;
+      font-family: 'JetBrains Mono', monospace;
+      margin-bottom: 4px;
+    }
+
+    .metric-label {
+      font-size: 12px;
+      color: var(--text-secondary);
+      margin-bottom: 8px;
+    }
+
+    .metric-badge {
+      display: inline-block;
+      padding: 4px 8px;
+      border-radius: 12px;
+      font-size: 11px;
+      font-weight: 600;
+    }
+
+    /* ==================== 7 DECISIONS PANEL ==================== */
+    .decisions-section {
+      margin-bottom: 24px;
+    }
+
+    .section-title {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 20px;
+    }
+
+    .section-title h2 {
+      font-size: 20px;
+      font-weight: 700;
+    }
+
+    .section-title .badge {
+      background: var(--accent-purple);
+      padding: 4px 12px;
+      border-radius: 20px;
+      font-size: 12px;
+      font-weight: 600;
+    }
+
+    .decisions-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 16px;
+    }
+
+    .decision-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border-color);
+      border-radius: 12px;
+      padding: 20px;
+      transition: all 0.3s;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .decision-card::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 4px;
+      height: 100%;
+      background: var(--accent-green);
+    }
+
+    .decision-card:hover {
+      border-color: var(--accent-green);
+      transform: translateX(4px);
+    }
+
+    .decision-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 12px;
+    }
+
+    .decision-number {
+      width: 32px;
+      height: 32px;
+      background: linear-gradient(135deg, var(--accent-green), var(--accent-blue));
+      border-radius: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 14px;
+      font-weight: 700;
+      color: var(--bg-primary);
+    }
+
+    .decision-icon {
+      font-size: 28px;
+    }
+
+    .decision-title {
+      font-size: 14px;
+      color: var(--text-secondary);
+      margin-bottom: 8px;
+    }
+
+    .decision-value {
+      font-size: 18px;
+      font-weight: 700;
+      margin-bottom: 12px;
+      color: var(--accent-green);
+    }
+
+    .decision-reasoning {
+      font-size: 13px;
+      color: var(--text-secondary);
+      line-height: 1.5;
+      padding: 12px;
+      background: var(--bg-hover);
+      border-radius: 8px;
+    }
+
+    .decision-extra {
+      margin-top: 12px;
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+
+    .decision-tag {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      padding: 4px 10px;
+      background: var(--bg-primary);
+      border-radius: 6px;
+      font-size: 12px;
+      color: var(--text-secondary);
+    }
+
+    /* ==================== OVERRIDE PANEL ==================== */
+    .override-panel {
+      background: var(--bg-card);
+      border: 1px solid var(--border-color);
+      border-radius: 16px;
+      padding: 24px;
+      margin-bottom: 24px;
+    }
+
+    .override-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 16px;
+      margin-top: 20px;
+    }
+
+    .override-item {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    .override-item label {
+      font-size: 13px;
+      color: var(--text-secondary);
+    }
+
+    .override-item select {
+      padding: 12px;
+      background: var(--bg-hover);
+      border: 1px solid var(--border-color);
+      border-radius: 8px;
+      color: var(--text-primary);
+      font-size: 14px;
+    }
+
+    .override-item select:focus {
+      outline: none;
+      border-color: var(--accent-green);
+    }
+
+    /* ==================== COMMIT SECTION ==================== */
+    .commit-section {
+      background: linear-gradient(135deg, var(--bg-card) 0%, rgba(0, 255, 136, 0.05) 100%);
+      border: 2px solid var(--accent-green);
+      border-radius: 16px;
+      padding: 24px;
+    }
+
+    .commit-header {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 20px;
+    }
+
+    .commit-header h3 {
+      font-size: 20px;
+      font-weight: 700;
+    }
+
+    .commit-form {
+      display: grid;
+      gap: 20px;
+    }
+
+    .form-group {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    .form-group label {
+      font-size: 14px;
+      font-weight: 600;
+      color: var(--text-secondary);
+    }
+
+    .form-group .required {
+      color: var(--accent-red);
+    }
+
+    .form-group select,
+    .form-group textarea {
+      padding: 14px;
+      background: var(--bg-hover);
+      border: 1px solid var(--border-color);
+      border-radius: 8px;
+      color: var(--text-primary);
+      font-size: 14px;
+      font-family: inherit;
+    }
+
+    .form-group textarea {
+      min-height: 120px;
+      resize: vertical;
+    }
+
+    .form-group select:focus,
+    .form-group textarea:focus {
+      outline: none;
+      border-color: var(--accent-green);
+    }
+
+    .char-count {
+      font-size: 12px;
+      color: var(--text-secondary);
+      text-align: right;
+    }
+
+    .commit-actions {
+      display: flex;
+      gap: 12px;
+      justify-content: flex-end;
+      padding-top: 12px;
+    }
+
+    .btn-commit {
+      background: linear-gradient(135deg, var(--accent-green), #00cc6a);
+      color: var(--bg-primary);
+      padding: 16px 32px;
+      font-size: 16px;
+      font-weight: 700;
+    }
+
+    .btn-commit:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 30px rgba(0, 255, 136, 0.4);
+    }
+
+    .btn-commit:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+      transform: none;
+    }
+
+    /* ==================== TOAST ==================== */
+    .toast {
+      position: fixed;
+      bottom: 24px;
+      right: 24px;
+      padding: 16px 24px;
+      border-radius: 12px;
+      font-weight: 600;
+      display: none;
+      z-index: 10000;
+      animation: slideIn 0.3s ease;
+    }
+
+    .toast.success {
+      background: var(--accent-green);
+      color: var(--bg-primary);
+    }
+
+    .toast.error {
+      background: var(--accent-red);
+      color: white;
+    }
+
+    .toast.show {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    @keyframes slideIn {
+      from {
+        transform: translateX(100%);
+        opacity: 0;
+      }
+      to {
+        transform: translateX(0);
+        opacity: 1;
+      }
+    }
+
+    /* ==================== RESPONSIVE ==================== */
+    @media (max-width: 1200px) {
+      .metrics-grid {
+        grid-template-columns: repeat(2, 1fr);
+      }
+      
+      .decisions-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    @media (max-width: 768px) {
+      .wizard-header {
+        grid-template-columns: 1fr;
+        text-align: center;
+      }
+      
+      .metrics-grid {
+        grid-template-columns: 1fr;
+      }
+      
+      .override-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    /* Loading spinner */
+    .loading-spinner {
+      display: inline-block;
+      width: 20px;
+      height: 20px;
+      border: 2px solid transparent;
+      border-top-color: currentColor;
+      border-radius: 50%;
+      animation: spin 0.8s linear infinite;
+    }
+
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+  </style>
+</head>
+<body>
+  <!-- ==================== TOP NAVIGATION ==================== -->
+  <nav class="topbar">
+    <div class="topbar-left">
+      <a href="/" class="topbar-brand">
+        <div class="topbar-brand-icon">🎯</div>
+        <span class="topbar-brand-text">KDS</span>
+      </a>
+      <div class="breadcrumb">
+        <a href="/">Command Center</a>
+        <span>›</span>
+        <a href="/sector/<%= sector.sektor_id %>/rankings"><%= sector.sektor_adi %></a>
+        <span>›</span>
+        <a href="/sector/<%= sector.sektor_id %>/country/<%= country.ulke_id %>"><%= country.ulke_adi %></a>
+        <span>›</span>
+        <span class="current">Strateji Wizard</span>
+      </div>
+    </div>
+    <div class="topbar-actions">
+      <a href="/decisions" class="btn btn-secondary">📋 Kayıtlı Kararlar</a>
+      <a href="/sector/<%= sector.sektor_id %>/country/<%= country.ulke_id %>" class="btn btn-secondary">← Detaya Dön</a>
+    </div>
+  </nav>
+
+  <!-- ==================== MAIN CONTENT ==================== -->
+  <main class="main-content">
+    <!-- WIZARD HEADER -->
+    <div class="wizard-header">
+      <div class="country-flag">
+        🌍
+      </div>
+      <div class="country-info">
+        <h1><%= country.ulke_adi %></h1>
+        <div class="sector-badge">
+          <span>📦</span>
+          <%= sector.sektor_adi %>
+        </div>
+      </div>
+      <div class="score-section" style="--score: <%= score || 0 %>">
+        <div class="score-circle">
+          <div class="score-inner"><%= (score || 0).toFixed(0) %></div>
+        </div>
+        <div class="score-label">Uygunluk Skoru</div>
+      </div>
+    </div>
+
+    <!-- ADVANCED METRICS -->
+    <div class="metrics-grid">
+      <div class="metric-card">
+        <div class="metric-icon">📋</div>
+        <div class="metric-value" style="color: <%= advancedMetrics.regulatory.color %>">
+          <%= advancedMetrics.regulatory.score %>
+        </div>
+        <div class="metric-label">Düzenleyici Zorluk</div>
+        <span class="metric-badge" style="background: <%= advancedMetrics.regulatory.color %>20; color: <%= advancedMetrics.regulatory.color %>">
+          <%= advancedMetrics.regulatory.label %>
+        </span>
+      </div>
+
+      <div class="metric-card">
+        <div class="metric-icon">🤝</div>
+        <div class="metric-value" style="color: <%= advancedMetrics.cultural.color %>">
+          <%= advancedMetrics.cultural.score %>%
+        </div>
+        <div class="metric-label">Kültürel Benzerlik</div>
+        <span class="metric-badge" style="background: <%= advancedMetrics.cultural.color %>20; color: <%= advancedMetrics.cultural.color %>">
+          <%= advancedMetrics.cultural.label %>
+        </span>
+      </div>
+
+      <div class="metric-card">
+        <div class="metric-icon">📱</div>
+        <div class="metric-value" style="color: <%= advancedMetrics.digital.color %>">
+          <%= advancedMetrics.digital.score %>%
+        </div>
+        <div class="metric-label">Dijital Adaptasyon</div>
+        <span class="metric-badge" style="background: <%= advancedMetrics.digital.color %>20; color: <%= advancedMetrics.digital.color %>">
+          <%= advancedMetrics.digital.label %>
+        </span>
+      </div>
+
+      <div class="metric-card">
+        <div class="metric-icon">🚛</div>
+        <div class="metric-value" style="color: <%= advancedMetrics.distance.color %>">
+          <%= advancedMetrics.distance.km.toLocaleString() %> km
+        </div>
+        <div class="metric-label">Lojistik Mesafesi</div>
+        <span class="metric-badge" style="background: <%= advancedMetrics.distance.color %>20; color: <%= advancedMetrics.distance.color %>">
+          <%= advancedMetrics.distance.label %>
+        </span>
+      </div>
+
+      <div class="metric-card">
+        <div class="metric-icon">💰</div>
+        <div class="metric-value" style="color: <%= advancedMetrics.tax.color %>">
+          %<%= advancedMetrics.tax.rate %>
+        </div>
+        <div class="metric-label">Kurumlar Vergisi</div>
+        <span class="metric-badge" style="background: <%= advancedMetrics.tax.color %>20; color: <%= advancedMetrics.tax.color %>">
+          <%= advancedMetrics.tax.label %>
+        </span>
+      </div>
+
+      <div class="metric-card">
+        <div class="metric-icon">⚔️</div>
+        <div class="metric-value" style="color: <%= advancedMetrics.competition.color %>">
+          <%= advancedMetrics.competition.score %>
+        </div>
+        <div class="metric-label">Rekabet Yoğunluğu</div>
+        <span class="metric-badge" style="background: <%= advancedMetrics.competition.color %>20; color: <%= advancedMetrics.competition.color %>">
+          <%= advancedMetrics.competition.label %>
+        </span>
+      </div>
+
+      <div class="metric-card">
+        <div class="metric-icon">👥</div>
+        <div class="metric-value" style="color: <%= advancedMetrics.youth.color %>">
+          %<%= advancedMetrics.youth.ratio %>
+        </div>
+        <div class="metric-label">Genç Nüfus Oranı</div>
+        <span class="metric-badge" style="background: <%= advancedMetrics.youth.color %>20; color: <%= advancedMetrics.youth.color %>">
+          <%= advancedMetrics.youth.label %>
+        </span>
+      </div>
+
+      <div class="metric-card">
+        <div class="metric-icon">🏢</div>
+        <div class="metric-value" style="color: <%= advancedMetrics.easeOfBusiness.color %>">
+          <%= advancedMetrics.easeOfBusiness.score %>
+        </div>
+        <div class="metric-label">İş Yapma Kolaylığı</div>
+        <span class="metric-badge" style="background: <%= advancedMetrics.easeOfBusiness.color %>20; color: <%= advancedMetrics.easeOfBusiness.color %>">
+          <%= advancedMetrics.easeOfBusiness.label %>
+        </span>
+      </div>
+    </div>
+
+    <!-- 7 STRATEGIC DECISIONS -->
+    <section class="decisions-section">
+      <div class="section-title">
+        <h2>🎯 7 Stratejik Karar</h2>
+        <span class="badge">AI-Destekli Öneriler</span>
+      </div>
+
+      <div class="decisions-grid">
+        <% strategicDecisions.forEach((decision, index) => { %>
+        <div class="decision-card" data-decision-id="<%= decision.id %>">
+          <div class="decision-header">
+            <div class="decision-number"><%= index + 1 %></div>
+            <div class="decision-icon"><%= decision.icon %></div>
+          </div>
+          <div class="decision-title"><%= decision.title %></div>
+          <div class="decision-value"><%= decision.decision %></div>
+          <div class="decision-reasoning">
+            💡 <%= decision.reasoning %>
+          </div>
+          <% if (decision.channels) { %>
+          <div class="decision-extra">
+            <% decision.channels.forEach(ch => { %>
+            <span class="decision-tag">📢 <%= ch %></span>
+            <% }); %>
+          </div>
+          <% } %>
+          <% if (decision.phases) { %>
+          <div class="decision-extra">
+            <% decision.phases.forEach(ph => { %>
+            <span class="decision-tag">📅 <%= ph %></span>
+            <% }); %>
+          </div>
+          <% } %>
+          <% if (decision.adaptations) { %>
+          <div class="decision-extra">
+            <% decision.adaptations.forEach(ad => { %>
+            <span class="decision-tag">🔧 <%= ad %></span>
+            <% }); %>
+          </div>
+          <% } %>
+          <% if (decision.multiplier) { %>
+          <div class="decision-extra">
+            <span class="decision-tag">💵 Fiyat Çarpanı: <%= decision.multiplier %></span>
+          </div>
+          <% } %>
+          <% if (decision.transitTime) { %>
+          <div class="decision-extra">
+            <span class="decision-tag">⏱️ Transit: <%= decision.transitTime %></span>
+          </div>
+          <% } %>
+          <% if (decision.terms) { %>
+          <div class="decision-extra">
+            <span class="decision-tag">📄 <%= decision.terms %></span>
+          </div>
+          <% } %>
+        </div>
+        <% }); %>
+      </div>
+    </section>
+
+    <!-- USER OVERRIDE PANEL -->
+    <div class="override-panel">
+      <div class="section-title">
+        <h2>✏️ Strateji Özelleştirme</h2>
+        <span class="badge">İsteğe Bağlı</span>
+      </div>
+      <p style="color: var(--text-secondary); margin-bottom: 16px;">
+        AI önerilerini değiştirmek isterseniz aşağıdaki alanları kullanabilirsiniz.
+      </p>
+
+      <div class="override-grid">
+        <div class="override-item">
+          <label>Giriş Modu (Override)</label>
+          <select id="override_entry">
+            <option value="">— Öneriyi Kullan —</option>
+            <option value="Doğrudan Yatırım (FDI)">Doğrudan Yatırım (FDI)</option>
+            <option value="Joint Venture">Joint Venture</option>
+            <option value="Distribütörlük / Franchising">Distribütörlük / Franchising</option>
+            <option value="E-ticaret / Platform">E-ticaret / Platform</option>
+          </select>
+        </div>
+
+        <div class="override-item">
+          <label>Fiyatlandırma (Override)</label>
+          <select id="override_pricing">
+            <option value="">— Öneriyi Kullan —</option>
+            <option value="Skimming (Premium)">Skimming (Premium)</option>
+            <option value="Değer Bazlı">Değer Bazlı</option>
+            <option value="Penetrasyon (Düşük)">Penetrasyon (Düşük)</option>
+          </select>
+        </div>
+
+        <div class="override-item">
+          <label>Lojistik Kanalı (Override)</label>
+          <select id="override_logistics">
+            <option value="">— Öneriyi Kullan —</option>
+            <option value="Hava Kargo">Hava Kargo</option>
+            <option value="Deniz/Demiryolu Intermodal">Deniz/Demiryolu Intermodal</option>
+            <option value="Kara/Demiryolu">Kara/Demiryolu</option>
+          </select>
+        </div>
+
+        <div class="override-item">
+          <label>Pazarlama (Override)</label>
+          <select id="override_marketing">
+            <option value="">— Öneriyi Kullan —</option>
+            <option value="Dijital/Sosyal Medya">Dijital/Sosyal Medya</option>
+            <option value="Omnichannel">Omnichannel</option>
+            <option value="Geleneksel Medya">Geleneksel Medya</option>
+          </select>
+        </div>
+      </div>
+    </div>
+
+    <!-- COMMIT DECISION -->
+    <div class="commit-section">
+      <div class="commit-header">
+        <span style="font-size: 28px;">🚀</span>
+        <h3>Stratejiyi Kaydet</h3>
+      </div>
+
+      <form class="commit-form" id="strategyForm">
+        <div class="form-group">
+          <label>Karar Durumu <span class="required">*</span></label>
+          <select id="karar_durumu" required>
+            <option value="">— Seçin —</option>
+            <option value="Priority Target (High Focus)">🎯 Öncelikli Hedef (Yüksek Odak)</option>
+            <option value="Watchlist (Monitoring)">👁️ İzleme Listesi</option>
+            <option value="Pilot Project">🧪 Pilot Proje</option>
+            <option value="Do Not Enter">🚫 Girme</option>
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label>Yönetici Notu <span class="required">*</span></label>
+          <textarea 
+            id="yonetici_notu" 
+            placeholder="Bu stratejiyi neden seçiyorsunuz? Örn: 'Yüksek büyüme potansiyeli ve düşük rekabet nedeniyle öncelikli hedef olarak belirlendi...'"
+            required
+            minlength="10"
+          ></textarea>
+          <div class="char-count"><span id="charCount">0</span> / min. 10 karakter</div>
+        </div>
+
+        <div class="commit-actions">
+          <a href="/sector/<%= sector.sektor_id %>/country/<%= country.ulke_id %>" class="btn btn-secondary">
+            İptal
+          </a>
+          <button type="submit" class="btn btn-commit" id="commitBtn">
+            💾 STRATEJİYİ VERİTABANINA KAYDET
+          </button>
+        </div>
+      </form>
+    </div>
+  </main>
+
+  <!-- TOAST NOTIFICATION -->
+  <div id="toast" class="toast"></div>
+
+  <script>
+    // Data from server
+    const countryData = {
+      ulke_id: <%= country.ulke_id %>,
+      ulke_adi: '<%= country.ulke_adi %>',
+      ISO_KODU: '<%= country.ISO_KODU || "" %>'
+    };
+    
+    const sectorData = {
+      sektor_id: <%= sector.sektor_id %>,
+      sektor_adi: '<%= sector.sektor_adi %>'
+    };
+    
+    const calculatedScore = <%= score || 0 %>;
+    
+    const strategicDecisions = <%- JSON.stringify(strategicDecisions) %>;
+    const advancedMetrics = <%- JSON.stringify(advancedMetrics) %>;
+
+    // Character counter
+    const noteTextarea = document.getElementById('yonetici_notu');
+    const charCount = document.getElementById('charCount');
+    
+    noteTextarea.addEventListener('input', () => {
+      charCount.textContent = noteTextarea.value.length;
+      if (noteTextarea.value.length >= 10) {
+        charCount.style.color = 'var(--accent-green)';
+      } else {
+        charCount.style.color = 'var(--accent-red)';
+      }
+    });
+
+    // Form submission
+    const form = document.getElementById('strategyForm');
+    const commitBtn = document.getElementById('commitBtn');
+    
+    form.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      
+      const karar_durumu = document.getElementById('karar_durumu').value;
+      const yonetici_notu = document.getElementById('yonetici_notu').value;
+      
+      // Validation
+      if (!karar_durumu) {
+        showToast('Lütfen karar durumu seçin', 'error');
+        return;
+      }
+      
+      if (yonetici_notu.length < 10) {
+        showToast('Yönetici notu en az 10 karakter olmalıdır', 'error');
+        return;
+      }
+      
+      // Collect overrides
+      const user_overrides = {};
+      const overrideFields = ['entry', 'pricing', 'logistics', 'marketing'];
+      overrideFields.forEach(field => {
+        const val = document.getElementById(`override_${field}`).value;
+        if (val) user_overrides[field] = val;
+      });
+      
+      // Prepare payload
+      const payload = {
+        ulke_id: countryData.ulke_id,
+        ulke_adi: countryData.ulke_adi,
+        sektor_id: sectorData.sektor_id,
+        sektor_adi: sectorData.sektor_adi,
+        hesaplanan_skor: calculatedScore,
+        karar_durumu,
+        yonetici_notu,
+        strategic_decisions: strategicDecisions,
+        advanced_metrics: advancedMetrics,
+        user_overrides
+      };
+      
+      // Show loading
+      commitBtn.disabled = true;
+      commitBtn.innerHTML = '<span class="loading-spinner"></span> Kaydediliyor...';
+      
+      try {
+        const response = await fetch('/api/strategy', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify(payload)
+        });
+        
+        const result = await response.json();
+        
+        if (response.ok && result.status === 'success') {
+          showToast('✅ Strateji başarıyla kaydedildi!', 'success');
+          
+          // Redirect after short delay
+          setTimeout(() => {
+            window.location.href = '/decisions';
+          }, 1500);
+        } else {
+          throw new Error(result.message || 'Kayıt başarısız');
+        }
+      } catch (error) {
+        showToast('❌ ' + error.message, 'error');
+        commitBtn.disabled = false;
+        commitBtn.innerHTML = '💾 STRATEJİYİ VERİTABANINA KAYDET';
+      }
+    });
+
+    // Toast function
+    function showToast(message, type = 'success') {
+      const toast = document.getElementById('toast');
+      toast.textContent = message;
+      toast.className = `toast ${type} show`;
+      
+      setTimeout(() => {
+        toast.classList.remove('show');
+      }, 4000);
+    }
+  </script>
+</body>
+</html>
+

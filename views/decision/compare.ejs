@@ -6,7 +6,7 @@
   <title><%= title %></title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
   <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
   <style>
     * { margin: 0; padding: 0; box-sizing: border-box; }
@@ -14,237 +14,871 @@
     
     body {
       font-family: 'Outfit', sans-serif;
-      background: #0a0a1a;
+      background: linear-gradient(135deg, #0a0a1a 0%, #1a1a2e 50%, #0f0f23 100%);
       color: #fff;
       min-height: 100vh;
-      padding: 3rem;
     }
 
-    .container {
-      max-width: 1400px;
-      margin: 0 auto;
-    }
+    .mono { font-family: 'JetBrains Mono', monospace; }
 
-    .header {
+    /* Header */
+    .page-header {
+      background: linear-gradient(180deg, rgba(76, 201, 240, 0.1), transparent);
+      border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+      padding: 2rem 3rem;
       display: flex;
       justify-content: space-between;
       align-items: center;
-      margin-bottom: 3rem;
     }
 
-    .header h1 {
-      font-size: 3rem;
+    .header-left h1 {
+      font-size: 2.4rem;
       font-weight: 700;
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+    }
+
+    .sector-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.6rem;
+      background: rgba(76, 201, 240, 0.15);
+      border: 1px solid rgba(76, 201, 240, 0.3);
+      padding: 0.5rem 1.2rem;
+      border-radius: 2rem;
+      font-size: 1.2rem;
+      color: #4cc9f0;
+      margin-top: 0.8rem;
     }
 
     .back-btn {
       padding: 1rem 2rem;
       background: rgba(255, 255, 255, 0.05);
-      border: 1px solid rgba(255, 255, 255, 0.1);
+      border: 1px solid rgba(255, 255, 255, 0.15);
       border-radius: 1rem;
       color: #fff;
       text-decoration: none;
-      font-size: 1.4rem;
+      font-size: 1.3rem;
       transition: all 0.3s ease;
     }
 
     .back-btn:hover {
       background: rgba(255, 255, 255, 0.1);
+      border-color: rgba(255, 255, 255, 0.25);
     }
 
-    .comparison-table {
-      width: 100%;
-      background: rgba(255, 255, 255, 0.02);
-      border: 1px solid rgba(255, 255, 255, 0.08);
-      border-radius: 1.5rem;
-      overflow: hidden;
-      margin-bottom: 3rem;
+    /* Navigation */
+    .nav-bar {
+      display: flex;
+      gap: 0.5rem;
+      padding: 0 3rem;
+      margin-bottom: 1rem;
     }
 
-    .comparison-table th,
-    .comparison-table td {
-      padding: 1.5rem 2rem;
-      text-align: left;
-      border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+    .nav-link {
+      padding: 0.6rem 1.2rem;
+      background: rgba(255,255,255,0.05);
+      border: 1px solid rgba(255,255,255,0.1);
+      border-radius: 2rem;
+      color: rgba(255,255,255,0.7);
+      text-decoration: none;
+      font-size: 1.1rem;
+      transition: all 0.2s;
     }
 
-    .comparison-table th {
-      background: rgba(0, 217, 255, 0.1);
-      font-size: 1.3rem;
-      text-transform: uppercase;
-      letter-spacing: 0.1em;
-      color: rgba(255, 255, 255, 0.7);
+    .nav-link:hover {
+      background: rgba(76, 201, 240, 0.1);
+      border-color: rgba(76, 201, 240, 0.3);
+      color: #4cc9f0;
     }
 
-    .comparison-table td {
-      font-size: 1.5rem;
+    .nav-link.active {
+      background: rgba(76, 201, 240, 0.2);
+      border-color: rgba(76, 201, 240, 0.4);
+      color: #4cc9f0;
     }
 
-    .metric-label {
-      color: rgba(255, 255, 255, 0.6);
-      font-weight: 500;
+    /* Main Content */
+    .main-content {
+      padding: 2rem 3rem 4rem;
+      max-width: 1600px;
+      margin: 0 auto;
     }
 
-    .country-name {
-      font-size: 1.8rem;
-      font-weight: 600;
-      color: #00d9ff;
-    }
-
-    .best-value {
-      color: #00ff88;
-      font-weight: 700;
-    }
-
-    .chart-section {
-      background: rgba(255, 255, 255, 0.02);
-      border: 1px solid rgba(255, 255, 255, 0.08);
-      border-radius: 1.5rem;
-      padding: 2rem;
-    }
-
-    .chart-section h2 {
-      font-size: 1.8rem;
+    /* Battle Header - Country Cards */
+    .battle-header {
+      display: grid;
+      grid-template-columns: 200px repeat(<%= countries.length %>, 1fr);
+      gap: 1.5rem;
       margin-bottom: 2rem;
     }
 
-    .chart-container {
-      height: 400px;
+    .battle-header-label {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.4rem;
+      font-weight: 600;
+      color: rgba(255, 255, 255, 0.5);
+    }
+
+    .country-card {
+      background: linear-gradient(135deg, rgba(255, 255, 255, 0.04), rgba(255, 255, 255, 0.01));
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 1.5rem;
+      padding: 2rem;
+      text-align: center;
+      position: relative;
+      transition: all 0.3s ease;
+    }
+
+    .country-card:hover {
+      border-color: rgba(76, 201, 240, 0.3);
+      transform: translateY(-2px);
+    }
+
+    .country-card.winner {
+      border-color: #00ff88;
+      box-shadow: 0 0 40px rgba(0, 255, 136, 0.15);
+      background: linear-gradient(135deg, rgba(0, 255, 136, 0.08), rgba(0, 255, 136, 0.02));
+    }
+
+    .winner-badge {
+      position: absolute;
+      top: -1rem;
+      left: 50%;
+      transform: translateX(-50%);
+      background: linear-gradient(135deg, #00ff88, #4cc9f0);
+      color: #000;
+      padding: 0.4rem 1.5rem;
+      border-radius: 2rem;
+      font-size: 1.1rem;
+      font-weight: 700;
+      white-space: nowrap;
+    }
+
+    .country-flag { font-size: 3rem; margin-bottom: 0.8rem; }
+    .country-name { font-size: 1.8rem; font-weight: 700; margin-bottom: 0.3rem; }
+    .country-region { font-size: 1.1rem; color: rgba(255, 255, 255, 0.5); margin-bottom: 1.2rem; }
+
+    .total-score {
+      font-size: 3.5rem;
+      font-weight: 800;
+      background: linear-gradient(135deg, #4cc9f0, #00ff88);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+
+    .score-label { font-size: 1rem; color: rgba(255, 255, 255, 0.5); }
+
+    /* Battle Card Container */
+    .battle-card {
+      background: rgba(255, 255, 255, 0.02);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      border-radius: 1.5rem;
+      margin-bottom: 2rem;
+      overflow: hidden;
+    }
+
+    .battle-card-header {
+      background: linear-gradient(90deg, rgba(76, 201, 240, 0.1), transparent);
+      padding: 1.5rem 2rem;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .battle-card-header h2 {
+      font-size: 1.6rem;
+      font-weight: 700;
+      display: flex;
+      align-items: center;
+      gap: 0.8rem;
+    }
+
+    .battle-card-header .question {
+      font-size: 1.2rem;
+      color: rgba(255, 255, 255, 0.5);
+      font-style: italic;
+    }
+
+    .battle-card-body {
+      padding: 2rem;
+    }
+
+    /* Battle Grid - 3 Column Matrix */
+    .battle-grid {
+      display: grid;
+      grid-template-columns: 200px repeat(<%= countries.length %>, 1fr);
+      gap: 1.5rem;
+    }
+
+    .metric-row {
+      display: contents;
+    }
+
+    .metric-label-cell {
+      display: flex;
+      align-items: center;
+      padding: 1.2rem 0;
+      font-size: 1.3rem;
+      color: rgba(255, 255, 255, 0.7);
+      border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+    }
+
+    .metric-value-cell {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 1.2rem;
+      background: rgba(255, 255, 255, 0.02);
+      border-radius: 1rem;
+      border: 1px solid rgba(255, 255, 255, 0.05);
+      transition: all 0.3s;
+    }
+
+    .metric-value-cell.best {
+      background: rgba(0, 255, 136, 0.08);
+      border-color: rgba(0, 255, 136, 0.3);
+    }
+
+    .metric-value-cell.worst {
+      background: rgba(244, 67, 54, 0.05);
+      border-color: rgba(244, 67, 54, 0.2);
+    }
+
+    .metric-value {
+      font-size: 1.8rem;
+      font-weight: 700;
+      color: #fff;
+    }
+
+    .metric-value.green { color: #00ff88; }
+    .metric-value.yellow { color: #ffc107; }
+    .metric-value.red { color: #f44336; }
+
+    .metric-indicator {
+      font-size: 1rem;
+      color: rgba(255, 255, 255, 0.5);
+      margin-top: 0.3rem;
+    }
+
+    .advantage-tag {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.4rem;
+      padding: 0.3rem 0.8rem;
+      border-radius: 1rem;
+      font-size: 0.9rem;
+      font-weight: 600;
+      margin-top: 0.5rem;
+    }
+
+    .advantage-tag.positive {
+      background: rgba(0, 255, 136, 0.15);
+      color: #00ff88;
+    }
+
+    .advantage-tag.negative {
+      background: rgba(244, 67, 54, 0.15);
+      color: #f44336;
+    }
+
+    /* Saturation Bar */
+    .saturation-container {
+      width: 100%;
+      padding: 1rem 0;
+    }
+
+    .saturation-bar-wrapper {
+      background: rgba(255, 255, 255, 0.1);
+      border-radius: 1rem;
+      height: 2.5rem;
+      overflow: hidden;
+      position: relative;
+    }
+
+    .saturation-fill {
+      height: 100%;
+      border-radius: 1rem;
+      display: flex;
+      align-items: center;
+      justify-content: flex-end;
+      padding-right: 1rem;
+      font-size: 1.2rem;
+      font-weight: 700;
+      color: #000;
+      transition: width 0.6s ease;
+    }
+
+    .saturation-labels {
+      display: flex;
+      justify-content: space-between;
+      font-size: 1rem;
+      color: rgba(255, 255, 255, 0.4);
+      margin-top: 0.5rem;
+    }
+
+    .insight-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+      padding: 0.6rem 1.2rem;
+      border-radius: 2rem;
+      font-size: 1.1rem;
+      font-weight: 600;
+      margin-top: 1rem;
+    }
+
+    .insight-badge.opportunity {
+      background: rgba(0, 255, 136, 0.15);
+      border: 1px solid rgba(0, 255, 136, 0.3);
+      color: #00ff88;
+    }
+
+    .insight-badge.caution {
+      background: rgba(255, 193, 7, 0.15);
+      border: 1px solid rgba(255, 193, 7, 0.3);
+      color: #ffc107;
+    }
+
+    .insight-badge.warning {
+      background: rgba(244, 67, 54, 0.15);
+      border: 1px solid rgba(244, 67, 54, 0.3);
+      color: #f44336;
+    }
+
+    /* Risk Badge */
+    .risk-badge {
+      display: inline-flex;
+      padding: 0.5rem 1.2rem;
+      border-radius: 2rem;
+      font-size: 1.3rem;
+      font-weight: 700;
+    }
+
+    .risk-badge.low { background: rgba(0, 255, 136, 0.2); color: #00ff88; }
+    .risk-badge.medium { background: rgba(255, 193, 7, 0.2); color: #ffc107; }
+    .risk-badge.high { background: rgba(244, 67, 54, 0.2); color: #f44336; }
+
+    /* Trophy Icon */
+    .trophy-icon {
+      font-size: 1.5rem;
+      margin-left: 0.5rem;
+    }
+
+    /* Action Buttons */
+    .action-section {
+      display: grid;
+      grid-template-columns: 200px repeat(<%= countries.length %>, 1fr);
+      gap: 1.5rem;
+      margin-top: 3rem;
+    }
+
+    .action-label {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.4rem;
+      font-weight: 600;
+      color: rgba(255, 255, 255, 0.5);
+    }
+
+    .action-cell {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 1rem;
+    }
+
+    .target-btn {
+      width: 100%;
+      padding: 1.2rem 2rem;
+      border: none;
+      border-radius: 1rem;
+      font-size: 1.4rem;
+      font-weight: 700;
+      cursor: pointer;
+      transition: all 0.3s;
+      font-family: inherit;
+    }
+
+    .target-btn-primary {
+      background: linear-gradient(135deg, #4cc9f0, #00ff88);
+      color: #000;
+    }
+
+    .target-btn-primary:hover {
+      transform: scale(1.03);
+      box-shadow: 0 8px 25px rgba(76, 201, 240, 0.4);
+    }
+
+    .target-btn-secondary {
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid rgba(255, 255, 255, 0.15);
+      color: #fff;
+    }
+
+    .target-btn-secondary:hover {
+      background: rgba(255, 255, 255, 0.1);
+    }
+
+    /* Summary */
+    .verdict-section {
+      background: linear-gradient(135deg, rgba(0, 255, 136, 0.08), rgba(76, 201, 240, 0.05));
+      border: 1px solid rgba(0, 255, 136, 0.2);
+      border-radius: 1.5rem;
+      padding: 3rem;
+      text-align: center;
+      margin-top: 3rem;
+    }
+
+    .verdict-icon { font-size: 4rem; margin-bottom: 1rem; }
+    .verdict-title { font-size: 1.8rem; color: rgba(255, 255, 255, 0.7); margin-bottom: 1rem; }
+
+    .verdict-winner {
+      font-size: 3.5rem;
+      font-weight: 800;
+      background: linear-gradient(135deg, #4cc9f0, #00ff88);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      margin-bottom: 1rem;
+    }
+
+    .verdict-reasons {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: 1rem;
+      margin-bottom: 2rem;
+    }
+
+    .verdict-reason {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+      padding: 0.6rem 1.2rem;
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 2rem;
+      font-size: 1.2rem;
+    }
+
+    .final-cta {
+      padding: 1.2rem 3rem;
+      background: linear-gradient(135deg, #4cc9f0, #00ff88);
+      border: none;
+      border-radius: 2rem;
+      color: #000;
+      font-size: 1.5rem;
+      font-weight: 700;
+      cursor: pointer;
+      transition: all 0.3s;
+      font-family: inherit;
+    }
+
+    .final-cta:hover {
+      transform: scale(1.05);
+      box-shadow: 0 8px 30px rgba(76, 201, 240, 0.4);
+    }
+
+    /* Responsive */
+    @media (max-width: 1200px) {
+      .battle-header,
+      .battle-grid,
+      .action-section { 
+        grid-template-columns: 1fr; 
+      }
+      .metric-label-cell,
+      .battle-header-label,
+      .action-label { display: none; }
+      .metric-value-cell::before {
+        content: attr(data-label);
+        display: block;
+        font-size: 1rem;
+        color: rgba(255, 255, 255, 0.5);
+        margin-bottom: 0.5rem;
+      }
     }
   </style>
 </head>
 <body>
-  <div class="container">
-    <header class="header">
-      <h1>🔄 Ülke Karşılaştırması - <%= sector.sektor_adi %></h1>
-      <a href="/sector/<%= sector.sektor_id %>/rankings" class="back-btn">← Sıralamaya Dön</a>
-    </header>
+  <!-- Header -->
+  <header class="page-header">
+    <div class="header-left">
+      <h1>⚔️ Pazar Savaşı</h1>
+      <div class="sector-badge">📊 <%= sector.sektor_adi %></div>
+    </div>
+    <a href="/sector/<%= sector.sektor_id %>/rankings" class="back-btn">← Sıralamaya Dön</a>
+  </header>
 
-    <table class="comparison-table">
-      <thead>
-        <tr>
-          <th>Metrik</th>
-          <% countries.forEach(c => { %>
-            <th class="country-name"><%= c.ulke_adi %></th>
-          <% }); %>
-        </tr>
-      </thead>
-      <tbody>
-        <tr>
-          <td class="metric-label">Toplam Skor</td>
-          <% const maxScore = Math.max(...countries.map(c => parseFloat(c.totalScore || 0))); %>
-          <% countries.forEach(c => { %>
-            <td class="<%= parseFloat(c.totalScore || 0) === maxScore ? 'best-value' : '' %>"><%= c.totalScore || 0 %></td>
-          <% }); %>
-        </tr>
-        <tr>
-          <td class="metric-label">Sektörel İthalat</td>
-          <% const maxImport = Math.max(...countries.map(c => parseFloat(c.sektorel_ithalat || 0))); %>
-          <% countries.forEach(c => { %>
-            <td class="<%= parseFloat(c.sektorel_ithalat || 0) === maxImport ? 'best-value' : '' %>">$<%= c.sektorel_ithalat || 0 %>M</td>
-          <% }); %>
-        </tr>
-        <tr>
-          <td class="metric-label">Sektörel Büyüme</td>
-          <% const maxGrowth = Math.max(...countries.map(c => parseFloat(c.sektorel_buyume || 0))); %>
-          <% countries.forEach(c => { %>
-            <td class="<%= parseFloat(c.sektorel_buyume || 0) === maxGrowth ? 'best-value' : '' %>">%<%= c.sektorel_buyume || 0 %></td>
-          <% }); %>
-        </tr>
-        <tr>
-          <td class="metric-label">GSYİH (Milyar $)</td>
-          <% countries.forEach(c => { %>
-            <td>$<%= c.gsyh || 0 %>B</td>
-          <% }); %>
-        </tr>
-        <tr>
-          <td class="metric-label">Kişi Başı GSYİH</td>
-          <% const maxGDP = Math.max(...countries.map(c => parseFloat(c.gsyh_kisi_basi || 0))); %>
-          <% countries.forEach(c => { %>
-            <td class="<%= parseFloat(c.gsyh_kisi_basi || 0) === maxGDP ? 'best-value' : '' %>">$<%= Math.round(parseFloat(c.gsyh_kisi_basi || 0)).toLocaleString() %></td>
-          <% }); %>
-        </tr>
-        <tr>
-          <td class="metric-label">Risk Notu</td>
-          <% countries.forEach(c => { %>
-            <td><%= c.risk_notu || 'N/A' %></td>
-          <% }); %>
-        </tr>
-        <tr>
-          <td class="metric-label">LPI Skoru</td>
-          <% const maxLPI = Math.max(...countries.map(c => parseFloat(c.lpi_skoru || 0))); %>
-          <% countries.forEach(c => { %>
-            <td class="<%= parseFloat(c.lpi_skoru || 0) === maxLPI ? 'best-value' : '' %>"><%= c.lpi_skoru ? parseFloat(c.lpi_skoru).toFixed(2) : 'N/A' %></td>
-          <% }); %>
-        </tr>
-        <tr>
-          <td class="metric-label">Gümrük Süresi (Gün)</td>
-          <% const minCustoms = Math.min(...countries.map(c => parseInt(c.gumruk_suresi || 999))); %>
-          <% countries.forEach(c => { %>
-            <td class="<%= parseInt(c.gumruk_suresi || 999) === minCustoms ? 'best-value' : '' %>"><%= c.gumruk_suresi || 'N/A' %></td>
-          <% }); %>
-        </tr>
-        <tr>
-          <td class="metric-label">Konteyner Maliyeti</td>
-          <% const minCost = Math.min(...countries.map(c => parseInt(c.konteyner_maliyeti || 99999))); %>
-          <% countries.forEach(c => { %>
-            <td class="<%= parseInt(c.konteyner_maliyeti || 99999) === minCost ? 'best-value' : '' %>">$<%= c.konteyner_maliyeti ? parseInt(c.konteyner_maliyeti).toLocaleString() : 'N/A' %></td>
-          <% }); %>
-        </tr>
-      </tbody>
-    </table>
+  <!-- Navigation -->
+  <nav class="nav-bar">
+    <a href="/" class="nav-link">🗺️ Harita</a>
+    <a href="/scenario-builder" class="nav-link">🔬 Senaryo</a>
+    <a href="/sector/<%= sector.sektor_id %>/rankings" class="nav-link">📊 Sıralama</a>
+    <a href="/sector/<%= sector.sektor_id %>/compare?countries=<%= countries.map(c => c.ulke_id).join(',') %>" class="nav-link active">⚔️ Karşılaştır</a>
+    <a href="/decisions" class="nav-link">📋 Kayıtlı Kararlar</a>
+  </nav>
 
-    <div class="chart-section">
-      <h2>📊 Radar Karşılaştırması</h2>
-      <div class="chart-container">
-        <canvas id="comparisonChart"></canvas>
+  <main class="main-content">
+    <% 
+      // Find the winner
+      let winner = countries[0];
+      let winReasons = [];
+      countries.forEach(c => {
+        if (parseFloat(c.totalScore || 0) > parseFloat(winner.totalScore || 0)) {
+          winner = c;
+        }
+      });
+
+      // Helper functions
+      const isBest = (values, currentVal, lowerIsBetter = false) => {
+        if (lowerIsBetter) {
+          return currentVal === Math.min(...values.filter(v => v > 0));
+        }
+        return currentVal === Math.max(...values);
+      };
+
+      const getRiskClass = (risk) => {
+        if (['AAA', 'AA+', 'AA', 'AA-', 'A+', 'A', 'A-'].includes(risk)) return 'low';
+        if (['BBB+', 'BBB', 'BBB-', 'BB+', 'BB'].includes(risk)) return 'medium';
+        return 'high';
+      };
+
+      const getSaturationColor = (val) => {
+        if (val >= 80) return '#f44336';
+        if (val >= 50) return '#ffc107';
+        return '#00ff88';
+      };
+
+      const getSaturationInsight = (val) => {
+        if (val >= 80) return { class: 'warning', text: '⚠️ Yüksek Doygunluk - Giriş Zor' };
+        if (val >= 50) return { class: 'caution', text: '🔍 Orta Seviye - Dikkatli Değerlendir' };
+        return { class: 'opportunity', text: '✅ Yüksek Fırsat - Pazar Açık' };
+      };
+    %>
+
+    <!-- Battle Header - Country Cards -->
+    <div class="battle-header">
+      <div class="battle-header-label">Rakipler</div>
+      <% countries.forEach(c => { %>
+        <div class="country-card <%= c.ulke_id === winner.ulke_id ? 'winner' : '' %>">
+          <% if (c.ulke_id === winner.ulke_id) { %>
+            <span class="winner-badge">🏆 ÖNERİLEN HEDEF</span>
+          <% } %>
+          <div class="country-flag">🏳️</div>
+          <h2 class="country-name"><%= c.ulke_adi %></h2>
+          <p class="country-region"><%= c.bolge_adi || 'N/A' %> • <%= c.ISO_KODU %></p>
+          <div class="total-score mono"><%= c.totalScore || 0 %></div>
+          <p class="score-label">Toplam Skor</p>
+        </div>
+      <% }); %>
+    </div>
+
+    <!-- CARD A: Market Gap -->
+    <div class="battle-card">
+      <div class="battle-card-header">
+        <h2>📊 KART A: Pazar Boşluğu</h2>
+        <span class="question">"Bizim için yer var mı?"</span>
+      </div>
+      <div class="battle-card-body">
+        <!-- Saturation Analysis -->
+        <div class="battle-grid">
+          <div class="metric-row">
+            <div class="metric-label-cell">Yerli Üretim Oranı</div>
+            <% 
+              const saturationValues = countries.map(c => parseFloat(c.yerli_uretim_orani || 0));
+              const bestSaturation = Math.min(...saturationValues.filter(v => v > 0));
+            %>
+            <% countries.forEach(c => { 
+              const val = parseFloat(c.yerli_uretim_orani || 0);
+              const color = getSaturationColor(val);
+              const insight = getSaturationInsight(val);
+              const isBestSat = val === bestSaturation;
+            %>
+              <div class="metric-value-cell <%= isBestSat ? 'best' : '' %>" data-label="Yerli Üretim Oranı">
+                <div class="saturation-container">
+                  <div class="saturation-bar-wrapper">
+                    <div class="saturation-fill" style="width: <%= val %>%; background: <%= color %>;">
+                      %<%= val.toFixed(0) %>
+                    </div>
+                  </div>
+                  <div class="saturation-labels">
+                    <span>İthalat Fırsatı</span>
+                    <span>Yerel Üretim</span>
+                  </div>
+                </div>
+                <div class="insight-badge <%= insight.class %>"><%= insight.text %></div>
+                <% if (isBestSat) { %><span class="trophy-icon">🏆</span><% } %>
+              </div>
+            <% }); %>
+          </div>
+
+          <div class="metric-row">
+            <div class="metric-label-cell">Sektörel İthalat</div>
+            <% 
+              const importValues = countries.map(c => parseFloat(c.sektorel_ithalat || 0));
+              const bestImport = Math.max(...importValues);
+            %>
+            <% countries.forEach(c => { 
+              const val = parseFloat(c.sektorel_ithalat || 0);
+              const isBestVal = val === bestImport;
+            %>
+              <div class="metric-value-cell <%= isBestVal ? 'best' : '' %>" data-label="Sektörel İthalat">
+                <span class="metric-value mono <%= isBestVal ? 'green' : '' %>">$<%= val.toFixed(0) %>M</span>
+                <span class="metric-indicator">Pazar Büyüklüğü</span>
+                <% if (isBestVal && countries.length > 1) { 
+                  const diff = val - Math.min(...importValues.filter(v => v !== val));
+                %>
+                  <span class="advantage-tag positive">+$<%= diff.toFixed(0) %>M daha büyük</span>
+                <% } %>
+              </div>
+            <% }); %>
+          </div>
+
+          <div class="metric-row">
+            <div class="metric-label-cell">Sektörel Büyüme</div>
+            <% 
+              const growthValues = countries.map(c => parseFloat(c.sektorel_buyume || 0));
+              const bestGrowth = Math.max(...growthValues);
+            %>
+            <% countries.forEach(c => { 
+              const val = parseFloat(c.sektorel_buyume || 0);
+              const isBestVal = val === bestGrowth;
+              const colorClass = val >= 5 ? 'green' : val >= 2 ? 'yellow' : 'red';
+            %>
+              <div class="metric-value-cell <%= isBestVal ? 'best' : '' %>" data-label="Sektörel Büyüme">
+                <span class="metric-value mono <%= colorClass %>">%<%= val.toFixed(1) %></span>
+                <span class="metric-indicator"><%= val >= 5 ? '📈 Hızlı Büyüme' : val >= 2 ? '📊 Stabil' : '📉 Durgun' %></span>
+                <% if (isBestVal) { %><span class="trophy-icon">🏆</span><% } %>
+              </div>
+            <% }); %>
+          </div>
+        </div>
       </div>
     </div>
-  </div>
+
+    <!-- CARD B: Logistics & Friction -->
+    <div class="battle-card">
+      <div class="battle-card-header">
+        <h2>🚚 KART B: Lojistik & Sürtünme</h2>
+        <span class="question">"Ürünleri oraya kolayca ulaştırabilir miyiz?"</span>
+      </div>
+      <div class="battle-card-body">
+        <div class="battle-grid">
+          <div class="metric-row">
+            <div class="metric-label-cell">LPI Skoru</div>
+            <% 
+              const lpiValues = countries.map(c => parseFloat(c.lpi_skoru || 0));
+              const bestLPI = Math.max(...lpiValues);
+            %>
+            <% countries.forEach(c => { 
+              const val = parseFloat(c.lpi_skoru || 0);
+              const isBestVal = val === bestLPI && val > 0;
+              const colorClass = val >= 3.5 ? 'green' : val >= 2.5 ? 'yellow' : 'red';
+            %>
+              <div class="metric-value-cell <%= isBestVal ? 'best' : '' %>" data-label="LPI Skoru">
+                <% if (val > 0) { %>
+                  <span class="metric-value mono <%= colorClass %>"><%= val.toFixed(2) %></span>
+                  <span class="metric-indicator"><%= val >= 3.5 ? '✅ İyi Altyapı' : val >= 2.5 ? '⚠️ Orta' : '❌ Zayıf' %></span>
+                  <% if (isBestVal) { %><span class="trophy-icon">🏆</span><% } %>
+                <% } else { %>
+                  <span class="metric-value" style="color: rgba(255,255,255,0.3);">N/A</span>
+                  <span class="metric-indicator">Veri Yok</span>
+                <% } %>
+              </div>
+            <% }); %>
+          </div>
+
+          <div class="metric-row">
+            <div class="metric-label-cell">Gümrük Bekleme Süresi</div>
+            <% 
+              const customsValues = countries.map(c => parseInt(c.gumruk_suresi || 999));
+              const bestCustoms = Math.min(...customsValues.filter(v => v < 999));
+            %>
+            <% countries.forEach(c => { 
+              const val = parseInt(c.gumruk_suresi || 0);
+              const isBestVal = val === bestCustoms && val > 0;
+              const colorClass = val <= 5 ? 'green' : val <= 10 ? 'yellow' : 'red';
+            %>
+              <div class="metric-value-cell <%= isBestVal ? 'best' : (val > 10 ? 'worst' : '') %>" data-label="Gümrük Süresi">
+                <% if (val > 0) { %>
+                  <span class="metric-value mono <%= colorClass %>"><%= val %> Gün</span>
+                  <span class="metric-indicator"><%= val <= 5 ? '⚡ Hızlı' : val <= 10 ? '🕐 Ortalama' : '🐢 Yavaş' %></span>
+                  <% if (isBestVal && countries.length > 1) { 
+                    const diff = Math.max(...customsValues.filter(v => v < 999)) - val;
+                  %>
+                    <span class="advantage-tag positive">↑ <%= diff %> gün daha hızlı</span>
+                  <% } %>
+                <% } else { %>
+                  <span class="metric-value" style="color: rgba(255,255,255,0.3);">N/A</span>
+                <% } %>
+              </div>
+            <% }); %>
+          </div>
+
+          <div class="metric-row">
+            <div class="metric-label-cell">Konteyner Maliyeti</div>
+            <% 
+              const costValues = countries.map(c => parseInt(c.konteyner_maliyeti || 99999));
+              const bestCost = Math.min(...costValues.filter(v => v < 99999));
+            %>
+            <% countries.forEach(c => { 
+              const val = parseInt(c.konteyner_maliyeti || 0);
+              const isBestVal = val === bestCost && val > 0;
+              const colorClass = val <= 1500 ? 'green' : val <= 3000 ? 'yellow' : 'red';
+            %>
+              <div class="metric-value-cell <%= isBestVal ? 'best' : (val > 3000 ? 'worst' : '') %>" data-label="Konteyner Maliyeti">
+                <% if (val > 0) { %>
+                  <span class="metric-value mono <%= colorClass %>">$<%= val.toLocaleString() %></span>
+                  <span class="metric-indicator"><%= val <= 1500 ? '💰 Ekonomik' : val <= 3000 ? '💵 Ortalama' : '💸 Pahalı' %></span>
+                  <% if (isBestVal && countries.length > 1) { 
+                    const diff = Math.max(...costValues.filter(v => v < 99999)) - val;
+                  %>
+                    <span class="advantage-tag positive">↓ $<%= diff.toLocaleString() %> tasarruf</span>
+                  <% } %>
+                <% } else { %>
+                  <span class="metric-value" style="color: rgba(255,255,255,0.3);">N/A</span>
+                <% } %>
+              </div>
+            <% }); %>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- CARD C: Economic Power -->
+    <div class="battle-card">
+      <div class="battle-card-header">
+        <h2>💰 KART C: Ekonomik Güç</h2>
+        <span class="question">"Satın alma güçleri ne durumda?"</span>
+      </div>
+      <div class="battle-card-body">
+        <div class="battle-grid">
+          <div class="metric-row">
+            <div class="metric-label-cell">Kişi Başı GSYİH</div>
+            <% 
+              const gdpValues = countries.map(c => parseFloat(c.gsyh_kisi_basi || 0));
+              const bestGDP = Math.max(...gdpValues);
+            %>
+            <% countries.forEach(c => { 
+              const val = parseFloat(c.gsyh_kisi_basi || 0);
+              const isBestVal = val === bestGDP;
+              const colorClass = val >= 30000 ? 'green' : val >= 10000 ? 'yellow' : 'red';
+            %>
+              <div class="metric-value-cell <%= isBestVal ? 'best' : '' %>" data-label="Kişi Başı GSYİH">
+                <span class="metric-value mono <%= colorClass %>">$<%= Math.round(val).toLocaleString() %></span>
+                <span class="metric-indicator"><%= val >= 30000 ? '🌟 Yüksek Gelir' : val >= 10000 ? '📊 Orta Gelir' : '📉 Düşük Gelir' %></span>
+                <% if (isBestVal) { %><span class="trophy-icon">🏆</span><% } %>
+              </div>
+            <% }); %>
+          </div>
+
+          <div class="metric-row">
+            <div class="metric-label-cell">Risk Notu</div>
+            <% countries.forEach(c => { 
+              const risk = c.risk_notu || 'N/A';
+              const riskClass = getRiskClass(risk);
+            %>
+              <div class="metric-value-cell" data-label="Risk Notu">
+                <span class="risk-badge <%= riskClass %>"><%= risk %></span>
+                <span class="metric-indicator">
+                  <%= riskClass === 'low' ? '✅ Düşük Risk' : riskClass === 'medium' ? '⚠️ Orta Risk' : '❌ Yüksek Risk' %>
+                </span>
+              </div>
+            <% }); %>
+          </div>
+
+          <div class="metric-row">
+            <div class="metric-label-cell">Toplam Adreslenebilir Pazar</div>
+            <% countries.forEach(c => { 
+              const tam = (parseFloat(c.gsyh_kisi_basi || 0) * parseFloat(c.nufus || 0)) / 1000;
+              const tamValues = countries.map(x => (parseFloat(x.gsyh_kisi_basi || 0) * parseFloat(x.nufus || 0)) / 1000);
+              const bestTAM = Math.max(...tamValues);
+              const isBestVal = tam === bestTAM;
+            %>
+              <div class="metric-value-cell <%= isBestVal ? 'best' : '' %>" data-label="TAM">
+                <span class="metric-value mono green">$<%= tam.toFixed(1) %>B</span>
+                <span class="metric-indicator">Toplam Pazar Değeri</span>
+                <% if (isBestVal) { %><span class="trophy-icon">🏆</span><% } %>
+              </div>
+            <% }); %>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Action Section -->
+    <div class="action-section">
+      <div class="action-label">Strateji Belirle</div>
+      <% countries.forEach(c => { %>
+        <div class="action-cell">
+          <a href="/sector/<%= sector.sektor_id %>/country/<%= c.ulke_id %>/strategy" 
+             class="target-btn target-btn-secondary" 
+             style="text-decoration: none; background: linear-gradient(135deg, rgba(124, 58, 237, 0.3), rgba(124, 58, 237, 0.1)); border-color: rgba(124, 58, 237, 0.5); margin-bottom: 0.8rem;">
+            🧙 <%= c.ulke_adi %> - Strateji Wizard
+          </a>
+          <button class="target-btn <%= c.ulke_id === winner.ulke_id ? 'target-btn-primary' : 'target-btn-secondary' %>" 
+                  onclick="markAsTarget('<%= c.ulke_id %>', '<%= c.ulke_adi %>', <%= c.totalScore || 0 %>)">
+            🎯 <%= c.ulke_adi %>'yı HEDEF OLARAK İŞARETLE
+          </button>
+        </div>
+      <% }); %>
+    </div>
+
+    <!-- Verdict Section -->
+    <div class="verdict-section">
+      <div class="verdict-icon">🏆</div>
+      <p class="verdict-title">SONUÇ & TAVSİYE</p>
+      <div class="verdict-winner"><%= winner.ulke_adi %></div>
+      <div class="verdict-reasons">
+        <% if (parseFloat(winner.yerli_uretim_orani || 100) < 50) { %>
+          <span class="verdict-reason">✅ Düşük yerel üretim (%<%= parseFloat(winner.yerli_uretim_orani || 0).toFixed(0) %>)</span>
+          <% winReasons.push('Pazar açık'); %>
+        <% } %>
+        <% if (parseFloat(winner.sektorel_buyume || 0) > 3) { %>
+          <span class="verdict-reason">📈 Güçlü sektörel büyüme (%<%= parseFloat(winner.sektorel_buyume || 0).toFixed(1) %>)</span>
+          <% winReasons.push('Büyüyen pazar'); %>
+        <% } %>
+        <% if (parseFloat(winner.lpi_skoru || 0) >= 3) { %>
+          <span class="verdict-reason">🚚 İyi lojistik altyapısı</span>
+          <% winReasons.push('Kolay erişim'); %>
+        <% } %>
+        <% if (parseFloat(winner.gsyh_kisi_basi || 0) > 15000) { %>
+          <span class="verdict-reason">💰 Yüksek satın alma gücü</span>
+          <% winReasons.push('Güçlü ekonomi'); %>
+        <% } %>
+        <span class="verdict-reason">🏅 Toplam Skor: <%= winner.totalScore || 0 %></span>
+      </div>
+      <button class="final-cta" onclick="markAsTarget('<%= winner.ulke_id %>', '<%= winner.ulke_adi %>', <%= winner.totalScore || 0 %>)">
+        🚀 <%= winner.ulke_adi %>'yı Hedef Strateji Olarak Kaydet
+      </button>
+    </div>
+  </main>
+
+  <!-- Decision Panel Include -->
+  <%- include('../includes/decision-panel') %>
 
   <script>
-    const countries = <%- JSON.stringify(countries) %>;
-    const colors = ['#00d9ff', '#00ff88', '#ffc107', '#ff6b6b', '#a855f7'];
+    const sectorId = '<%= sector.sektor_id %>';
+    const sectorAdi = '<%= sector.sektor_adi %>';
 
-    new Chart(document.getElementById('comparisonChart'), {
-      type: 'radar',
-      data: {
-        labels: ['Pazar Potansiyeli', 'Ekonomik İstikrar', 'Lojistik Kolaylığı', 'Sektörel Büyüme'],
-        datasets: countries.map((c, i) => ({
-          label: c.ulke_adi,
-          data: [
-            c.scores?.marketPotential || 0,
-            c.scores?.economicStability || 0,
-            c.scores?.logisticsEase || 0,
-            c.scores?.sectorGrowth || 0
-          ],
-          backgroundColor: colors[i] + '33',
-          borderColor: colors[i],
-          borderWidth: 2,
-          pointBackgroundColor: colors[i]
-        }))
-      },
-      options: {
-        responsive: true,
-        maintainAspectRatio: false,
-        scales: {
-          r: {
-            beginAtZero: true,
-            max: 100,
-            ticks: { color: 'rgba(255,255,255,0.5)', backdropColor: 'transparent' },
-            grid: { color: 'rgba(255,255,255,0.1)' },
-            pointLabels: { color: 'rgba(255,255,255,0.8)', font: { size: 14 } }
-          }
-        },
-        plugins: {
-          legend: {
-            position: 'bottom',
-            labels: { color: '#fff', font: { size: 14 }, padding: 20 }
-          }
-        }
-      }
-    });
+    function markAsTarget(ulkeId, ulkeAdi, skor) {
+      openDecisionPanel({
+        ulke_id: ulkeId,
+        ulke_adi: ulkeAdi,
+        sektor_id: sectorId,
+        sektor_adi: sectorAdi,
+        skor: skor,
+        flag: '🏳️'
+      });
+    }
   </script>
 </body>
 </html>
-

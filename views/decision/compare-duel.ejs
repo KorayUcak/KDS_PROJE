@@ -1,0 +1,1538 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>🥊 Ülke Düellosu - Head-to-Head Karşılaştırma</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    
+    :root {
+      --bg-dark: #050709;
+      --bg-panel: #0a0d12;
+      --bg-card: #111318;
+      --bg-input: #1a1d24;
+      --border: #252931;
+      --accent: #00d4ff;
+      --accent-glow: rgba(0,212,255,0.3);
+      --success: #00ff88;
+      --success-glow: rgba(0,255,136,0.3);
+      --warning: #ffaa00;
+      --warning-glow: rgba(255,170,0,0.3);
+      --danger: #ff4466;
+      --danger-glow: rgba(255,68,102,0.3);
+      --text: #e8eaed;
+      --text-dim: #6b7280;
+      --purple: #a855f7;
+      --cyan: #06b6d4;
+      --country-a: #00d4ff;
+      --country-a-bg: rgba(0,212,255,0.1);
+      --country-b: #a855f7;
+      --country-b-bg: rgba(168,85,247,0.1);
+    }
+
+    body {
+      font-family: 'Inter', -apple-system, sans-serif;
+      background: var(--bg-dark);
+      color: var(--text);
+      min-height: 100vh;
+    }
+
+    .mono { font-family: 'JetBrains Mono', monospace; }
+
+    /* ==================== TOPBAR ==================== */
+    .topbar {
+      background: linear-gradient(180deg, var(--bg-panel) 0%, transparent 100%);
+      border-bottom: 1px solid var(--border);
+      padding: 16px 24px;
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      backdrop-filter: blur(12px);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .topbar-left {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+    }
+
+    .back-btn {
+      padding: 8px 16px;
+      background: var(--bg-input);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      color: var(--text);
+      text-decoration: none;
+      font-size: 13px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      transition: all 0.2s;
+    }
+
+    .back-btn:hover {
+      border-color: var(--accent);
+      background: var(--bg-card);
+    }
+
+    .page-title {
+      font-size: 20px;
+      font-weight: 800;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .page-title .icon {
+      font-size: 28px;
+    }
+
+    .vs-badge {
+      background: linear-gradient(135deg, var(--danger), #cc3355);
+      padding: 4px 12px;
+      border-radius: 6px;
+      font-size: 12px;
+      font-weight: 700;
+      color: #fff;
+    }
+
+    /* ==================== SELECTOR HEADER ==================== */
+    .selector-header {
+      display: grid;
+      grid-template-columns: 1fr auto 1fr;
+      gap: 24px;
+      padding: 24px;
+      background: var(--bg-panel);
+      border-bottom: 1px solid var(--border);
+      align-items: center;
+    }
+
+    .country-selector {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    .selector-label {
+      font-size: 10px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 1.5px;
+      color: var(--text-dim);
+    }
+
+    .selector-label.a { color: var(--country-a); }
+    .selector-label.b { color: var(--country-b); }
+
+    .country-select {
+      padding: 14px 18px;
+      background: var(--bg-input);
+      border: 2px solid var(--border);
+      border-radius: 12px;
+      color: var(--text);
+      font-size: 15px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .country-select.a:focus { border-color: var(--country-a); box-shadow: 0 0 0 4px var(--country-a-bg); }
+    .country-select.b:focus { border-color: var(--country-b); box-shadow: 0 0 0 4px var(--country-b-bg); }
+
+    .vs-divider {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .vs-text {
+      font-size: 32px;
+      font-weight: 900;
+      background: linear-gradient(135deg, var(--country-a), var(--country-b));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+
+    .compare-btn {
+      padding: 10px 24px;
+      background: linear-gradient(135deg, var(--accent), var(--cyan));
+      border: none;
+      border-radius: 8px;
+      color: #000;
+      font-size: 12px;
+      font-weight: 700;
+      cursor: pointer;
+      transition: all 0.3s;
+    }
+
+    .compare-btn:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 4px 20px var(--accent-glow);
+    }
+
+    /* ==================== MAIN CONTENT ==================== */
+    .duel-content {
+      padding: 24px;
+      display: none;
+    }
+
+    .duel-content.show { display: block; }
+
+    /* ==================== SCORE HEADER ==================== */
+    .score-header {
+      display: grid;
+      grid-template-columns: 1fr auto 1fr;
+      gap: 24px;
+      margin-bottom: 32px;
+    }
+
+    .country-score-card {
+      background: var(--bg-card);
+      border: 2px solid var(--border);
+      border-radius: 16px;
+      padding: 24px;
+      text-align: center;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .country-score-card.a { border-color: rgba(0,212,255,0.3); }
+    .country-score-card.b { border-color: rgba(168,85,247,0.3); }
+
+    .country-score-card::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 4px;
+    }
+
+    .country-score-card.a::before { background: linear-gradient(90deg, var(--country-a), var(--cyan)); }
+    .country-score-card.b::before { background: linear-gradient(90deg, var(--purple), var(--country-b)); }
+
+    .winner-badge {
+      position: absolute;
+      top: 12px;
+      right: 12px;
+      background: linear-gradient(135deg, #ffd700, #ffaa00);
+      padding: 4px 10px;
+      border-radius: 6px;
+      font-size: 11px;
+      font-weight: 700;
+      color: #000;
+      display: none;
+    }
+
+    .winner-badge.show { display: flex; align-items: center; gap: 4px; }
+
+    .country-flag {
+      font-size: 48px;
+      margin-bottom: 12px;
+    }
+
+    .country-name {
+      font-size: 24px;
+      font-weight: 800;
+      margin-bottom: 8px;
+    }
+
+    .country-region {
+      font-size: 12px;
+      color: var(--text-dim);
+      margin-bottom: 16px;
+    }
+
+    .score-display {
+      font-size: 56px;
+      font-weight: 900;
+      line-height: 1;
+      margin-bottom: 8px;
+    }
+
+    .country-score-card.a .score-display { color: var(--country-a); }
+    .country-score-card.b .score-display { color: var(--country-b); }
+
+    .score-label {
+      font-size: 11px;
+      color: var(--text-dim);
+      text-transform: uppercase;
+      letter-spacing: 1px;
+    }
+
+    .vs-center {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .vs-circle {
+      width: 80px;
+      height: 80px;
+      border-radius: 50%;
+      background: var(--bg-card);
+      border: 3px solid var(--border);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 24px;
+      font-weight: 900;
+      color: var(--text-dim);
+    }
+
+    /* ==================== COMPARISON SECTIONS ==================== */
+    .comparison-section {
+      margin-bottom: 32px;
+    }
+
+    .section-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 16px;
+      padding-bottom: 12px;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .section-title {
+      font-size: 16px;
+      font-weight: 700;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .section-title .icon {
+      width: 32px;
+      height: 32px;
+      border-radius: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 16px;
+    }
+
+    .section-title .icon.cost { background: rgba(0,212,255,0.15); }
+    .section-title .icon.market { background: rgba(0,255,136,0.15); }
+    .section-title .icon.swot { background: rgba(168,85,247,0.15); }
+
+    .section-winner {
+      padding: 6px 14px;
+      border-radius: 20px;
+      font-size: 11px;
+      font-weight: 600;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .section-winner.a { background: var(--country-a-bg); color: var(--country-a); border: 1px solid rgba(0,212,255,0.3); }
+    .section-winner.b { background: var(--country-b-bg); color: var(--country-b); border: 1px solid rgba(168,85,247,0.3); }
+    .section-winner.tie { background: var(--bg-input); color: var(--text-dim); border: 1px solid var(--border); }
+
+    /* ==================== COST CHART ==================== */
+    .cost-chart-container {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 24px;
+    }
+
+    .chart-wrapper {
+      height: 300px;
+      position: relative;
+    }
+
+    .cost-legend {
+      display: flex;
+      justify-content: center;
+      gap: 24px;
+      margin-top: 16px;
+    }
+
+    .legend-item {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 12px;
+      color: var(--text-dim);
+    }
+
+    .legend-dot {
+      width: 12px;
+      height: 12px;
+      border-radius: 3px;
+    }
+
+    /* ==================== PIE CHARTS ==================== */
+    .pie-charts-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 24px;
+    }
+
+    .pie-card {
+      background: var(--bg-card);
+      border: 2px solid var(--border);
+      border-radius: 16px;
+      padding: 24px;
+      text-align: center;
+    }
+
+    .pie-card.a { border-color: rgba(0,212,255,0.2); }
+    .pie-card.b { border-color: rgba(168,85,247,0.2); }
+
+    .pie-card-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 16px;
+    }
+
+    .pie-country-name {
+      font-size: 14px;
+      font-weight: 700;
+    }
+
+    .pie-card.a .pie-country-name { color: var(--country-a); }
+    .pie-card.b .pie-country-name { color: var(--country-b); }
+
+    .opportunity-badge {
+      padding: 4px 10px;
+      border-radius: 6px;
+      font-size: 10px;
+      font-weight: 600;
+    }
+
+    .opportunity-badge.high { background: rgba(0,255,136,0.15); color: var(--success); }
+    .opportunity-badge.medium { background: rgba(255,170,0,0.15); color: var(--warning); }
+    .opportunity-badge.low { background: rgba(255,68,102,0.15); color: var(--danger); }
+
+    .pie-chart-wrapper {
+      height: 180px;
+      margin-bottom: 16px;
+    }
+
+    .pie-stats {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+    }
+
+    .pie-stat {
+      background: var(--bg-input);
+      border-radius: 8px;
+      padding: 12px;
+    }
+
+    .pie-stat-label {
+      font-size: 10px;
+      color: var(--text-dim);
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      margin-bottom: 4px;
+    }
+
+    .pie-stat-value {
+      font-size: 18px;
+      font-weight: 700;
+    }
+
+    .pie-stat-value.local { color: var(--warning); }
+    .pie-stat-value.import { color: var(--success); }
+
+    /* ==================== SWOT ANALYSIS ==================== */
+    .swot-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 24px;
+    }
+
+    .swot-card {
+      background: var(--bg-card);
+      border: 2px solid var(--border);
+      border-radius: 16px;
+      padding: 20px;
+    }
+
+    .swot-card.a { border-color: rgba(0,212,255,0.2); }
+    .swot-card.b { border-color: rgba(168,85,247,0.2); }
+
+    .swot-country-header {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 20px;
+      padding-bottom: 12px;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .swot-country-flag {
+      font-size: 28px;
+    }
+
+    .swot-country-name {
+      font-size: 16px;
+      font-weight: 700;
+    }
+
+    .swot-card.a .swot-country-name { color: var(--country-a); }
+    .swot-card.b .swot-country-name { color: var(--country-b); }
+
+    .swot-matrix {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+    }
+
+    .swot-quadrant {
+      background: var(--bg-input);
+      border-radius: 12px;
+      padding: 14px;
+      min-height: 120px;
+    }
+
+    .swot-quadrant-header {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin-bottom: 10px;
+    }
+
+    .swot-quadrant-icon {
+      width: 24px;
+      height: 24px;
+      border-radius: 6px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 12px;
+    }
+
+    .swot-quadrant.strengths .swot-quadrant-icon { background: rgba(0,255,136,0.2); }
+    .swot-quadrant.weaknesses .swot-quadrant-icon { background: rgba(255,68,102,0.2); }
+    .swot-quadrant.opportunities .swot-quadrant-icon { background: rgba(0,212,255,0.2); }
+    .swot-quadrant.threats .swot-quadrant-icon { background: rgba(255,170,0,0.2); }
+
+    .swot-quadrant-title {
+      font-size: 11px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    .swot-quadrant.strengths .swot-quadrant-title { color: var(--success); }
+    .swot-quadrant.weaknesses .swot-quadrant-title { color: var(--danger); }
+    .swot-quadrant.opportunities .swot-quadrant-title { color: var(--accent); }
+    .swot-quadrant.threats .swot-quadrant-title { color: var(--warning); }
+
+    .swot-items {
+      list-style: none;
+    }
+
+    .swot-item {
+      font-size: 11px;
+      color: var(--text-dim);
+      padding: 4px 0;
+      display: flex;
+      align-items: flex-start;
+      gap: 6px;
+      line-height: 1.4;
+    }
+
+    .swot-item::before {
+      content: '•';
+      color: var(--text-dim);
+      flex-shrink: 0;
+    }
+
+    /* ==================== ACTION FOOTER ==================== */
+    .action-footer {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 24px;
+      margin-top: 32px;
+      padding-top: 24px;
+      border-top: 1px solid var(--border);
+    }
+
+    .action-card {
+      background: var(--bg-card);
+      border: 2px solid var(--border);
+      border-radius: 16px;
+      padding: 24px;
+      text-align: center;
+    }
+
+    .action-card.a { border-color: rgba(0,212,255,0.3); }
+    .action-card.b { border-color: rgba(168,85,247,0.3); }
+
+    .action-card-title {
+      font-size: 14px;
+      font-weight: 600;
+      margin-bottom: 16px;
+    }
+
+    .action-btn {
+      width: 100%;
+      padding: 16px 24px;
+      border: none;
+      border-radius: 12px;
+      font-size: 14px;
+      font-weight: 700;
+      cursor: pointer;
+      transition: all 0.3s;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+    }
+
+    .action-btn.a {
+      background: linear-gradient(135deg, var(--country-a), var(--cyan));
+      color: #000;
+    }
+
+    .action-btn.b {
+      background: linear-gradient(135deg, var(--purple), var(--country-b));
+      color: #fff;
+    }
+
+    .action-btn:hover {
+      transform: translateY(-3px);
+      box-shadow: 0 8px 24px rgba(0,0,0,0.3);
+    }
+
+    /* ==================== EMPTY STATE ==================== */
+    .empty-state {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 80px 40px;
+      text-align: center;
+    }
+
+    .empty-state .icon {
+      font-size: 64px;
+      margin-bottom: 20px;
+      opacity: 0.5;
+    }
+
+    .empty-state h3 {
+      font-size: 20px;
+      font-weight: 700;
+      margin-bottom: 10px;
+    }
+
+    .empty-state p {
+      font-size: 14px;
+      color: var(--text-dim);
+      max-width: 400px;
+    }
+
+    /* ==================== MODAL ==================== */
+    .modal-overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: rgba(0,0,0,0.85);
+      display: none;
+      align-items: center;
+      justify-content: center;
+      z-index: 2000;
+      backdrop-filter: blur(8px);
+    }
+
+    .modal-overlay.show { display: flex; }
+
+    .modal {
+      background: var(--bg-panel);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      width: 500px;
+      max-height: 85vh;
+      overflow: hidden;
+      animation: modalSlide 0.3s ease;
+    }
+
+    @keyframes modalSlide {
+      from { opacity: 0; transform: translateY(20px) scale(0.95); }
+      to { opacity: 1; transform: translateY(0) scale(1); }
+    }
+
+    .modal-header {
+      padding: 20px 24px;
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .modal-header h3 {
+      font-size: 18px;
+      font-weight: 700;
+    }
+
+    .modal-close {
+      width: 32px;
+      height: 32px;
+      background: var(--bg-input);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      color: var(--text);
+      cursor: pointer;
+      font-size: 18px;
+    }
+
+    .modal-body {
+      padding: 24px;
+    }
+
+    .modal-summary {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 12px;
+      margin-bottom: 24px;
+    }
+
+    .modal-stat {
+      background: var(--bg-card);
+      border-radius: 10px;
+      padding: 14px;
+    }
+
+    .modal-stat-label {
+      font-size: 10px;
+      color: var(--text-dim);
+      text-transform: uppercase;
+      margin-bottom: 4px;
+    }
+
+    .modal-stat-value {
+      font-size: 14px;
+      font-weight: 600;
+    }
+
+    .form-group {
+      margin-bottom: 20px;
+    }
+
+    .form-group label {
+      display: block;
+      font-size: 11px;
+      color: var(--text-dim);
+      text-transform: uppercase;
+      margin-bottom: 8px;
+    }
+
+    .form-group select,
+    .form-group textarea {
+      width: 100%;
+      padding: 12px;
+      background: var(--bg-input);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      color: var(--text);
+      font-size: 13px;
+      font-family: inherit;
+    }
+
+    .form-group textarea {
+      min-height: 100px;
+      resize: vertical;
+    }
+
+    .modal-footer {
+      padding: 16px 24px;
+      border-top: 1px solid var(--border);
+      display: flex;
+      gap: 12px;
+      justify-content: flex-end;
+    }
+
+    .btn {
+      padding: 12px 24px;
+      border-radius: 8px;
+      font-size: 13px;
+      font-weight: 600;
+      cursor: pointer;
+      border: none;
+    }
+
+    .btn-secondary {
+      background: var(--bg-input);
+      color: var(--text);
+    }
+
+    .btn-primary {
+      background: linear-gradient(135deg, var(--success), #00cc70);
+      color: #000;
+    }
+
+    /* TOAST */
+    .toast {
+      position: fixed;
+      bottom: 24px;
+      right: 24px;
+      padding: 14px 24px;
+      background: var(--success);
+      color: #000;
+      border-radius: 10px;
+      font-size: 13px;
+      font-weight: 600;
+      display: none;
+      z-index: 3000;
+    }
+
+    .toast.show { display: block; }
+  </style>
+</head>
+<body>
+  <!-- ==================== TOPBAR ==================== -->
+  <header class="topbar">
+    <div class="topbar-left">
+      <a href="/" class="back-btn">← Komuta Merkezi</a>
+      <h1 class="page-title">
+        <span class="icon">🥊</span>
+        Ülke Düellosu
+        <span class="vs-badge">HEAD-TO-HEAD</span>
+      </h1>
+    </div>
+  </header>
+
+  <!-- ==================== COUNTRY SELECTOR ==================== -->
+  <div class="selector-header">
+    <div class="country-selector">
+      <span class="selector-label a">🔵 Rakip A</span>
+      <select class="country-select a" id="countryA">
+        <option value="">Ülke Seçin...</option>
+      </select>
+    </div>
+    
+    <div class="vs-divider">
+      <div class="vs-text">VS</div>
+      <button class="compare-btn" id="compareBtn">⚔️ Karşılaştır</button>
+    </div>
+    
+    <div class="country-selector">
+      <span class="selector-label b">🟣 Rakip B</span>
+      <select class="country-select b" id="countryB">
+        <option value="">Ülke Seçin...</option>
+      </select>
+    </div>
+  </div>
+
+  <!-- ==================== EMPTY STATE ==================== -->
+  <div class="empty-state" id="emptyState">
+    <div class="icon">⚔️</div>
+    <h3>İki Ülke Seçin</h3>
+    <p>Yukarıdaki dropdown'lardan karşılaştırmak istediğiniz iki ülkeyi seçin ve "Karşılaştır" butonuna tıklayın.</p>
+  </div>
+
+  <!-- ==================== DUEL CONTENT ==================== -->
+  <div class="duel-content" id="duelContent">
+    <!-- Score Header -->
+    <div class="score-header">
+      <div class="country-score-card a" id="scoreCardA">
+        <div class="winner-badge" id="winnerBadgeA">🏆 KAZANAN</div>
+        <div class="country-flag" id="flagA">🌍</div>
+        <div class="country-name" id="nameA">-</div>
+        <div class="country-region" id="regionA">-</div>
+        <div class="score-display" id="scoreA">0</div>
+        <div class="score-label">Uygunluk Skoru</div>
+      </div>
+      
+      <div class="vs-center">
+        <div class="vs-circle">VS</div>
+      </div>
+      
+      <div class="country-score-card b" id="scoreCardB">
+        <div class="winner-badge" id="winnerBadgeB">🏆 KAZANAN</div>
+        <div class="country-flag" id="flagB">🌍</div>
+        <div class="country-name" id="nameB">-</div>
+        <div class="country-region" id="regionB">-</div>
+        <div class="score-display" id="scoreB">0</div>
+        <div class="score-label">Uygunluk Skoru</div>
+      </div>
+    </div>
+
+    <!-- Cost Comparison -->
+    <div class="comparison-section">
+      <div class="section-header">
+        <div class="section-title">
+          <span class="icon cost">💰</span>
+          Maliyet Karşılaştırması
+        </div>
+        <div class="section-winner" id="costWinner"></div>
+      </div>
+      <div class="cost-chart-container">
+        <div class="chart-wrapper">
+          <canvas id="costChart"></canvas>
+        </div>
+        <div class="cost-legend">
+          <div class="legend-item">
+            <div class="legend-dot" style="background:var(--accent)"></div>
+            <span>Nakliye Maliyeti</span>
+          </div>
+          <div class="legend-item">
+            <div class="legend-dot" style="background:var(--purple)"></div>
+            <span>Gümrük & Vergi</span>
+          </div>
+          <div class="legend-item">
+            <div class="legend-dot" style="background:var(--warning)"></div>
+            <span>Yerel Dağıtım</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Market Structure -->
+    <div class="comparison-section">
+      <div class="section-header">
+        <div class="section-title">
+          <span class="icon market">📊</span>
+          Pazar Yapısı (Yerel Üretim vs İthalat İhtiyacı)
+        </div>
+        <div class="section-winner" id="marketWinner"></div>
+      </div>
+      <div class="pie-charts-grid">
+        <div class="pie-card a" id="pieCardA">
+          <div class="pie-card-header">
+            <span class="pie-country-name" id="pieNameA">-</span>
+            <span class="opportunity-badge" id="opportunityA">-</span>
+          </div>
+          <div class="pie-chart-wrapper">
+            <canvas id="pieChartA"></canvas>
+          </div>
+          <div class="pie-stats">
+            <div class="pie-stat">
+              <div class="pie-stat-label">Yerel Üretim</div>
+              <div class="pie-stat-value local" id="localA">0%</div>
+            </div>
+            <div class="pie-stat">
+              <div class="pie-stat-label">İthalat Fırsatı</div>
+              <div class="pie-stat-value import" id="importA">0%</div>
+            </div>
+          </div>
+        </div>
+        <div class="pie-card b" id="pieCardB">
+          <div class="pie-card-header">
+            <span class="pie-country-name" id="pieNameB">-</span>
+            <span class="opportunity-badge" id="opportunityB">-</span>
+          </div>
+          <div class="pie-chart-wrapper">
+            <canvas id="pieChartB"></canvas>
+          </div>
+          <div class="pie-stats">
+            <div class="pie-stat">
+              <div class="pie-stat-label">Yerel Üretim</div>
+              <div class="pie-stat-value local" id="localB">0%</div>
+            </div>
+            <div class="pie-stat">
+              <div class="pie-stat-label">İthalat Fırsatı</div>
+              <div class="pie-stat-value import" id="importB">0%</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- SWOT Analysis -->
+    <div class="comparison-section">
+      <div class="section-header">
+        <div class="section-title">
+          <span class="icon swot">🎯</span>
+          Otomatik SWOT Analizi
+        </div>
+      </div>
+      <div class="swot-grid">
+        <div class="swot-card a" id="swotCardA">
+          <div class="swot-country-header">
+            <span class="swot-country-flag" id="swotFlagA">🌍</span>
+            <span class="swot-country-name" id="swotNameA">-</span>
+          </div>
+          <div class="swot-matrix" id="swotMatrixA"></div>
+        </div>
+        <div class="swot-card b" id="swotCardB">
+          <div class="swot-country-header">
+            <span class="swot-country-flag" id="swotFlagB">🌍</span>
+            <span class="swot-country-name" id="swotNameB">-</span>
+          </div>
+          <div class="swot-matrix" id="swotMatrixB"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Action Footer -->
+    <div class="action-footer">
+      <div class="action-card a">
+        <div class="action-card-title">Bu ülkeyi hedef olarak seçin</div>
+        <button class="action-btn a" id="selectBtnA">
+          🎯 <span id="selectNameA">-</span> Seç
+        </button>
+      </div>
+      <div class="action-card b">
+        <div class="action-card-title">Bu ülkeyi hedef olarak seçin</div>
+        <button class="action-btn b" id="selectBtnB">
+          🎯 <span id="selectNameB">-</span> Seç
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ==================== MODAL ==================== -->
+  <div class="modal-overlay" id="modalOverlay">
+    <div class="modal">
+      <div class="modal-header">
+        <h3>📋 Strateji Onayı</h3>
+        <button class="modal-close" id="modalClose">×</button>
+      </div>
+      <div class="modal-body">
+        <div class="modal-summary" id="modalSummary"></div>
+        <div class="form-group">
+          <label>Karar Durumu</label>
+          <select id="decisionStatus">
+            <option value="Öncelikli Hedef">🎯 Öncelikli Hedef</option>
+            <option value="İzleme Listesi">👁️ İzleme Listesi</option>
+            <option value="Pilot Proje">🧪 Pilot Proje</option>
+            <option value="Şimdilik Değil">⏸️ Şimdilik Değil</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>Yönetici Notu</label>
+          <textarea id="managerNote" placeholder="Neden bu ülkeyi seçtiniz?"></textarea>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-secondary" id="cancelSave">İptal</button>
+        <button class="btn btn-primary" id="confirmSave">✓ Kaydet</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="toast" id="toast"></div>
+
+  <script>
+    // ==================== STATE ====================
+    let allCountries = [];
+    let countryA = null;
+    let countryB = null;
+    let charts = {};
+    let selectedForSave = null;
+
+    // ==================== MOCK DATA GENERATOR ====================
+    function generateMockData(country) {
+      const seed = (country.ulke_id || 1) * 1234;
+      const random = (min, max) => {
+        const x = Math.sin(seed + min) * 10000;
+        return min + (x - Math.floor(x)) * (max - min);
+      };
+      
+      return {
+        tariffRate: Math.round(random(2, 18)),
+        localDistribution: Math.round(random(200, 1200)),
+        corporateTax: Math.round(random(10, 35))
+      };
+    }
+
+    // ==================== SWOT GENERATOR ====================
+    function generateSWOT(country) {
+      const swot = {
+        strengths: [],
+        weaknesses: [],
+        opportunities: [],
+        threats: []
+      };
+
+      const lpi = parseFloat(country.lpi_skoru || 0);
+      const customs = parseInt(country.gumruk_suresi || 30);
+      const agreements = parseInt(country.anlasma_sayisi || 0);
+      const risk = country.risk_notu || 'BB';
+      const growth = parseFloat(country.sektorel_buyume || 0);
+      const population = parseFloat(country.nufus_milyon || 0);
+      const inflation = parseFloat(country.enflasyon || 0);
+      const localProd = parseFloat(country.yerli_uretim_orani || 50);
+      const gdp = parseFloat(country.gsyh_kisi_basi || 0);
+
+      // STRENGTHS
+      if (lpi >= 3.8) swot.strengths.push('Yüksek Lojistik Verimliliği');
+      if (lpi >= 3.5) swot.strengths.push('Güçlü Altyapı');
+      if (customs <= 2) swot.strengths.push('Hızlı Gümrük İşlemleri');
+      if (agreements >= 3) swot.strengths.push('Çoklu Ticaret Anlaşması');
+      if (['AAA', 'AA'].includes(risk)) swot.strengths.push('Düşük Ticari Risk');
+      if (gdp >= 40000) swot.strengths.push('Yüksek Satın Alma Gücü');
+
+      // WEAKNESSES
+      if (lpi < 2.5) swot.weaknesses.push('Lojistik Darboğazları');
+      if (customs > 10) swot.weaknesses.push('Uzun Gümrük Süreleri');
+      if (['C', 'CC', 'CCC', 'D'].includes(risk)) swot.weaknesses.push('Yüksek Ticari Risk');
+      if (agreements === 0) swot.weaknesses.push('Ticaret Anlaşması Yok');
+      if (gdp < 5000) swot.weaknesses.push('Düşük Alım Gücü');
+
+      // OPPORTUNITIES
+      if (growth >= 5) swot.opportunities.push('Yüksek Sektörel Büyüme');
+      if (population >= 50) swot.opportunities.push('Geniş Hedef Kitle');
+      if (localProd < 40) swot.opportunities.push('Düşük Yerel Rekabet');
+      if (inflation < 5) swot.opportunities.push('Stabil Ekonomi');
+      if (population >= 100) swot.opportunities.push('Devasa Pazar Potansiyeli');
+
+      // THREATS
+      if (inflation >= 10) swot.threats.push('Yüksek Enflasyon Riski');
+      if (localProd >= 80) swot.threats.push('Doymuş Yerel Pazar');
+      if (['B', 'BB'].includes(risk)) swot.threats.push('Orta Düzey Risk');
+      if (growth < 0) swot.threats.push('Daralan Pazar');
+
+      // Default items if empty
+      if (swot.strengths.length === 0) swot.strengths.push('Veri yetersiz');
+      if (swot.weaknesses.length === 0) swot.weaknesses.push('Veri yetersiz');
+      if (swot.opportunities.length === 0) swot.opportunities.push('Veri yetersiz');
+      if (swot.threats.length === 0) swot.threats.push('Veri yetersiz');
+
+      return swot;
+    }
+
+    // ==================== INIT ====================
+    async function init() {
+      await loadCountries();
+      setupEventListeners();
+    }
+
+    // ==================== LOAD COUNTRIES ====================
+    async function loadCountries() {
+      try {
+        const response = await fetch('/api/global-markets');
+        const result = await response.json();
+        
+        if (result.status === 'success' && result.data.countries) {
+          allCountries = result.data.countries;
+          populateDropdowns();
+        }
+      } catch (error) {
+        console.error('Error loading countries:', error);
+      }
+    }
+
+    // ==================== POPULATE DROPDOWNS ====================
+    function populateDropdowns() {
+      const selectA = document.getElementById('countryA');
+      const selectB = document.getElementById('countryB');
+      
+      allCountries.forEach(c => {
+        const optA = document.createElement('option');
+        optA.value = c.ulke_id;
+        optA.textContent = c.ulke_adi;
+        selectA.appendChild(optA);
+        
+        const optB = document.createElement('option');
+        optB.value = c.ulke_id;
+        optB.textContent = c.ulke_adi;
+        selectB.appendChild(optB);
+      });
+    }
+
+    // ==================== SETUP EVENT LISTENERS ====================
+    function setupEventListeners() {
+      document.getElementById('compareBtn').addEventListener('click', startComparison);
+      document.getElementById('selectBtnA').addEventListener('click', () => openSaveModal('A'));
+      document.getElementById('selectBtnB').addEventListener('click', () => openSaveModal('B'));
+      document.getElementById('modalClose').addEventListener('click', closeModal);
+      document.getElementById('cancelSave').addEventListener('click', closeModal);
+      document.getElementById('confirmSave').addEventListener('click', saveDecision);
+    }
+
+    // ==================== START COMPARISON ====================
+    function startComparison() {
+      const idA = document.getElementById('countryA').value;
+      const idB = document.getElementById('countryB').value;
+      
+      if (!idA || !idB) {
+        alert('Lütfen iki ülke seçin!');
+        return;
+      }
+      
+      if (idA === idB) {
+        alert('Farklı ülkeler seçin!');
+        return;
+      }
+      
+      countryA = allCountries.find(c => c.ulke_id == idA);
+      countryB = allCountries.find(c => c.ulke_id == idB);
+      
+      if (!countryA || !countryB) return;
+      
+      document.getElementById('emptyState').style.display = 'none';
+      document.getElementById('duelContent').classList.add('show');
+      
+      renderComparison();
+    }
+
+    // ==================== RENDER COMPARISON ====================
+    function renderComparison() {
+      // Score Cards
+      const scoreA = countryA.totalScore || 0;
+      const scoreB = countryB.totalScore || 0;
+      
+      document.getElementById('nameA').textContent = countryA.ulke_adi;
+      document.getElementById('nameB').textContent = countryB.ulke_adi;
+      document.getElementById('regionA').textContent = countryA.bolge_adi || 'Global';
+      document.getElementById('regionB').textContent = countryB.bolge_adi || 'Global';
+      document.getElementById('scoreA').textContent = scoreA.toFixed(0);
+      document.getElementById('scoreB').textContent = scoreB.toFixed(0);
+      
+      // Winner badges
+      if (scoreA > scoreB) {
+        document.getElementById('winnerBadgeA').classList.add('show');
+        document.getElementById('winnerBadgeB').classList.remove('show');
+      } else if (scoreB > scoreA) {
+        document.getElementById('winnerBadgeB').classList.add('show');
+        document.getElementById('winnerBadgeA').classList.remove('show');
+      } else {
+        document.getElementById('winnerBadgeA').classList.remove('show');
+        document.getElementById('winnerBadgeB').classList.remove('show');
+      }
+
+      // Action buttons
+      document.getElementById('selectNameA').textContent = countryA.ulke_adi;
+      document.getElementById('selectNameB').textContent = countryB.ulke_adi;
+
+      renderCostChart();
+      renderPieCharts();
+      renderSWOT();
+    }
+
+    // ==================== RENDER COST CHART ====================
+    function renderCostChart() {
+      const mockA = generateMockData(countryA);
+      const mockB = generateMockData(countryB);
+      
+      const freightA = countryA.konteyner_maliyeti || 1200;
+      const freightB = countryB.konteyner_maliyeti || 1200;
+      
+      const tariffA = mockA.tariffRate * 50; // 5% of $50k base
+      const tariffB = mockB.tariffRate * 50;
+      
+      const localA = mockA.localDistribution;
+      const localB = mockB.localDistribution;
+      
+      const totalA = freightA + tariffA + localA;
+      const totalB = freightB + tariffB + localB;
+      
+      // Cost winner
+      const costWinner = document.getElementById('costWinner');
+      if (totalA < totalB) {
+        costWinner.className = 'section-winner a';
+        costWinner.innerHTML = '🏆 ' + countryA.ulke_adi + ' daha ucuz';
+      } else if (totalB < totalA) {
+        costWinner.className = 'section-winner b';
+        costWinner.innerHTML = '🏆 ' + countryB.ulke_adi + ' daha ucuz';
+      } else {
+        costWinner.className = 'section-winner tie';
+        costWinner.innerHTML = '🤝 Eşit';
+      }
+      
+      if (charts.cost) charts.cost.destroy();
+      
+      const ctx = document.getElementById('costChart').getContext('2d');
+      charts.cost = new Chart(ctx, {
+        type: 'bar',
+        data: {
+          labels: [countryA.ulke_adi, countryB.ulke_adi],
+          datasets: [
+            {
+              label: 'Nakliye',
+              data: [freightA, freightB],
+              backgroundColor: 'rgba(0,212,255,0.8)',
+              borderRadius: 4
+            },
+            {
+              label: 'Gümrük & Vergi',
+              data: [tariffA, tariffB],
+              backgroundColor: 'rgba(168,85,247,0.8)',
+              borderRadius: 4
+            },
+            {
+              label: 'Yerel Dağıtım',
+              data: [localA, localB],
+              backgroundColor: 'rgba(255,170,0,0.8)',
+              borderRadius: 4
+            }
+          ]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: {
+            legend: { display: false },
+            tooltip: {
+              callbacks: {
+                label: ctx => `${ctx.dataset.label}: $${ctx.raw.toLocaleString()}`
+              }
+            }
+          },
+          scales: {
+            x: {
+              stacked: true,
+              grid: { display: false },
+              ticks: { color: '#e8eaed', font: { weight: '600' } }
+            },
+            y: {
+              stacked: true,
+              grid: { color: 'rgba(37,41,49,0.5)' },
+              ticks: {
+                color: '#6b7280',
+                callback: v => '$' + (v/1000).toFixed(0) + 'k'
+              }
+            }
+          }
+        }
+      });
+    }
+
+    // ==================== RENDER PIE CHARTS ====================
+    function renderPieCharts() {
+      const localA = countryA.yerli_uretim_orani || 50;
+      const localB = countryB.yerli_uretim_orani || 50;
+      const importA = 100 - localA;
+      const importB = 100 - localB;
+      
+      // Update stats
+      document.getElementById('pieNameA').textContent = countryA.ulke_adi;
+      document.getElementById('pieNameB').textContent = countryB.ulke_adi;
+      document.getElementById('localA').textContent = localA.toFixed(0) + '%';
+      document.getElementById('localB').textContent = localB.toFixed(0) + '%';
+      document.getElementById('importA').textContent = importA.toFixed(0) + '%';
+      document.getElementById('importB').textContent = importB.toFixed(0) + '%';
+      
+      // Opportunity badges
+      const oppA = document.getElementById('opportunityA');
+      const oppB = document.getElementById('opportunityB');
+      
+      if (importA >= 60) {
+        oppA.textContent = '🟢 Yüksek Fırsat';
+        oppA.className = 'opportunity-badge high';
+      } else if (importA >= 40) {
+        oppA.textContent = '🟡 Orta Fırsat';
+        oppA.className = 'opportunity-badge medium';
+      } else {
+        oppA.textContent = '🔴 Doymuş';
+        oppA.className = 'opportunity-badge low';
+      }
+      
+      if (importB >= 60) {
+        oppB.textContent = '🟢 Yüksek Fırsat';
+        oppB.className = 'opportunity-badge high';
+      } else if (importB >= 40) {
+        oppB.textContent = '🟡 Orta Fırsat';
+        oppB.className = 'opportunity-badge medium';
+      } else {
+        oppB.textContent = '🔴 Doymuş';
+        oppB.className = 'opportunity-badge low';
+      }
+      
+      // Market winner
+      const marketWinner = document.getElementById('marketWinner');
+      if (importA > importB) {
+        marketWinner.className = 'section-winner a';
+        marketWinner.innerHTML = '🏆 ' + countryA.ulke_adi + ' daha açık pazar';
+      } else if (importB > importA) {
+        marketWinner.className = 'section-winner b';
+        marketWinner.innerHTML = '🏆 ' + countryB.ulke_adi + ' daha açık pazar';
+      } else {
+        marketWinner.className = 'section-winner tie';
+        marketWinner.innerHTML = '🤝 Eşit';
+      }
+      
+      // Pie Chart A
+      if (charts.pieA) charts.pieA.destroy();
+      const ctxA = document.getElementById('pieChartA').getContext('2d');
+      charts.pieA = new Chart(ctxA, {
+        type: 'doughnut',
+        data: {
+          labels: ['Yerel Üretim', 'İthalat İhtiyacı'],
+          datasets: [{
+            data: [localA, importA],
+            backgroundColor: [
+              'rgba(255,170,0,0.8)',
+              importA >= 60 ? 'rgba(0,255,136,0.8)' : 'rgba(107,114,128,0.5)'
+            ],
+            borderWidth: 0
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          cutout: '60%',
+          plugins: {
+            legend: { display: false }
+          }
+        }
+      });
+      
+      // Pie Chart B
+      if (charts.pieB) charts.pieB.destroy();
+      const ctxB = document.getElementById('pieChartB').getContext('2d');
+      charts.pieB = new Chart(ctxB, {
+        type: 'doughnut',
+        data: {
+          labels: ['Yerel Üretim', 'İthalat İhtiyacı'],
+          datasets: [{
+            data: [localB, importB],
+            backgroundColor: [
+              'rgba(255,170,0,0.8)',
+              importB >= 60 ? 'rgba(0,255,136,0.8)' : 'rgba(107,114,128,0.5)'
+            ],
+            borderWidth: 0
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          cutout: '60%',
+          plugins: {
+            legend: { display: false }
+          }
+        }
+      });
+    }
+
+    // ==================== RENDER SWOT ====================
+    function renderSWOT() {
+      const swotA = generateSWOT(countryA);
+      const swotB = generateSWOT(countryB);
+      
+      document.getElementById('swotNameA').textContent = countryA.ulke_adi;
+      document.getElementById('swotNameB').textContent = countryB.ulke_adi;
+      
+      document.getElementById('swotMatrixA').innerHTML = renderSWOTMatrix(swotA);
+      document.getElementById('swotMatrixB').innerHTML = renderSWOTMatrix(swotB);
+    }
+
+    function renderSWOTMatrix(swot) {
+      return `
+        <div class="swot-quadrant strengths">
+          <div class="swot-quadrant-header">
+            <div class="swot-quadrant-icon">💪</div>
+            <span class="swot-quadrant-title">Güçlü Yönler</span>
+          </div>
+          <ul class="swot-items">
+            ${swot.strengths.map(s => `<li class="swot-item">${s}</li>`).join('')}
+          </ul>
+        </div>
+        <div class="swot-quadrant weaknesses">
+          <div class="swot-quadrant-header">
+            <div class="swot-quadrant-icon">⚠️</div>
+            <span class="swot-quadrant-title">Zayıf Yönler</span>
+          </div>
+          <ul class="swot-items">
+            ${swot.weaknesses.map(w => `<li class="swot-item">${w}</li>`).join('')}
+          </ul>
+        </div>
+        <div class="swot-quadrant opportunities">
+          <div class="swot-quadrant-header">
+            <div class="swot-quadrant-icon">🚀</div>
+            <span class="swot-quadrant-title">Fırsatlar</span>
+          </div>
+          <ul class="swot-items">
+            ${swot.opportunities.map(o => `<li class="swot-item">${o}</li>`).join('')}
+          </ul>
+        </div>
+        <div class="swot-quadrant threats">
+          <div class="swot-quadrant-header">
+            <div class="swot-quadrant-icon">⛔</div>
+            <span class="swot-quadrant-title">Tehditler</span>
+          </div>
+          <ul class="swot-items">
+            ${swot.threats.map(t => `<li class="swot-item">${t}</li>`).join('')}
+          </ul>
+        </div>
+      `;
+    }
+
+    // ==================== MODAL ====================
+    function openSaveModal(side) {
+      selectedForSave = side === 'A' ? countryA : countryB;
+      const otherCountry = side === 'A' ? countryB : countryA;
+      
+      document.getElementById('modalSummary').innerHTML = `
+        <div class="modal-stat">
+          <div class="modal-stat-label">Seçilen Ülke</div>
+          <div class="modal-stat-value">${selectedForSave.ulke_adi}</div>
+        </div>
+        <div class="modal-stat">
+          <div class="modal-stat-label">Uygunluk Skoru</div>
+          <div class="modal-stat-value" style="color:var(--accent)">${(selectedForSave.totalScore || 0).toFixed(0)}/100</div>
+        </div>
+        <div class="modal-stat">
+          <div class="modal-stat-label">Karşılaştırılan</div>
+          <div class="modal-stat-value">${otherCountry.ulke_adi}</div>
+        </div>
+        <div class="modal-stat">
+          <div class="modal-stat-label">Karşılaştırma Sonucu</div>
+          <div class="modal-stat-value" style="color:var(--success)">
+            ${(selectedForSave.totalScore || 0) > (otherCountry.totalScore || 0) ? '🏆 Kazanan' : '📊 Alternatif'}
+          </div>
+        </div>
+      `;
+      
+      document.getElementById('modalOverlay').classList.add('show');
+    }
+
+    function closeModal() {
+      document.getElementById('modalOverlay').classList.remove('show');
+      selectedForSave = null;
+    }
+
+    async function saveDecision() {
+      if (!selectedForSave) return;
+      
+      const status = document.getElementById('decisionStatus').value;
+      const note = document.getElementById('managerNote').value;
+      
+      try {
+        const response = await fetch('/api/decisions', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            ulke_id: selectedForSave.ulke_id,
+            ulke_adi: selectedForSave.ulke_adi,
+            sektor_id: null,
+            sektor_adi: 'Karşılaştırma Analizi',
+            karar_durumu: status,
+            yonetici_notu: note || `${countryA.ulke_adi} vs ${countryB.ulke_adi} karşılaştırması sonucu seçildi.`,
+            hesaplanan_skor: selectedForSave.totalScore || 0
+          })
+        });
+
+        if (response.ok) {
+          closeModal();
+          showToast('✓ Strateji başarıyla kaydedildi!');
+        }
+      } catch (error) {
+        console.error('Save error:', error);
+      }
+    }
+
+    function showToast(message) {
+      const toast = document.getElementById('toast');
+      toast.textContent = message;
+      toast.classList.add('show');
+      setTimeout(() => toast.classList.remove('show'), 3500);
+    }
+
+    // ==================== START ====================
+    init();
+  </script>
+</body>
+</html>
+

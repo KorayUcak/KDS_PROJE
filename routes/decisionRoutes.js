@@ -2,33 +2,38 @@ const express = require('express');
 const router = express.Router();
 const decisionController = require('../controllers/decisionController');
 
-// ===== VIEW ROUTES =====
+// ===== ANA SAYFALAR =====
 
-// Ana sayfa - Command Center (birleşik dashboard)
+// Ana sayfa - Basit Karar Destek Sistemi
 router.get('/', decisionController.getCommandCenter);
 
-// Eski sektör seçim sayfası (alternatif)
-router.get('/select', decisionController.getSectorSelection);
+// Head-to-Head Karşılaştırma Sayfası
+router.get('/compare', decisionController.getCompareDuel);
 
-// Sektör seçildikten sonra ülke sıralaması
-router.get('/sector/:sektorId/rankings', decisionController.getCountryRankings);
-
-// Ülke detay sayfası
-router.get('/sector/:sektorId/country/:ulkeId', decisionController.getCountryDetail);
-
-// Ülke karşılaştırma sayfası
-router.get('/sector/:sektorId/compare', decisionController.compareCountries);
+// Kayıtlı kararlar sayfası
+router.get('/decisions', decisionController.getSavedDecisionsPage);
 
 // ===== API ROUTES =====
 
 // API: Filtre seçenekleri
 router.get('/api/filters', decisionController.getFilterOptionsAPI);
 
-// API: Ülke sıralaması (JSON)
+// API: Global Markets (30+ ülke)
+router.get('/api/global-markets', decisionController.getGlobalMarketsAPI);
+
+// API: Ülke sıralaması (JSON) - Hybrid: DB + Global
 router.get('/api/sector/:sektorId/rankings', decisionController.getRankingsAPI);
 
-// API: Ülke detayı (JSON)
-router.get('/api/sector/:sektorId/country/:ulkeId', decisionController.getCountryDetailAPI);
+// API: Karar kaydet
+router.post('/api/decisions', decisionController.saveDecisionAPI);
+
+// API: Kayıtlı kararları getir
+router.get('/api/decisions', decisionController.getSavedDecisionsAPI);
+
+// API: Karar durumunu güncelle
+router.patch('/api/decisions/:id/status', decisionController.updateDecisionStatusAPI);
+
+// API: Kararı sil
+router.delete('/api/decisions/:id', decisionController.deleteDecisionAPI);
 
 module.exports = router;
-

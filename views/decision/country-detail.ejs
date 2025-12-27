@@ -4,75 +4,145 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title><%= title %></title>
-  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
   <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
   <style>
     * { margin: 0; padding: 0; box-sizing: border-box; }
+    html { font-size: 62.5%; }
     
     body {
       font-family: 'Outfit', sans-serif;
-      background: #1a1a2e;
+      background: linear-gradient(135deg, #0a0a1a 0%, #1a1a2e 50%, #0f0f23 100%);
       color: #fff;
       min-height: 100vh;
-      padding: 2rem;
     }
 
-    .container {
-      max-width: 1200px;
+    .mono { font-family: 'JetBrains Mono', monospace; }
+
+    /* Header */
+    .page-header {
+      background: linear-gradient(180deg, rgba(76, 201, 240, 0.1), transparent);
+      border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+      padding: 1.5rem 3rem;
+    }
+
+    .header-content {
+      max-width: 1400px;
+      margin: 0 auto;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .header-left h1 {
+      font-size: 2.2rem;
+      font-weight: 700;
+      margin-bottom: 0.3rem;
+    }
+
+    .header-meta {
+      display: flex;
+      gap: 1rem;
+      align-items: center;
+    }
+
+    .meta-badge {
+      padding: 0.4rem 1rem;
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 2rem;
+      font-size: 1.1rem;
+      color: rgba(255, 255, 255, 0.7);
+    }
+
+    .back-btn {
+      padding: 0.8rem 1.5rem;
+      background: rgba(255,255,255,0.05);
+      border: 1px solid rgba(255,255,255,0.1);
+      border-radius: 0.75rem;
+      color: #fff;
+      text-decoration: none;
+      font-size: 1.2rem;
+      transition: all 0.2s;
+    }
+
+    .back-btn:hover { background: rgba(255,255,255,0.1); }
+
+    /* Navigation */
+    .nav-bar {
+      display: flex;
+      gap: 0.5rem;
+      padding: 1rem 3rem;
+      max-width: 1400px;
       margin: 0 auto;
     }
 
-    /* Breadcrumb */
-    .breadcrumb {
-      display: flex;
-      gap: 0.5rem;
-      font-size: 0.9rem;
-      margin-bottom: 1.5rem;
-    }
-
-    .breadcrumb a {
-      color: rgba(255,255,255,0.5);
-      text-decoration: none;
-    }
-
-    .breadcrumb a:hover { color: #4cc9f0; }
-    .breadcrumb span { color: rgba(255,255,255,0.3); }
-
-    /* Hero */
-    .hero {
-      display: grid;
-      grid-template-columns: 1fr 300px;
-      gap: 2rem;
-      margin-bottom: 2rem;
-    }
-
-    .hero-info {
-      background: linear-gradient(135deg, rgba(76,201,240,0.1), rgba(76,201,240,0.02));
-      border: 1px solid rgba(76,201,240,0.2);
-      border-radius: 1.5rem;
-      padding: 2rem;
-    }
-
-    .hero-name { font-size: 2.5rem; font-weight: 700; margin-bottom: 0.5rem; }
-    .hero-region { font-size: 1rem; color: rgba(255,255,255,0.5); margin-bottom: 1.5rem; }
-
-    .hero-tags {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 0.8rem;
-    }
-
-    .tag {
+    .nav-link {
       padding: 0.5rem 1rem;
       background: rgba(255,255,255,0.05);
       border: 1px solid rgba(255,255,255,0.1);
       border-radius: 2rem;
-      font-size: 0.85rem;
+      color: rgba(255,255,255,0.7);
+      text-decoration: none;
+      font-size: 1.1rem;
+      transition: all 0.2s;
     }
+
+    .nav-link:hover { background: rgba(76, 201, 240, 0.1); border-color: rgba(76, 201, 240, 0.3); color: #4cc9f0; }
+    .nav-link.active { background: rgba(76, 201, 240, 0.2); border-color: rgba(76, 201, 240, 0.4); color: #4cc9f0; }
+
+    /* Main Content */
+    .main-content {
+      max-width: 1400px;
+      margin: 0 auto;
+      padding: 2rem 3rem 4rem;
+    }
+
+    /* Hero Score Card */
+    .hero-card {
+      display: grid;
+      grid-template-columns: 1fr 300px;
+      gap: 2rem;
+      margin-bottom: 3rem;
+    }
+
+    .hero-info {
+      background: linear-gradient(135deg, rgba(76, 201, 240, 0.08), rgba(76, 201, 240, 0.02));
+      border: 1px solid rgba(76, 201, 240, 0.2);
+      border-radius: 1.5rem;
+      padding: 2rem;
+    }
+
+    .country-title {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+      margin-bottom: 1.5rem;
+    }
+
+    .country-flag { font-size: 4rem; }
+    .country-name { font-size: 2.8rem; font-weight: 800; }
+    .country-region { font-size: 1.3rem; color: rgba(255,255,255,0.5); }
+
+    .quick-stats {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 1rem;
+    }
+
+    .quick-stat {
+      text-align: center;
+      padding: 1rem;
+      background: rgba(255,255,255,0.03);
+      border-radius: 1rem;
+    }
+
+    .quick-stat .value { font-size: 1.8rem; font-weight: 700; color: #4cc9f0; }
+    .quick-stat .label { font-size: 1rem; color: rgba(255,255,255,0.5); }
 
     /* Score Box */
     .score-box {
-      background: #16213e;
+      background: linear-gradient(135deg, #16213e, #1a1a2e);
       border: 1px solid rgba(255,255,255,0.1);
       border-radius: 1.5rem;
       padding: 2rem;
@@ -83,23 +153,14 @@
     }
 
     .score-ring {
-      width: 150px;
-      height: 150px;
-      margin: 0 auto 1rem;
+      width: 180px;
+      height: 180px;
+      margin: 0 auto 1.5rem;
       position: relative;
     }
 
-    .score-ring svg {
-      width: 100%;
-      height: 100%;
-      transform: rotate(-90deg);
-    }
-
-    .score-ring circle {
-      fill: none;
-      stroke-width: 10;
-    }
-
+    .score-ring svg { width: 100%; height: 100%; transform: rotate(-90deg); }
+    .score-ring circle { fill: none; stroke-width: 12; }
     .score-ring .bg { stroke: rgba(255,255,255,0.1); }
     .score-ring .fill { stroke-linecap: round; }
 
@@ -108,218 +169,299 @@
       top: 50%;
       left: 50%;
       transform: translate(-50%, -50%);
-      font-size: 3rem;
+      font-size: 4rem;
+      font-weight: 800;
+    }
+
+    .score-label { font-size: 1.2rem; color: rgba(255,255,255,0.5); margin-bottom: 1rem; }
+
+    .overall-verdict {
+      display: inline-block;
+      padding: 0.8rem 2rem;
+      border-radius: 2rem;
+      font-size: 1.3rem;
       font-weight: 700;
     }
 
-    .score-label {
-      font-size: 0.9rem;
-      color: rgba(255,255,255,0.5);
-      margin-bottom: 0.8rem;
-    }
+    .verdict-success { background: rgba(0,255,136,0.2); color: #00ff88; }
+    .verdict-warning { background: rgba(255,193,7,0.2); color: #ffc107; }
+    .verdict-danger { background: rgba(244,67,54,0.2); color: #f44336; }
+    .verdict-neutral { background: rgba(76,201,240,0.2); color: #4cc9f0; }
 
-    .recommendation {
-      display: inline-block;
-      padding: 0.6rem 1.5rem;
-      border-radius: 2rem;
-      font-size: 0.95rem;
-      font-weight: 600;
-    }
-
-    .rec-excellent { background: rgba(0,255,136,0.2); color: #00ff88; }
-    .rec-good { background: rgba(76,201,240,0.2); color: #4cc9f0; }
-    .rec-moderate { background: rgba(255,193,7,0.2); color: #ffc107; }
-    .rec-risky { background: rgba(255,152,0,0.2); color: #ff9800; }
-    .rec-poor { background: rgba(244,67,54,0.2); color: #f44336; }
-
-    /* Score Cards */
-    .scores-row {
-      display: grid;
-      grid-template-columns: repeat(4, 1fr);
+    /* Section Title */
+    .section-header {
+      display: flex;
+      align-items: center;
       gap: 1rem;
       margin-bottom: 2rem;
     }
 
-    .score-card {
-      background: rgba(255,255,255,0.02);
-      border: 1px solid rgba(255,255,255,0.08);
-      border-radius: 1rem;
-      padding: 1.5rem;
-      text-align: center;
+    .section-header h2 {
+      font-size: 2rem;
+      font-weight: 700;
     }
 
-    .score-card .icon { font-size: 1.5rem; margin-bottom: 0.5rem; }
-    .score-card .val { font-size: 2rem; font-weight: 700; color: #4cc9f0; }
-    .score-card .lbl { font-size: 0.8rem; color: rgba(255,255,255,0.5); }
+    .section-header .subtitle {
+      font-size: 1.2rem;
+      color: rgba(255,255,255,0.5);
+    }
 
-    .progress-bar {
+    /* Decision Cards Grid */
+    .decisions-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 1.5rem;
+    }
+
+    .decisions-grid.full-width {
+      grid-template-columns: 1fr;
+    }
+
+    /* Decision Card */
+    .decision-card {
+      background: rgba(255,255,255,0.02);
+      border: 2px solid rgba(255,255,255,0.08);
+      border-radius: 1.5rem;
+      overflow: hidden;
+      transition: all 0.3s;
+    }
+
+    .decision-card:hover {
+      transform: translateY(-3px);
+      box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+    }
+
+    .decision-card.success { border-color: rgba(0,255,136,0.4); }
+    .decision-card.warning { border-color: rgba(255,193,7,0.4); }
+    .decision-card.danger { border-color: rgba(244,67,54,0.4); }
+    .decision-card.neutral { border-color: rgba(76,201,240,0.4); }
+
+    .decision-header {
+      padding: 1.5rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+    }
+
+    .decision-card.success .decision-header { background: linear-gradient(90deg, rgba(0,255,136,0.1), transparent); }
+    .decision-card.warning .decision-header { background: linear-gradient(90deg, rgba(255,193,7,0.1), transparent); }
+    .decision-card.danger .decision-header { background: linear-gradient(90deg, rgba(244,67,54,0.1), transparent); }
+    .decision-card.neutral .decision-header { background: linear-gradient(90deg, rgba(76,201,240,0.1), transparent); }
+
+    .decision-number {
+      font-size: 1rem;
+      color: rgba(255,255,255,0.4);
+      margin-bottom: 0.3rem;
+    }
+
+    .decision-question {
+      font-size: 1.1rem;
+      color: rgba(255,255,255,0.6);
+      font-style: italic;
+    }
+
+    .decision-verdict-badge {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      padding: 0.6rem 1.2rem;
+      border-radius: 2rem;
+      font-size: 1.2rem;
+      font-weight: 700;
+      white-space: nowrap;
+    }
+
+    .decision-card.success .decision-verdict-badge { background: rgba(0,255,136,0.2); color: #00ff88; }
+    .decision-card.warning .decision-verdict-badge { background: rgba(255,193,7,0.2); color: #ffc107; }
+    .decision-card.danger .decision-verdict-badge { background: rgba(244,67,54,0.2); color: #f44336; }
+    .decision-card.neutral .decision-verdict-badge { background: rgba(76,201,240,0.2); color: #4cc9f0; }
+
+    .decision-body {
+      padding: 1.5rem;
+    }
+
+    .decision-title {
+      font-size: 1.6rem;
+      font-weight: 700;
+      margin-bottom: 0.3rem;
+    }
+
+    .decision-subtitle {
+      font-size: 1.2rem;
+      color: rgba(255,255,255,0.5);
+      margin-bottom: 1rem;
+    }
+
+    .decision-explanation {
+      font-size: 1.2rem;
+      color: rgba(255,255,255,0.7);
+      line-height: 1.6;
+      margin-bottom: 1.2rem;
+      padding: 1rem;
+      background: rgba(255,255,255,0.03);
+      border-radius: 0.75rem;
+      border-left: 3px solid;
+    }
+
+    .decision-card.success .decision-explanation { border-color: #00ff88; }
+    .decision-card.warning .decision-explanation { border-color: #ffc107; }
+    .decision-card.danger .decision-explanation { border-color: #f44336; }
+    .decision-card.neutral .decision-explanation { border-color: #4cc9f0; }
+
+    .decision-action {
+      display: flex;
+      align-items: flex-start;
+      gap: 0.8rem;
+      padding: 1rem;
+      background: rgba(255,255,255,0.02);
+      border-radius: 0.75rem;
+    }
+
+    .action-icon { font-size: 1.5rem; }
+    .action-text { font-size: 1.1rem; color: rgba(255,255,255,0.8); }
+    .action-label { font-size: 1rem; color: rgba(255,255,255,0.5); display: block; margin-bottom: 0.2rem; }
+
+    .confidence-bar {
+      margin-top: 1rem;
+      display: flex;
+      align-items: center;
+      gap: 0.8rem;
+    }
+
+    .confidence-label { font-size: 1rem; color: rgba(255,255,255,0.5); }
+    .confidence-track {
+      flex: 1;
       height: 6px;
       background: rgba(255,255,255,0.1);
       border-radius: 3px;
-      margin-top: 0.8rem;
       overflow: hidden;
     }
-
-    .progress-fill {
+    .confidence-fill {
       height: 100%;
-      background: linear-gradient(90deg, #4cc9f0, #00ff88);
       border-radius: 3px;
+      transition: width 0.5s ease;
+    }
+    .confidence-value { font-size: 1.1rem; font-weight: 600; }
+
+    /* Sticky Action Footer */
+    .sticky-footer {
+      position: fixed;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      background: linear-gradient(180deg, rgba(26, 26, 46, 0.95), rgba(22, 33, 62, 0.98));
+      border-top: 1px solid rgba(76, 201, 240, 0.3);
+      padding: 1rem 3rem;
+      z-index: 1000;
+      backdrop-filter: blur(10px);
     }
 
-    /* Charts Row */
-    .charts-row {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
+    .footer-content {
+      max-width: 1400px;
+      margin: 0 auto;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .footer-info {
+      display: flex;
+      align-items: center;
       gap: 1.5rem;
-      margin-bottom: 2rem;
     }
 
-    .chart-box {
-      background: rgba(255,255,255,0.02);
-      border: 1px solid rgba(255,255,255,0.08);
-      border-radius: 1rem;
-      padding: 1.5rem;
-    }
-
-    .chart-box h3 {
-      font-size: 1rem;
-      font-weight: 600;
-      margin-bottom: 1rem;
-    }
-
-    .chart-area { height: 250px; }
-
-    /* Logistics */
-    .logistics-row {
-      display: grid;
-      grid-template-columns: repeat(3, 1fr);
-      gap: 1rem;
-      margin-bottom: 2rem;
-    }
-
-    .logistics-card {
-      background: linear-gradient(135deg, rgba(76,201,240,0.08), rgba(76,201,240,0.02));
-      border: 1px solid rgba(76,201,240,0.15);
-      border-radius: 1rem;
-      padding: 1.5rem;
-      text-align: center;
-    }
-
-    .logistics-card .icon { font-size: 2rem; margin-bottom: 0.5rem; }
-    .logistics-card .val { font-size: 2rem; font-weight: 700; color: #4cc9f0; }
-    .logistics-card .lbl { font-size: 0.85rem; color: rgba(255,255,255,0.5); margin-bottom: 0.8rem; }
-
-    .status {
-      display: inline-block;
+    .footer-country { font-size: 1.4rem; font-weight: 600; }
+    .footer-score {
+      background: rgba(76, 201, 240, 0.2);
+      color: #4cc9f0;
       padding: 0.4rem 1rem;
       border-radius: 2rem;
-      font-size: 0.8rem;
-      font-weight: 500;
-    }
-
-    .status-good { background: rgba(0,255,136,0.2); color: #00ff88; }
-    .status-avg { background: rgba(255,193,7,0.2); color: #ffc107; }
-    .status-bad { background: rgba(244,67,54,0.2); color: #f44336; }
-
-    /* Summary */
-    .summary-row {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 1.5rem;
-      margin-bottom: 2rem;
-    }
-
-    .summary-card {
-      border-radius: 1rem;
-      padding: 1.5rem;
-    }
-
-    .summary-pros {
-      background: linear-gradient(135deg, rgba(0,255,136,0.1), rgba(0,255,136,0.02));
-      border: 1px solid rgba(0,255,136,0.2);
-    }
-
-    .summary-cons {
-      background: linear-gradient(135deg, rgba(244,67,54,0.1), rgba(244,67,54,0.02));
-      border: 1px solid rgba(244,67,54,0.2);
-    }
-
-    .summary-card h3 {
-      font-size: 1rem;
+      font-size: 1.2rem;
       font-weight: 600;
-      margin-bottom: 1rem;
     }
 
-    .summary-card h3.green { color: #00ff88; }
-    .summary-card h3.red { color: #f44336; }
-
-    .summary-list {
-      list-style: none;
-    }
-
-    .summary-list li {
-      padding: 0.5rem 0;
-      font-size: 0.9rem;
-      color: rgba(255,255,255,0.8);
-    }
-
-    /* Actions */
-    .actions {
-      display: flex;
-      gap: 1rem;
-    }
-
-    .btn {
-      padding: 0.8rem 1.5rem;
-      border-radius: 0.5rem;
-      font-size: 0.9rem;
-      font-weight: 600;
-      text-decoration: none;
-      transition: all 0.2s;
-    }
-
-    .btn-primary {
+    .footer-btn {
+      padding: 1rem 2.5rem;
       background: linear-gradient(135deg, #4cc9f0, #00ff88);
+      border: none;
+      border-radius: 2rem;
       color: #000;
+      font-size: 1.3rem;
+      font-weight: 700;
+      cursor: pointer;
+      transition: all 0.3s;
+      font-family: inherit;
     }
 
-    .btn-secondary {
-      background: rgba(255,255,255,0.05);
-      border: 1px solid rgba(255,255,255,0.1);
-      color: #fff;
+    .footer-btn:hover {
+      transform: scale(1.05);
+      box-shadow: 0 4px 20px rgba(76, 201, 240, 0.4);
     }
 
-    .btn:hover {
-      transform: scale(1.02);
-    }
+    /* Add padding for sticky footer */
+    body { padding-bottom: 8rem; }
 
-    @media (max-width: 900px) {
-      .hero { grid-template-columns: 1fr; }
-      .scores-row { grid-template-columns: repeat(2, 1fr); }
-      .charts-row { grid-template-columns: 1fr; }
-      .logistics-row { grid-template-columns: 1fr; }
-      .summary-row { grid-template-columns: 1fr; }
+    /* Responsive */
+    @media (max-width: 1000px) {
+      .hero-card { grid-template-columns: 1fr; }
+      .decisions-grid { grid-template-columns: 1fr; }
+      .quick-stats { grid-template-columns: repeat(2, 1fr); }
     }
   </style>
 </head>
 <body>
-  <div class="container">
-    <!-- Breadcrumb -->
-    <nav class="breadcrumb">
-      <a href="/">🌍 Harita</a> <span>›</span>
-      <a href="/sector/<%= sector.sektor_id %>/rankings"><%= sector.sektor_adi %></a> <span>›</span>
-      <%= country.ulke_adi %>
-    </nav>
+  <!-- Header -->
+  <header class="page-header">
+    <div class="header-content">
+      <div class="header-left">
+        <h1>🎯 Executive Verdicts</h1>
+        <div class="header-meta">
+          <span class="meta-badge">📊 <%= sector.sektor_adi %></span>
+          <span class="meta-badge">🏳️ <%= country.ulke_adi %></span>
+        </div>
+      </div>
+      <a href="/sector/<%= sector.sektor_id %>/rankings" class="back-btn">← Sıralamaya Dön</a>
+    </div>
+  </header>
 
-    <!-- Hero -->
-    <div class="hero">
+  <!-- Navigation -->
+  <nav class="nav-bar">
+    <a href="/" class="nav-link">🗺️ Harita</a>
+    <a href="/scenario-builder" class="nav-link">🔬 Senaryo</a>
+    <a href="/sector/<%= sector.sektor_id %>/rankings" class="nav-link">📊 Sıralama</a>
+    <a href="/sector/<%= sector.sektor_id %>/country/<%= country.ulke_id %>" class="nav-link active">🎯 Kararlar</a>
+    <a href="/sector/<%= sector.sektor_id %>/country/<%= country.ulke_id %>/strategy" class="nav-link">🧙 Wizard</a>
+    <a href="/decisions" class="nav-link">📋 Kayıtlı Kararlar</a>
+  </nav>
+
+  <main class="main-content">
+    <!-- Hero Card -->
+    <div class="hero-card">
       <div class="hero-info">
-        <h1 class="hero-name"><%= country.ulke_adi %></h1>
-        <p class="hero-region"><%= country.bolge_adi || 'N/A' %> • <%= country.ISO_KODU %></p>
-        <div class="hero-tags">
-          <span class="tag">👥 <%= country.nufus_milyon ? parseFloat(country.nufus_milyon).toFixed(1) : '0' %>M</span>
-          <span class="tag">💰 $<%= country.toplam_gsyh_milyar_dolar ? parseFloat(country.toplam_gsyh_milyar_dolar).toFixed(0) : '0' %>B GSYİH</span>
-          <span class="tag">📊 Risk: <%= country.risk_notu_kodu || 'N/A' %></span>
+        <div class="country-title">
+          <span class="country-flag">🏳️</span>
+          <div>
+            <h1 class="country-name"><%= country.ulke_adi %></h1>
+            <p class="country-region"><%= country.bolge_adi || 'N/A' %> • <%= country.ISO_KODU %></p>
+          </div>
+        </div>
+        <div class="quick-stats">
+          <div class="quick-stat">
+            <div class="value mono">$<%= country.gsyh_kisi_basi_usd ? Math.round(parseFloat(country.gsyh_kisi_basi_usd)).toLocaleString() : 'N/A' %></div>
+            <div class="label">Kişi Başı GSYİH</div>
+          </div>
+          <div class="quick-stat">
+            <div class="value mono"><%= country.nufus_milyon ? parseFloat(country.nufus_milyon).toFixed(1) : 'N/A' %>M</div>
+            <div class="label">Nüfus</div>
+          </div>
+          <div class="quick-stat">
+            <div class="value"><%= country.risk_notu_kodu || 'N/A' %></div>
+            <div class="label">Risk Notu</div>
+          </div>
+          <div class="quick-stat">
+            <div class="value mono"><%= country.lpi_skoru ? parseFloat(country.lpi_skoru).toFixed(2) : 'N/A' %></div>
+            <div class="label">LPI Skoru</div>
+          </div>
         </div>
       </div>
 
@@ -334,204 +476,286 @@
               stroke-dashoffset="<%= 264 * (1 - countryRank.totalScore / 100) %>"
             />
           </svg>
-          <div class="score-num" style="color: <%= countryRank.totalScore >= 65 ? '#00ff88' : countryRank.totalScore >= 50 ? '#ffc107' : '#f44336' %>">
+          <div class="score-num mono" style="color: <%= countryRank.totalScore >= 65 ? '#00ff88' : countryRank.totalScore >= 50 ? '#ffc107' : '#f44336' %>">
             <%= countryRank.totalScore %>
           </div>
         </div>
-        <div class="score-label">Toplam Skor</div>
-        <span class="recommendation rec-<%= countryRank.recommendation.class %>">
-          <%= countryRank.recommendation.text %>
+        <div class="score-label">Toplam Uygunluk Skoru</div>
+        <span class="overall-verdict verdict-<%= countryRank.totalScore >= 65 ? 'success' : countryRank.totalScore >= 50 ? 'warning' : 'danger' %>">
+          <%= countryRank.totalScore >= 65 ? '✅ Önerilen Pazar' : countryRank.totalScore >= 50 ? '⚠️ Potansiyel Var' : '❌ Riskli Pazar' %>
         </span>
       </div>
       <% } %>
     </div>
 
-    <!-- Score Cards -->
-    <% if (countryRank) { %>
-    <div class="scores-row">
-      <div class="score-card">
-        <div class="icon">📊</div>
-        <div class="val"><%= countryRank.scores.marketPotential %></div>
-        <div class="lbl">Pazar Potansiyeli</div>
-        <div class="progress-bar"><div class="progress-fill" style="width: <%= countryRank.scores.marketPotential %>%"></div></div>
+    <!-- 7 Decisions Section -->
+    <div class="section-header">
+      <h2>📋 7 Stratejik Karar</h2>
+      <span class="subtitle">Veriye dayalı yönetici tavsiyeleri</span>
+    </div>
+
+    <% if (decisions) { %>
+    <div class="decisions-grid">
+      
+      <!-- Decision 1: Market Entry -->
+      <div class="decision-card <%= decisions.marketEntry.status %>">
+        <div class="decision-header">
+          <div>
+            <div class="decision-number">KARAR #1</div>
+            <div class="decision-question">"Bu pazara girmeli miyiz?"</div>
+          </div>
+          <div class="decision-verdict-badge">
+            <%= decisions.marketEntry.icon %> <%= decisions.marketEntry.verdict %>
+          </div>
+        </div>
+        <div class="decision-body">
+          <h3 class="decision-title"><%= decisions.marketEntry.title %></h3>
+          <p class="decision-subtitle"><%= decisions.marketEntry.subtitle %></p>
+          <div class="decision-explanation"><%= decisions.marketEntry.explanation %></div>
+          <div class="decision-action">
+            <span class="action-icon">💡</span>
+            <div>
+              <span class="action-label">Önerilen Aksiyon:</span>
+              <span class="action-text"><%= decisions.marketEntry.action %></span>
+            </div>
+          </div>
+          <div class="confidence-bar">
+            <span class="confidence-label">Güven:</span>
+            <div class="confidence-track">
+              <div class="confidence-fill" style="width: <%= decisions.marketEntry.confidence %>%; background: <%= decisions.marketEntry.status === 'success' ? '#00ff88' : decisions.marketEntry.status === 'warning' ? '#ffc107' : decisions.marketEntry.status === 'danger' ? '#f44336' : '#4cc9f0' %>;"></div>
+            </div>
+            <span class="confidence-value mono">%<%= decisions.marketEntry.confidence %></span>
+          </div>
+        </div>
       </div>
-      <div class="score-card">
-        <div class="icon">💰</div>
-        <div class="val"><%= countryRank.scores.economicStability %></div>
-        <div class="lbl">Ekonomik İstikrar</div>
-        <div class="progress-bar"><div class="progress-fill" style="width: <%= countryRank.scores.economicStability %>%"></div></div>
+
+      <!-- Decision 2: Pricing -->
+      <div class="decision-card <%= decisions.pricing.status %>">
+        <div class="decision-header">
+          <div>
+            <div class="decision-number">KARAR #2</div>
+            <div class="decision-question">"Nasıl fiyatlandırmalıyız?"</div>
+          </div>
+          <div class="decision-verdict-badge">
+            <%= decisions.pricing.icon %> <%= decisions.pricing.verdict %>
+          </div>
+        </div>
+        <div class="decision-body">
+          <h3 class="decision-title"><%= decisions.pricing.title %></h3>
+          <p class="decision-subtitle"><%= decisions.pricing.subtitle %></p>
+          <div class="decision-explanation"><%= decisions.pricing.explanation %></div>
+          <div class="decision-action">
+            <span class="action-icon">💡</span>
+            <div>
+              <span class="action-label">Önerilen Aksiyon:</span>
+              <span class="action-text"><%= decisions.pricing.action %></span>
+            </div>
+          </div>
+          <div class="confidence-bar">
+            <span class="confidence-label">Güven:</span>
+            <div class="confidence-track">
+              <div class="confidence-fill" style="width: <%= decisions.pricing.confidence %>%; background: <%= decisions.pricing.status === 'success' ? '#00ff88' : decisions.pricing.status === 'warning' ? '#ffc107' : '#4cc9f0' %>;"></div>
+            </div>
+            <span class="confidence-value mono">%<%= decisions.pricing.confidence %></span>
+          </div>
+        </div>
       </div>
-      <div class="score-card">
-        <div class="icon">🚚</div>
-        <div class="val"><%= countryRank.scores.logisticsEase %></div>
-        <div class="lbl">Lojistik Kolaylığı</div>
-        <div class="progress-bar"><div class="progress-fill" style="width: <%= countryRank.scores.logisticsEase %>%"></div></div>
+
+      <!-- Decision 3: Logistics -->
+      <div class="decision-card <%= decisions.logistics.status %>">
+        <div class="decision-header">
+          <div>
+            <div class="decision-number">KARAR #3</div>
+            <div class="decision-question">"Nasıl gönderelim?"</div>
+          </div>
+          <div class="decision-verdict-badge">
+            <%= decisions.logistics.icon %> <%= decisions.logistics.verdict %>
+          </div>
+        </div>
+        <div class="decision-body">
+          <h3 class="decision-title"><%= decisions.logistics.title %></h3>
+          <p class="decision-subtitle"><%= decisions.logistics.subtitle %></p>
+          <div class="decision-explanation"><%= decisions.logistics.explanation %></div>
+          <div class="decision-action">
+            <span class="action-icon">💡</span>
+            <div>
+              <span class="action-label">Önerilen Mod:</span>
+              <span class="action-text"><%= decisions.logistics.recommendedMode %> | Tampon Stok: <%= decisions.logistics.bufferStock %></span>
+            </div>
+          </div>
+          <div class="confidence-bar">
+            <span class="confidence-label">Güven:</span>
+            <div class="confidence-track">
+              <div class="confidence-fill" style="width: <%= decisions.logistics.confidence %>%; background: <%= decisions.logistics.status === 'success' ? '#00ff88' : decisions.logistics.status === 'warning' ? '#ffc107' : '#4cc9f0' %>;"></div>
+            </div>
+            <span class="confidence-value mono">%<%= decisions.logistics.confidence %></span>
+          </div>
+        </div>
       </div>
-      <div class="score-card">
-        <div class="icon">📈</div>
-        <div class="val"><%= countryRank.scores.sectorGrowth %></div>
-        <div class="lbl">Sektörel Büyüme</div>
-        <div class="progress-bar"><div class="progress-fill" style="width: <%= countryRank.scores.sectorGrowth %>%"></div></div>
+
+      <!-- Decision 4: Financial -->
+      <div class="decision-card <%= decisions.financial.status %>">
+        <div class="decision-header">
+          <div>
+            <div class="decision-number">KARAR #4</div>
+            <div class="decision-question">"Paramız güvende mi?"</div>
+          </div>
+          <div class="decision-verdict-badge">
+            <%= decisions.financial.icon %> <%= decisions.financial.verdict %>
+          </div>
+        </div>
+        <div class="decision-body">
+          <h3 class="decision-title"><%= decisions.financial.title %></h3>
+          <p class="decision-subtitle"><%= decisions.financial.subtitle %></p>
+          <div class="decision-explanation"><%= decisions.financial.explanation %></div>
+          <div class="decision-action">
+            <span class="action-icon">💡</span>
+            <div>
+              <span class="action-label">Para Birimi Önerisi:</span>
+              <span class="action-text"><%= decisions.financial.currencyRecommendation %></span>
+            </div>
+          </div>
+          <div class="confidence-bar">
+            <span class="confidence-label">Güven:</span>
+            <div class="confidence-track">
+              <div class="confidence-fill" style="width: <%= decisions.financial.confidence %>%; background: <%= decisions.financial.status === 'success' ? '#00ff88' : decisions.financial.status === 'warning' ? '#ffc107' : decisions.financial.status === 'danger' ? '#f44336' : '#4cc9f0' %>;"></div>
+            </div>
+            <span class="confidence-value mono">%<%= decisions.financial.confidence %></span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Decision 5: Marketing -->
+      <div class="decision-card <%= decisions.marketing.status %>">
+        <div class="decision-header">
+          <div>
+            <div class="decision-number">KARAR #5</div>
+            <div class="decision-question">"Hedef kitlemiz kim?"</div>
+          </div>
+          <div class="decision-verdict-badge">
+            <%= decisions.marketing.icon %> <%= decisions.marketing.verdict %>
+          </div>
+        </div>
+        <div class="decision-body">
+          <h3 class="decision-title"><%= decisions.marketing.title %></h3>
+          <p class="decision-subtitle"><%= decisions.marketing.subtitle %></p>
+          <div class="decision-explanation"><%= decisions.marketing.explanation %></div>
+          <div class="decision-action">
+            <span class="action-icon">💡</span>
+            <div>
+              <span class="action-label">Kampanya Odağı:</span>
+              <span class="action-text"><%= decisions.marketing.campaignFocus %></span>
+            </div>
+          </div>
+          <div class="confidence-bar">
+            <span class="confidence-label">Güven:</span>
+            <div class="confidence-track">
+              <div class="confidence-fill" style="width: <%= decisions.marketing.confidence %>%; background: <%= decisions.marketing.status === 'success' ? '#00ff88' : decisions.marketing.status === 'warning' ? '#ffc107' : '#4cc9f0' %>;"></div>
+            </div>
+            <span class="confidence-value mono">%<%= decisions.marketing.confidence %></span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Decision 6: Trade Barrier -->
+      <div class="decision-card <%= decisions.tradeBarrier.status %>">
+        <div class="decision-header">
+          <div>
+            <div class="decision-number">KARAR #6</div>
+            <div class="decision-question">"Ticari avantajımız var mı?"</div>
+          </div>
+          <div class="decision-verdict-badge">
+            <%= decisions.tradeBarrier.icon %> <%= decisions.tradeBarrier.verdict %>
+          </div>
+        </div>
+        <div class="decision-body">
+          <h3 class="decision-title"><%= decisions.tradeBarrier.title %></h3>
+          <p class="decision-subtitle"><%= decisions.tradeBarrier.subtitle %></p>
+          <div class="decision-explanation"><%= decisions.tradeBarrier.explanation %></div>
+          <div class="decision-action">
+            <span class="action-icon">💡</span>
+            <div>
+              <span class="action-label">Tarife Avantajı:</span>
+              <span class="action-text"><%= decisions.tradeBarrier.tariffAdvantage %></span>
+            </div>
+          </div>
+          <div class="confidence-bar">
+            <span class="confidence-label">Güven:</span>
+            <div class="confidence-track">
+              <div class="confidence-fill" style="width: <%= decisions.tradeBarrier.confidence %>%; background: <%= decisions.tradeBarrier.status === 'success' ? '#00ff88' : decisions.tradeBarrier.status === 'warning' ? '#ffc107' : '#4cc9f0' %>;"></div>
+            </div>
+            <span class="confidence-value mono">%<%= decisions.tradeBarrier.confidence %></span>
+          </div>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- Decision 7: Investment Horizon (Full Width) -->
+    <div class="decisions-grid full-width" style="margin-top: 1.5rem;">
+      <div class="decision-card <%= decisions.investmentHorizon.status %>">
+        <div class="decision-header">
+          <div>
+            <div class="decision-number">KARAR #7</div>
+            <div class="decision-question">"Kısa vadeli mi, uzun vadeli mi?"</div>
+          </div>
+          <div class="decision-verdict-badge">
+            <%= decisions.investmentHorizon.icon %> <%= decisions.investmentHorizon.verdict %>
+          </div>
+        </div>
+        <div class="decision-body">
+          <h3 class="decision-title"><%= decisions.investmentHorizon.title %></h3>
+          <p class="decision-subtitle"><%= decisions.investmentHorizon.subtitle %></p>
+          <div class="decision-explanation"><%= decisions.investmentHorizon.explanation %></div>
+          <div class="decision-action">
+            <span class="action-icon">💡</span>
+            <div>
+              <span class="action-label">Yatırım Ufku:</span>
+              <span class="action-text"><%= decisions.investmentHorizon.horizon %> | Yatırım Seviyesi: <%= decisions.investmentHorizon.investmentLevel %></span>
+            </div>
+          </div>
+          <div class="confidence-bar">
+            <span class="confidence-label">Güven:</span>
+            <div class="confidence-track">
+              <div class="confidence-fill" style="width: <%= decisions.investmentHorizon.confidence %>%; background: <%= decisions.investmentHorizon.status === 'success' ? '#00ff88' : decisions.investmentHorizon.status === 'warning' ? '#ffc107' : '#4cc9f0' %>;"></div>
+            </div>
+            <span class="confidence-value mono">%<%= decisions.investmentHorizon.confidence %></span>
+          </div>
+        </div>
       </div>
     </div>
     <% } %>
+  </main>
 
-    <!-- Logistics -->
-    <div class="logistics-row">
-      <div class="logistics-card">
-        <div class="icon">📊</div>
-        <div class="val"><%= country.lpi_skoru ? parseFloat(country.lpi_skoru).toFixed(2) : 'N/A' %></div>
-        <div class="lbl">LPI Skoru</div>
-        <% const lpi = parseFloat(country.lpi_skoru) || 0; %>
-        <span class="status <%= lpi >= 3.5 ? 'status-good' : lpi >= 2.5 ? 'status-avg' : 'status-bad' %>">
-          <%= lpi >= 3.5 ? 'İyi' : lpi >= 2.5 ? 'Ortalama' : 'Zayıf' %>
-        </span>
+  <!-- Sticky Action Footer -->
+  <div class="sticky-footer">
+    <div class="footer-content">
+      <div class="footer-info">
+        <span class="footer-country">🏳️ <%= country.ulke_adi %></span>
+        <span class="footer-score"><%= countryRank ? countryRank.totalScore : 0 %> puan</span>
+        <% if (decisions && decisions.marketEntry) { %>
+          <span class="overall-verdict verdict-<%= decisions.marketEntry.status %>" style="font-size: 1.1rem;">
+            <%= decisions.marketEntry.icon %> <%= decisions.marketEntry.verdict %>
+          </span>
+        <% } %>
       </div>
-      <div class="logistics-card">
-        <div class="icon">⏱️</div>
-        <div class="val"><%= country.gumruk_bekleme_suresi_gun || 'N/A' %></div>
-        <div class="lbl">Gümrük Süresi (Gün)</div>
-        <% const customs = parseInt(country.gumruk_bekleme_suresi_gun) || 99; %>
-        <span class="status <%= customs <= 5 ? 'status-good' : customs <= 10 ? 'status-avg' : 'status-bad' %>">
-          <%= customs <= 5 ? 'Hızlı' : customs <= 10 ? 'Ortalama' : 'Yavaş' %>
-        </span>
-      </div>
-      <div class="logistics-card">
-        <div class="icon">📦</div>
-        <div class="val">$<%= country.konteyner_ihracat_maliyeti_usd ? parseInt(country.konteyner_ihracat_maliyeti_usd).toLocaleString() : 'N/A' %></div>
-        <div class="lbl">Konteyner Maliyeti</div>
-        <% const cost = parseInt(country.konteyner_ihracat_maliyeti_usd) || 9999; %>
-        <span class="status <%= cost <= 1500 ? 'status-good' : cost <= 3000 ? 'status-avg' : 'status-bad' %>">
-          <%= cost <= 1500 ? 'Ekonomik' : cost <= 3000 ? 'Ortalama' : 'Pahalı' %>
-        </span>
-      </div>
-    </div>
-
-    <!-- Charts -->
-    <div class="charts-row">
-      <div class="chart-box">
-        <h3>🎯 Skor Analizi</h3>
-        <div class="chart-area">
-          <canvas id="radarChart"></canvas>
-        </div>
-      </div>
-      <div class="chart-box">
-        <h3>💹 Ekonomik Göstergeler</h3>
-        <div class="chart-area">
-          <canvas id="barChart"></canvas>
-        </div>
-      </div>
-    </div>
-
-    <!-- Summary -->
-    <div class="summary-row">
-      <div class="summary-card summary-pros">
-        <h3 class="green">✅ Güçlü Yönler</h3>
-        <ul class="summary-list">
-          <% if (parseFloat(country.sektorel_ithalat_milyon_usd || 0) > 500) { %>
-            <li>📥 Yüksek ithalat talebi</li>
-          <% } %>
-          <% if (parseFloat(country.lpi_skoru || 0) >= 3) { %>
-            <li>🚚 İyi lojistik altyapısı</li>
-          <% } %>
-          <% if (parseFloat(country.sektorel_buyume_orani_yuzde || 0) > 3) { %>
-            <li>📈 Güçlü sektörel büyüme</li>
-          <% } %>
-          <% if (parseFloat(country.gsyh_kisi_basi_usd || 0) > 10000) { %>
-            <li>💰 Yüksek satın alma gücü</li>
-          <% } %>
-          <% if (country.agreements && country.agreements.length > 0) { %>
-            <li>📜 Aktif ticaret anlaşmaları</li>
-          <% } %>
-        </ul>
-      </div>
-      <div class="summary-card summary-cons">
-        <h3 class="red">⚠️ Dikkat Edilecekler</h3>
-        <ul class="summary-list">
-          <% if (parseFloat(country.enflasyon_orani_yuzde || 0) > 10) { %>
-            <li>💸 Yüksek enflasyon riski</li>
-          <% } %>
-          <% if (parseInt(country.gumruk_bekleme_suresi_gun || 0) > 10) { %>
-            <li>⏱️ Uzun gümrük süreleri</li>
-          <% } %>
-          <% if (parseInt(country.konteyner_ihracat_maliyeti_usd || 0) > 3000) { %>
-            <li>📦 Yüksek nakliye maliyeti</li>
-          <% } %>
-          <% if (['CCC', 'CC', 'C', 'D', 'B-', 'B', 'B+'].includes(country.risk_notu_kodu)) { %>
-            <li>⚠️ Düşük ülke risk notu</li>
-          <% } %>
-        </ul>
-      </div>
-    </div>
-
-    <!-- Actions -->
-    <div class="actions">
-      <a href="/sector/<%= sector.sektor_id %>/rankings" class="btn btn-secondary">← Sıralamaya Dön</a>
-      <a href="/" class="btn btn-secondary">🌍 Haritaya Dön</a>
+      <a href="/sector/<%= sector.sektor_id %>/country/<%= country.ulke_id %>/strategy" class="footer-btn" style="margin-right: 12px; background: linear-gradient(135deg, #7c3aed, #a855f7); text-decoration: none;">
+        🧙 Strateji Wizard
+      </a>
+      <button class="footer-btn" onclick="openDecisionPanel({
+        ulke_id: '<%= country.ulke_id %>',
+        ulke_adi: '<%= country.ulke_adi %>',
+        sektor_id: '<%= sector.sektor_id %>',
+        sektor_adi: '<%= sector.sektor_adi %>',
+        skor: <%= countryRank ? countryRank.totalScore : 0 %>,
+        flag: '🏳️'
+      })">
+        🎯 Hızlı Karar Al
+      </button>
     </div>
   </div>
 
-  <script>
-    <% if (countryRank) { %>
-    // Radar Chart
-    new Chart(document.getElementById('radarChart'), {
-      type: 'radar',
-      data: {
-        labels: ['Pazar', 'Ekonomi', 'Lojistik', 'Büyüme'],
-        datasets: [{
-          label: '<%= country.ulke_adi %>',
-          data: [<%= countryRank.scores.marketPotential %>, <%= countryRank.scores.economicStability %>, <%= countryRank.scores.logisticsEase %>, <%= countryRank.scores.sectorGrowth %>],
-          backgroundColor: 'rgba(76, 201, 240, 0.2)',
-          borderColor: '#4cc9f0',
-          borderWidth: 2,
-          pointBackgroundColor: '#4cc9f0'
-        }]
-      },
-      options: {
-        responsive: true,
-        maintainAspectRatio: false,
-        scales: {
-          r: {
-            beginAtZero: true,
-            max: 100,
-            ticks: { color: 'rgba(255,255,255,0.5)', backdropColor: 'transparent' },
-            grid: { color: 'rgba(255,255,255,0.1)' },
-            pointLabels: { color: 'rgba(255,255,255,0.7)' }
-          }
-        },
-        plugins: { legend: { display: false } }
-      }
-    });
-    <% } %>
-
-    // Bar Chart
-    new Chart(document.getElementById('barChart'), {
-      type: 'bar',
-      data: {
-        labels: ['GSYİH', 'Büyüme %', 'Enflasyon %', 'İşsizlik %'],
-        datasets: [{
-          data: [
-            <%= parseFloat(country.toplam_gsyh_milyar_dolar || 0) %>,
-            <%= parseFloat(country.buyume_orani_yuzde || 0) %>,
-            <%= parseFloat(country.enflasyon_orani_yuzde || 0) %>,
-            <%= parseFloat(country.issizlik_orani_yuzde || 0) %>
-          ],
-          backgroundColor: ['#4cc9f099', '#00ff8899', '#ffc10799', '#ff980099'],
-          borderColor: ['#4cc9f0', '#00ff88', '#ffc107', '#ff9800'],
-          borderWidth: 2,
-          borderRadius: 6
-        }]
-      },
-      options: {
-        responsive: true,
-        maintainAspectRatio: false,
-        plugins: { legend: { display: false } },
-        scales: {
-          y: { grid: { color: 'rgba(255,255,255,0.05)' }, ticks: { color: 'rgba(255,255,255,0.5)' } },
-          x: { grid: { display: false }, ticks: { color: 'rgba(255,255,255,0.7)' } }
-        }
-      }
-    });
-  </script>
+  <!-- Decision Panel Include -->
+  <%- include('../includes/decision-panel') %>
 </body>
 </html>

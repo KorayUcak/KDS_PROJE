@@ -1,0 +1,394 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>📋 Kayıtlı Kararlar - Türkiye İhracat KDS</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    
+    body {
+      font-family: 'Inter', sans-serif;
+      background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+      color: #fff;
+      min-height: 100vh;
+    }
+
+    /* HEADER */
+    .header {
+      background: rgba(0,0,0,0.3);
+      padding: 20px 40px;
+      border-bottom: 1px solid rgba(255,255,255,0.1);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .logo {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .logo-icon { font-size: 32px; }
+
+    .logo h1 {
+      font-size: 22px;
+      font-weight: 700;
+    }
+
+    .logo h1 span { color: #e63946; }
+
+    .back-btn {
+      padding: 10px 20px;
+      background: rgba(255,255,255,0.1);
+      border: 1px solid rgba(255,255,255,0.2);
+      border-radius: 8px;
+      color: #fff;
+      text-decoration: none;
+      font-size: 14px;
+      font-weight: 500;
+      transition: all 0.3s;
+    }
+
+    .back-btn:hover {
+      background: rgba(255,255,255,0.2);
+    }
+
+    /* CONTAINER */
+    .container {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 30px 40px;
+    }
+
+    /* PAGE TITLE */
+    .page-title {
+      font-size: 28px;
+      font-weight: 700;
+      margin-bottom: 30px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    /* STATS */
+    .stats-row {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 16px;
+      margin-bottom: 30px;
+    }
+
+    .stat-card {
+      background: rgba(255,255,255,0.05);
+      border: 1px solid rgba(255,255,255,0.1);
+      border-radius: 12px;
+      padding: 20px;
+      text-align: center;
+    }
+
+    .stat-value {
+      font-size: 32px;
+      font-weight: 800;
+      margin-bottom: 4px;
+    }
+
+    .stat-value.green { color: #00ff88; }
+    .stat-value.blue { color: #4cc9f0; }
+    .stat-value.yellow { color: #ffc107; }
+    .stat-value.red { color: #f44336; }
+
+    .stat-label {
+      font-size: 13px;
+      color: rgba(255,255,255,0.6);
+    }
+
+    /* DECISIONS LIST */
+    .decisions-list {
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+    }
+
+    .decision-card {
+      background: rgba(255,255,255,0.05);
+      border: 1px solid rgba(255,255,255,0.1);
+      border-radius: 16px;
+      padding: 24px;
+      display: grid;
+      grid-template-columns: auto 1fr auto auto;
+      gap: 24px;
+      align-items: center;
+      transition: all 0.3s;
+    }
+
+    .decision-card:hover {
+      background: rgba(255,255,255,0.08);
+      border-color: rgba(255,255,255,0.2);
+    }
+
+    .decision-flag {
+      font-size: 40px;
+    }
+
+    .decision-info h3 {
+      font-size: 18px;
+      font-weight: 600;
+      margin-bottom: 4px;
+    }
+
+    .decision-info .meta {
+      font-size: 13px;
+      color: rgba(255,255,255,0.5);
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .decision-info .note {
+      font-size: 14px;
+      color: rgba(255,255,255,0.7);
+      margin-top: 8px;
+      font-style: italic;
+    }
+
+    .decision-score {
+      text-align: center;
+    }
+
+    .decision-score .value {
+      font-size: 28px;
+      font-weight: 800;
+      color: #4cc9f0;
+    }
+
+    .decision-score .label {
+      font-size: 11px;
+      color: rgba(255,255,255,0.5);
+    }
+
+    .decision-status {
+      padding: 8px 16px;
+      border-radius: 20px;
+      font-size: 13px;
+      font-weight: 600;
+      white-space: nowrap;
+    }
+
+    .status-completed {
+      background: rgba(0, 255, 136, 0.2);
+      color: #00ff88;
+    }
+
+    .status-progress {
+      background: rgba(76, 201, 240, 0.2);
+      color: #4cc9f0;
+    }
+
+    .status-draft {
+      background: rgba(255, 193, 7, 0.2);
+      color: #ffc107;
+    }
+
+    .status-cancelled {
+      background: rgba(244, 67, 54, 0.2);
+      color: #f44336;
+    }
+
+    .decision-actions {
+      display: flex;
+      gap: 8px;
+    }
+
+    .action-btn {
+      width: 36px;
+      height: 36px;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      font-size: 16px;
+      transition: all 0.3s;
+    }
+
+    .action-btn.delete {
+      background: rgba(244, 67, 54, 0.2);
+      color: #f44336;
+    }
+
+    .action-btn.delete:hover {
+      background: rgba(244, 67, 54, 0.4);
+    }
+
+    /* EMPTY STATE */
+    .empty-state {
+      text-align: center;
+      padding: 60px;
+      color: rgba(255,255,255,0.5);
+    }
+
+    .empty-state .icon {
+      font-size: 64px;
+      margin-bottom: 16px;
+    }
+
+    .empty-state h3 {
+      font-size: 20px;
+      margin-bottom: 8px;
+      color: #fff;
+    }
+
+    .empty-state p {
+      margin-bottom: 24px;
+    }
+
+    .empty-state a {
+      display: inline-block;
+      padding: 12px 24px;
+      background: linear-gradient(135deg, #4cc9f0, #00ff88);
+      color: #000;
+      text-decoration: none;
+      border-radius: 8px;
+      font-weight: 600;
+    }
+
+    /* TOAST */
+    .toast {
+      position: fixed;
+      bottom: 30px;
+      right: 30px;
+      padding: 16px 24px;
+      background: #00ff88;
+      color: #000;
+      border-radius: 12px;
+      font-weight: 600;
+      display: none;
+      z-index: 1000;
+    }
+
+    .toast.show { display: block; }
+    .toast.error { background: #f44336; color: #fff; }
+
+    /* RESPONSIVE */
+    @media (max-width: 900px) {
+      .decision-card {
+        grid-template-columns: 1fr;
+        text-align: center;
+      }
+      .stats-row {
+        grid-template-columns: repeat(2, 1fr);
+      }
+    }
+  </style>
+</head>
+<body>
+  <!-- HEADER -->
+  <header class="header">
+    <div class="logo">
+      <span class="logo-icon">🇹🇷</span>
+      <h1>Türkiye <span>İhracat</span> KDS</h1>
+    </div>
+    <a href="/" class="back-btn">← Ana Sayfaya Dön</a>
+  </header>
+
+  <div class="container">
+    <h1 class="page-title">📋 Kayıtlı Kararlarınız</h1>
+
+    <!-- STATS -->
+    <div class="stats-row">
+      <div class="stat-card">
+        <div class="stat-value blue"><%= stats.toplam || 0 %></div>
+        <div class="stat-label">Toplam Karar</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-value green"><%= stats.tamamlandi || 0 %></div>
+        <div class="stat-label">Tamamlandı</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-value yellow"><%= stats.devam_ediyor || 0 %></div>
+        <div class="stat-label">Devam Ediyor</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-value red"><%= stats.iptal || 0 %></div>
+        <div class="stat-label">İptal</div>
+      </div>
+    </div>
+
+    <!-- DECISIONS LIST -->
+    <% if (decisions && decisions.length > 0) { %>
+      <div class="decisions-list">
+        <% decisions.forEach(decision => { 
+          const params = decision.parametreler || {};
+          const results = decision.sonuclar || {};
+          const statusClass = decision.durum === 'tamamlandi' ? 'completed' : 
+                              decision.durum === 'devam_ediyor' ? 'progress' : 
+                              decision.durum === 'iptal' ? 'cancelled' : 'draft';
+          const statusText = decision.durum === 'tamamlandi' ? '✅ Tamamlandı' : 
+                             decision.durum === 'devam_ediyor' ? '🔄 Devam Ediyor' : 
+                             decision.durum === 'iptal' ? '❌ İptal' : '📝 Taslak';
+        %>
+          <div class="decision-card" data-id="<%= decision.id %>">
+            <div class="decision-flag">🏳️</div>
+            <div class="decision-info">
+              <h3><%= params.ulke_adi || 'Ülke' %> - <%= params.sektor_adi || 'Sektör' %></h3>
+              <div class="meta">
+                <span>📅 <%= new Date(decision.olusturma_tarihi).toLocaleDateString('tr-TR') %></span>
+                <span>🎯 <%= results.karar_durumu || decision.analiz_tipi || 'Değerlendirme' %></span>
+              </div>
+              <% if (results.yonetici_notu) { %>
+                <div class="note">"<%= results.yonetici_notu.substring(0, 100) %><%= results.yonetici_notu.length > 100 ? '...' : '' %>"</div>
+              <% } %>
+            </div>
+            <div class="decision-score">
+              <div class="value"><%= Math.round(results.hesaplanan_skor || 0) %></div>
+              <div class="label">Puan</div>
+            </div>
+            <div class="decision-status status-<%= statusClass %>"><%= statusText %></div>
+            <div class="decision-actions">
+              <button class="action-btn delete" onclick="deleteDecision(<%= decision.id %>)" title="Sil">🗑️</button>
+            </div>
+          </div>
+        <% }); %>
+      </div>
+    <% } else { %>
+      <div class="empty-state">
+        <div class="icon">📭</div>
+        <h3>Henüz karar kaydedilmemiş</h3>
+        <p>Sektör seçip ülke değerlendirmesi yaparak ilk kararınızı kaydedin.</p>
+        <a href="/">🎯 Analiz Başlat</a>
+      </div>
+    <% } %>
+  </div>
+
+  <!-- TOAST -->
+  <div class="toast" id="toast"></div>
+
+  <script>
+    async function deleteDecision(id) {
+      if (!confirm('Bu kararı silmek istediğinize emin misiniz?')) return;
+      
+      try {
+        const response = await fetch(`/api/decisions/${id}`, { method: 'DELETE' });
+        
+        if (response.ok) {
+          showToast('✅ Karar silindi');
+          // Remove card from DOM
+          document.querySelector(`[data-id="${id}"]`).remove();
+        } else {
+          throw new Error('Silme başarısız');
+        }
+      } catch (error) {
+        showToast('❌ ' + error.message, 'error');
+      }
+    }
+
+    function showToast(message, type = 'success') {
+      const toast = document.getElementById('toast');
+      toast.textContent = message;
+      toast.className = `toast show ${type}`;
+      setTimeout(() => toast.classList.remove('show'), 3000);
+    }
+  </script>
+</body>
+</html>
