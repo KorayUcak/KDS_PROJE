@@ -3,6 +3,8 @@ const SectorModel = require('../models/sectorModel');
 const FilterModel = require('../models/filterModel');
 const DecisionLogic = require('../utils/decisionLogic');
 const GlobalMarkets = require('../utils/globalMarketsData');
+const UnifiedScoringEngine = require('../utils/unifiedScoringEngine');
+const SectorConfig = require('../utils/sectorConfig');
 const catchAsync = require('../utils/catchAsync');
 const AppError = require('../utils/AppError');
 
@@ -88,7 +90,7 @@ exports.getCountryRankings = catchAsync(async (req, res, next) => {
   });
 });
 
-// Ülke detay sayfası - 7 Karar Framework
+// Ülke detay sayfası - 7 Karar Framework (YENİ: Birleşik Skorlama)
 exports.getCountryDetail = catchAsync(async (req, res, next) => {
   const { sektorId, ulkeId } = req.params;
 
@@ -111,7 +113,7 @@ exports.getCountryDetail = catchAsync(async (req, res, next) => {
   // Tüm sektörleri getir (sidebar için)
   const sectors = await SectorModel.getAll();
 
-  // 7 Karar Framework - Executive Verdicts
+  // 7 Karar Framework - Executive Verdicts (YENİ: Birleşik Skorlama)
   const decisionData = {
     risk_notu_kodu: country.risk_notu_kodu,
     yerli_uretim_karsilama_orani_yuzde: country.yerli_uretim_karsilama_orani_yuzde,
@@ -127,7 +129,11 @@ exports.getCountryDetail = catchAsync(async (req, res, next) => {
     buyume_orani_yuzde: country.buyume_orani_yuzde
   };
 
-  const decisions = DecisionLogic.getAllDecisions(decisionData);
+  // YENİ: Birleşik skorlama motoru ile tutarlı sonuçlar
+  const unifiedResult = UnifiedScoringEngine.calculateGlobalScore(decisionData);
+  
+  // Legacy decisions (geriye dönük uyumluluk)
+  const legacyDecisions = DecisionLogic.getAllDecisions(decisionData);
 
   res.render('decision/country-detail', {
     title: `${country.ulke_adi} - ${sector.sektor_adi} Analizi`,
@@ -135,7 +141,14 @@ exports.getCountryDetail = catchAsync(async (req, res, next) => {
     country,
     countryRank,
     sectors,
-    decisions
+    // YENİ: Birleşik skorlama verileri
+    unifiedScore: unifiedResult,
+    decisions: unifiedResult.decisions,
+    globalScore: unifiedResult.globalScore,
+    decisionCounts: unifiedResult.counts,
+    recommendation: unifiedResult.recommendation,
+    // Legacy (geriye dönük uyumluluk)
+    legacyDecisions
   });
 });
 
@@ -245,6 +258,9 @@ exports.getCountryDetailAPI = catchAsync(async (req, res, next) => {
 
 // API: Karar kaydet (Decision Recording System)
 exports.saveDecisionAPI = catchAsync(async (req, res, next) => {
+  // DEBUG: Log incoming request body
+  console.log('📥 [saveDecisionAPI] Gelen veri:', JSON.stringify(req.body, null, 2));
+  
   const {
     ulke_id,
     ulke_adi,
@@ -255,30 +271,40 @@ exports.saveDecisionAPI = catchAsync(async (req, res, next) => {
     hesaplanan_skor
   } = req.body;
 
-  // Gerekli alanları kontrol et
-  if (!ulke_id || !sektor_id || !karar_durumu) {
-    return next(new AppError('Ülke, sektör ve karar durumu zorunludur', 400));
+  // Gerekli alanları kontrol et - sadece ulke_id zorunlu
+  if (!ulke_id) {
+    console.error('❌ [saveDecisionAPI] Hata: ulke_id eksik');
+    return next(new AppError('Ülke seçimi zorunludur', 400));
   }
 
   // Analiz adını oluştur
-  const analiz_adi = `${ulke_adi || 'Ülke'} - ${sektor_adi || 'Sektör'} Değerlendirmesi`;
+  const analiz_adi = `${ulke_adi || 'Ülke'} - ${sektor_adi || 'Genel'} Değerlendirmesi`;
 
-  const result = await DecisionModel.saveDecision({
-    analiz_adi,
-    ulke_id,
-    ulke_adi,
-    sektor_id,
-    sektor_adi,
-    karar_durumu,
-    yonetici_notu,
-    hesaplanan_skor: parseFloat(hesaplanan_skor) || 0
-  });
+  console.log('📝 [saveDecisionAPI] Kaydedilecek analiz:', analiz_adi);
 
-  res.status(201).json({
-    status: 'success',
-    message: 'Karar başarıyla kaydedildi',
-    data: result
-  });
+  try {
+    const result = await DecisionModel.saveDecision({
+      analiz_adi,
+      ulke_id,
+      ulke_adi: ulke_adi || 'Bilinmeyen',
+      sektor_id: sektor_id || null,
+      sektor_adi: sektor_adi || 'Genel',
+      karar_durumu: karar_durumu || 'İzleme Listesi',
+      yonetici_notu: yonetici_notu || 'Karar kaydedildi.',
+      hesaplanan_skor: parseFloat(hesaplanan_skor) || 0
+    });
+
+    console.log('✅ [saveDecisionAPI] Başarılı:', result);
+
+    res.status(201).json({
+      status: 'success',
+      message: 'Karar başarıyla kaydedildi',
+      data: result
+    });
+  } catch (dbError) {
+    console.error('❌ [saveDecisionAPI] DB Hatası:', dbError.message);
+    return next(new AppError(`Veritabanı hatası: ${dbError.message}`, 500));
+  }
 });
 
 // API: Kayıtlı kararları getir
@@ -485,4 +511,184 @@ exports.getScenarioBuilder = catchAsync(async (req, res, next) => {
     ...filterOptions
   });
 });
+
+// ==========================================
+// UNIFIED SCORING ENGINE API
+// ==========================================
+
+// API: Birleşik skorlama ile ülke değerlendirmesi
+exports.getUnifiedScoreAPI = catchAsync(async (req, res, next) => {
+  const countryData = req.body;
+  
+  if (!countryData || Object.keys(countryData).length === 0) {
+    return next(new AppError('Ülke verisi gerekli', 400));
+  }
+
+  // Birleşik skorlama hesapla
+  const result = UnifiedScoringEngine.calculateGlobalScore(countryData);
+  
+  // Tutarlılık kontrolü yap
+  const validation = UnifiedScoringEngine.validateConsistency(countryData);
+
+  res.status(200).json({
+    status: 'success',
+    data: {
+      globalScore: result.globalScore,
+      globalVerdict: result.globalVerdict,
+      decisions: result.decisions,
+      counts: result.counts,
+      recommendation: result.recommendation,
+      summary: result.summary,
+      validation: {
+        isConsistent: validation.isConsistent,
+        message: validation.isConsistent 
+          ? 'Global Skor ve 7 Karar matematiksel olarak tutarlı ✓'
+          : 'UYARI: Tutarsızlık tespit edildi'
+      }
+    }
+  });
+});
+
+// API: Birden fazla ülke için birleşik skorlama
+exports.getBulkUnifiedScoresAPI = catchAsync(async (req, res, next) => {
+  const { countries } = req.body;
+  
+  if (!countries || !Array.isArray(countries) || countries.length === 0) {
+    return next(new AppError('En az bir ülke verisi gerekli', 400));
+  }
+
+  const results = countries.map(country => {
+    const result = UnifiedScoringEngine.calculateGlobalScore(country);
+    return {
+      ulke_id: country.ulke_id,
+      ulke_adi: country.ulke_adi,
+      globalScore: result.globalScore,
+      globalVerdict: result.globalVerdict,
+      counts: result.counts,
+      summary: result.summary
+    };
+  });
+
+  // Skora göre sırala
+  results.sort((a, b) => b.globalScore - a.globalScore);
+
+  res.status(200).json({
+    status: 'success',
+    results: results.length,
+    data: {
+      rankings: results
+    }
+  });
+});
+
+// ==========================================
+// SECTOR INTELLIGENCE API
+// ==========================================
+
+// API: Sektör zekası - global istatistikler + algoritma ağırlıkları
+exports.getSectorIntelligenceAPI = catchAsync(async (req, res, next) => {
+  const { sektorId } = req.params;
+  const sectorName = req.query.name || '';
+
+  // Sektör bilgisi
+  let sector = null;
+  if (sektorId && sektorId !== 'null') {
+    sector = await SectorModel.getById(sektorId);
+  }
+
+  // Sektör arketipi ve ağırlıkları
+  const archetype = SectorConfig.getSectorArchetype(sector?.sektor_adi || sectorName || parseInt(sektorId) || 0);
+  const insight = SectorConfig.getSectorInsight(sector?.sektor_adi || sectorName || parseInt(sektorId) || 0);
+
+  // Sektör istatistikleri (DB'den)
+  let sectorStats = {
+    avgGrowth: 0,
+    totalVolume: 0,
+    countryCount: 0,
+    topRegion: 'Bilinmiyor'
+  };
+
+  if (sektorId && sektorId !== 'null') {
+    try {
+      const summary = await DecisionModel.getSectorSummary(sektorId);
+      if (summary && summary.stats) {
+        sectorStats = {
+          avgGrowth: parseFloat(summary.stats.ortalama_buyume) || 0,
+          totalVolume: parseFloat(summary.stats.toplam_ithalat) || 0,
+          countryCount: parseInt(summary.stats.ulke_sayisi) || 0,
+          topRegion: 'Avrupa' // Placeholder - DB'den hesaplanabilir
+        };
+      }
+    } catch (err) {
+      console.log('Sector stats fetch error:', err.message);
+    }
+  }
+
+  // Global Markets'tan ek istatistikler
+  const globalMarkets = GlobalMarkets.getGlobalMarkets();
+  if (globalMarkets.length > 0) {
+    const avgGrowth = globalMarkets.reduce((sum, c) => sum + (c.sektorel_buyume || 0), 0) / globalMarkets.length;
+    const totalVolume = globalMarkets.reduce((sum, c) => sum + (c.sektorel_ithalat || 0), 0);
+    
+    // En yüksek hacimli bölgeyi bul
+    const regionVolumes = {};
+    globalMarkets.forEach(c => {
+      const region = c.bolge_adi || 'Diğer';
+      regionVolumes[region] = (regionVolumes[region] || 0) + (c.sektorel_ithalat || 0);
+    });
+    const topRegion = Object.entries(regionVolumes).sort((a, b) => b[1] - a[1])[0]?.[0] || 'Bilinmiyor';
+
+    // DB verisi yoksa global verilerden kullan
+    if (sectorStats.avgGrowth === 0) sectorStats.avgGrowth = avgGrowth;
+    if (sectorStats.totalVolume === 0) sectorStats.totalVolume = totalVolume;
+    if (sectorStats.topRegion === 'Bilinmiyor') sectorStats.topRegion = topRegion;
+    if (sectorStats.countryCount === 0) sectorStats.countryCount = globalMarkets.length;
+  }
+
+  res.status(200).json({
+    status: 'success',
+    data: {
+      sector: sector || { sektor_id: sektorId, sektor_adi: sectorName || 'Genel' },
+      archetype: {
+        name: archetype.name,
+        icon: archetype.icon,
+        description: archetype.description
+      },
+      weights: archetype.weights,
+      insight: insight.insight,
+      priorityFactors: insight.priorityFactors,
+      ignoredFactors: insight.ignoredFactors,
+      stats: {
+        avgGrowth: sectorStats.avgGrowth.toFixed(1),
+        totalVolume: sectorStats.totalVolume,
+        totalVolumeFormatted: formatVolume(sectorStats.totalVolume),
+        countryCount: sectorStats.countryCount,
+        topRegion: sectorStats.topRegion
+      }
+    }
+  });
+});
+
+// API: Tüm sektör arketiplerini getir
+exports.getSectorArchetypesAPI = catchAsync(async (req, res, next) => {
+  const archetypes = SectorConfig.getAllArchetypes();
+  
+  res.status(200).json({
+    status: 'success',
+    data: {
+      archetypes
+    }
+  });
+});
+
+// Helper: Format volume to human readable
+function formatVolume(value) {
+  if (value >= 1000000) {
+    return `$${(value / 1000000).toFixed(1)}T`;
+  } else if (value >= 1000) {
+    return `$${(value / 1000).toFixed(0)}B`;
+  } else {
+    return `$${value.toFixed(0)}M`;
+  }
+}
 

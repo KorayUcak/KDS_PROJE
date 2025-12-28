@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>🥊 Ülke Düellosu - Head-to-Head Karşılaştırma</title>
+  <title>⚖️ Stratejik Karşılaştırma - Head-to-Head Analiz</title>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
   <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
   <style>
@@ -33,11 +33,20 @@
       --country-b-bg: rgba(168,85,247,0.1);
     }
 
+    html, body {
+      height: 100%;
+      width: 100%;
+      margin: 0;
+      padding: 0;
+      overflow-x: hidden;
+    }
+
     body {
       font-family: 'Inter', -apple-system, sans-serif;
       background: var(--bg-dark);
       color: var(--text);
       min-height: 100vh;
+      max-width: 100vw;
     }
 
     .mono { font-family: 'JetBrains Mono', monospace; }
@@ -94,15 +103,83 @@
     }
 
     .vs-badge {
-      background: linear-gradient(135deg, var(--danger), #cc3355);
+      background: var(--bg-input);
+      border: 1px solid var(--border);
       padding: 4px 12px;
       border-radius: 6px;
-      font-size: 12px;
-      font-weight: 700;
-      color: #fff;
+      font-size: 11px;
+      font-weight: 600;
+      color: var(--text-dim);
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
     }
 
-    /* ==================== SELECTOR HEADER ==================== */
+    /* ==================== SELECTOR HEADER (TRIPLE) ==================== */
+    .selector-header.triple {
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
+      padding: 24px;
+      background: var(--bg-panel);
+      border-bottom: 1px solid var(--border);
+    }
+
+    .sector-selector-box {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      padding: 16px 20px;
+      background: linear-gradient(135deg, rgba(0, 212, 255, 0.08), rgba(168, 85, 247, 0.08));
+      border: 1px solid rgba(0, 212, 255, 0.3);
+      border-radius: 12px;
+    }
+
+    .selector-label.sector {
+      color: var(--accent);
+      font-size: 11px;
+      white-space: nowrap;
+    }
+
+    .sector-select-main {
+      flex: 1;
+      padding: 12px 16px;
+      background: var(--bg-input);
+      border: 2px solid var(--border);
+      border-radius: 10px;
+      color: var(--text);
+      font-size: 14px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .sector-select-main:focus {
+      border-color: var(--accent);
+      box-shadow: 0 0 0 4px var(--accent-glow);
+      outline: none;
+    }
+
+    .sector-badge {
+      padding: 6px 12px;
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      font-size: 11px;
+      color: var(--text-dim);
+      display: none;
+    }
+
+    .sector-badge.show {
+      display: block;
+    }
+
+    .countries-row {
+      display: grid;
+      grid-template-columns: 1fr auto 1fr;
+      gap: 24px;
+      align-items: center;
+    }
+
     .selector-header {
       display: grid;
       grid-template-columns: 1fr auto 1fr;
@@ -153,12 +230,9 @@
     }
 
     .vs-text {
-      font-size: 32px;
-      font-weight: 900;
-      background: linear-gradient(135deg, var(--country-a), var(--country-b));
-      -webkit-background-clip: text;
-      -webkit-text-fill-color: transparent;
-      background-clip: text;
+      font-size: 28px;
+      font-weight: 600;
+      color: var(--text-dim);
     }
 
     .compare-btn {
@@ -182,16 +256,94 @@
     .duel-content {
       padding: 24px;
       display: none;
+      max-width: 100%;
+      overflow-x: hidden;
     }
 
     .duel-content.show { display: block; }
 
+    /* Sector Context Banner */
+    .sector-context-banner {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 16px 20px;
+      background: linear-gradient(135deg, rgba(0, 212, 255, 0.1), rgba(168, 85, 247, 0.1));
+      border: 1px solid rgba(0, 212, 255, 0.2);
+      border-radius: 12px;
+      margin-bottom: 24px;
+    }
+
+    .sector-context-left {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .sector-context-label {
+      font-size: 10px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      color: var(--text-dim);
+      padding: 4px 10px;
+      background: var(--bg-input);
+      border-radius: 4px;
+    }
+
+    .sector-context-name {
+      font-size: 18px;
+      font-weight: 700;
+      color: var(--accent);
+    }
+
+    .sector-context-right {
+      display: flex;
+      align-items: center;
+    }
+
+    .sector-winner-verdict {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 10px 16px;
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+    }
+
+    .sector-winner-verdict.winner-a {
+      border-color: rgba(0, 212, 255, 0.5);
+      background: rgba(0, 212, 255, 0.1);
+    }
+
+    .sector-winner-verdict.winner-b {
+      border-color: rgba(168, 85, 247, 0.5);
+      background: rgba(168, 85, 247, 0.1);
+    }
+
+    .sector-winner-verdict.tie {
+      border-color: rgba(255, 170, 0, 0.5);
+      background: rgba(255, 170, 0, 0.1);
+    }
+
+    .sector-winner-verdict .verdict-icon {
+      font-size: 20px;
+    }
+
+    .sector-winner-verdict .verdict-text {
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--text);
+    }
+
     /* ==================== SCORE HEADER ==================== */
     .score-header {
       display: grid;
-      grid-template-columns: 1fr auto 1fr;
+      grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
       gap: 24px;
       margin-bottom: 32px;
+      max-width: 100%;
     }
 
     .country-score-card {
@@ -223,16 +375,17 @@
       position: absolute;
       top: 12px;
       right: 12px;
-      background: linear-gradient(135deg, #ffd700, #ffaa00);
-      padding: 4px 10px;
+      background: rgba(16, 185, 129, 0.15);
+      border: 1px solid rgba(16, 185, 129, 0.4);
+      padding: 6px 12px;
       border-radius: 6px;
       font-size: 11px;
-      font-weight: 700;
-      color: #000;
+      font-weight: 600;
+      color: #10b981;
       display: none;
     }
 
-    .winner-badge.show { display: flex; align-items: center; gap: 4px; }
+    .winner-badge.show { display: flex; align-items: center; gap: 6px; }
 
     .country-flag {
       font-size: 48px;
@@ -344,11 +497,16 @@
       border: 1px solid var(--border);
       border-radius: 16px;
       padding: 24px;
+      max-width: 100%;
+      overflow: hidden;
     }
 
     .chart-wrapper {
       height: 300px;
       position: relative;
+      min-width: 0;
+      max-width: 100%;
+      overflow: hidden;
     }
 
     .cost-legend {
@@ -375,8 +533,9 @@
     /* ==================== PIE CHARTS ==================== */
     .pie-charts-grid {
       display: grid;
-      grid-template-columns: 1fr 1fr;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
       gap: 24px;
+      max-width: 100%;
     }
 
     .pie-card {
@@ -449,11 +608,112 @@
     .pie-stat-value.local { color: var(--warning); }
     .pie-stat-value.import { color: var(--success); }
 
+    /* ==================== SMART INSIGHT CARDS ==================== */
+    .smart-insight {
+      background: rgba(0,255,136,0.06);
+      border-left: 4px solid var(--success);
+      border-radius: 0 12px 12px 0;
+      padding: 16px 20px;
+      margin-top: 20px;
+    }
+
+    .smart-insight.caution {
+      background: rgba(255,170,0,0.06);
+      border-left-color: var(--warning);
+    }
+
+    .smart-insight.negative {
+      background: rgba(255,68,102,0.06);
+      border-left-color: var(--danger);
+    }
+
+    .smart-insight.neutral {
+      background: rgba(0,212,255,0.06);
+      border-left-color: var(--accent);
+    }
+
+    .smart-insight-header {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 10px;
+    }
+
+    .smart-insight-icon {
+      font-size: 16px;
+    }
+
+    .smart-insight-title {
+      font-size: 12px;
+      font-weight: 700;
+      color: var(--success);
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    .smart-insight.caution .smart-insight-title { color: var(--warning); }
+    .smart-insight.negative .smart-insight-title { color: var(--danger); }
+    .smart-insight.neutral .smart-insight-title { color: var(--accent); }
+
+    .smart-insight-body {
+      font-size: 13px;
+      color: var(--text);
+      line-height: 1.6;
+    }
+
+    .insight-verdict {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-top: 12px;
+      padding: 12px 14px;
+      background: rgba(0,0,0,0.25);
+      border-radius: 8px;
+    }
+
+    .verdict-badge {
+      width: 24px;
+      height: 24px;
+      border-radius: 6px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 12px;
+      font-weight: 700;
+      flex-shrink: 0;
+    }
+
+    .verdict-badge.go { background: var(--success); color: #000; }
+    .verdict-badge.caution { background: var(--warning); color: #000; }
+    .verdict-badge.stop { background: var(--danger); color: #fff; }
+
+    .verdict-text {
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--text);
+    }
+
+    .insight-details {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-top: 10px;
+    }
+
+    .insight-tag {
+      padding: 4px 10px;
+      background: rgba(0,0,0,0.3);
+      border-radius: 6px;
+      font-size: 11px;
+      color: var(--text-dim);
+    }
+
     /* ==================== SWOT ANALYSIS ==================== */
     .swot-grid {
       display: grid;
-      grid-template-columns: 1fr 1fr;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
       gap: 24px;
+      max-width: 100%;
     }
 
     .swot-card {
@@ -637,6 +897,64 @@
       font-size: 14px;
       color: var(--text-dim);
       max-width: 400px;
+      line-height: 1.8;
+    }
+
+    .empty-state-steps {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-top: 24px;
+      padding: 16px 24px;
+      background: var(--bg-card);
+      border-radius: 12px;
+    }
+
+    .empty-state-steps .step {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 8px 14px;
+      background: var(--bg-input);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      transition: all 0.3s;
+    }
+
+    .empty-state-steps .step.active {
+      border-color: var(--success);
+      background: rgba(0, 255, 136, 0.1);
+    }
+
+    .empty-state-steps .step-num {
+      width: 20px;
+      height: 20px;
+      background: var(--border);
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 11px;
+      font-weight: 700;
+    }
+
+    .empty-state-steps .step.active .step-num {
+      background: var(--success);
+      color: #000;
+    }
+
+    .empty-state-steps .step-text {
+      font-size: 12px;
+      color: var(--text-dim);
+    }
+
+    .empty-state-steps .step.active .step-text {
+      color: var(--success);
+    }
+
+    .empty-state-steps .step-arrow {
+      color: var(--text-dim);
+      font-size: 14px;
     }
 
     /* ==================== MODAL ==================== */
@@ -796,6 +1114,82 @@
     }
 
     .toast.show { display: block; }
+
+    /* ==================== RESPONSIVE DESIGN ==================== */
+    @media (max-width: 1024px) {
+      .selector-header {
+        grid-template-columns: 1fr;
+        gap: 16px;
+        padding: 20px;
+      }
+      
+      .vs-divider {
+        flex-direction: row;
+        justify-content: center;
+      }
+      
+      .score-header {
+        grid-template-columns: 1fr;
+        gap: 16px;
+      }
+      
+      .vs-center {
+        display: none;
+      }
+      
+      .pie-charts-grid,
+      .swot-grid,
+      .action-footer {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    @media (max-width: 768px) {
+      .duel-content {
+        padding: 16px;
+      }
+      
+      .country-score-card {
+        padding: 16px;
+      }
+      
+      .score-display {
+        font-size: 40px;
+      }
+      
+      .topbar {
+        padding: 12px 16px;
+        flex-wrap: wrap;
+        gap: 12px;
+      }
+      
+      .page-title {
+        font-size: 16px;
+      }
+      
+      .swot-matrix {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    /* ==================== SCROLLBAR STYLING ==================== */
+    ::-webkit-scrollbar {
+      width: 8px;
+      height: 8px;
+    }
+
+    ::-webkit-scrollbar-track {
+      background: var(--bg-dark);
+    }
+
+    ::-webkit-scrollbar-thumb {
+      background: var(--border);
+      border-radius: 4px;
+    }
+
+    ::-webkit-scrollbar-thumb:hover {
+      background: var(--text-dim);
+    }
   </style>
 </head>
 <body>
@@ -804,48 +1198,94 @@
     <div class="topbar-left">
       <a href="/" class="back-btn">← Komuta Merkezi</a>
       <h1 class="page-title">
-        <span class="icon">🥊</span>
-        Ülke Düellosu
-        <span class="vs-badge">HEAD-TO-HEAD</span>
+        <span class="icon">⚖️</span>
+        Stratejik Karşılaştırma
+        <span class="vs-badge">Head-to-Head Analiz</span>
       </h1>
     </div>
   </header>
 
-  <!-- ==================== COUNTRY SELECTOR ==================== -->
-  <div class="selector-header">
-    <div class="country-selector">
-      <span class="selector-label a">🔵 Rakip A</span>
-      <select class="country-select a" id="countryA">
-        <option value="">Ülke Seçin...</option>
+  <!-- ==================== TRIPLE SELECTOR ==================== -->
+  <div class="selector-header triple">
+    <!-- Sector Selector (Primary) -->
+    <div class="sector-selector-box">
+      <span class="selector-label sector">Sektör Seçin</span>
+      <select class="sector-select-main" id="sectorSelect">
+        <option value="">Sektör Seçin...</option>
       </select>
+      <div class="sector-badge" id="sectorBadge"></div>
     </div>
     
-    <div class="vs-divider">
-      <div class="vs-text">VS</div>
-      <button class="compare-btn" id="compareBtn">⚔️ Karşılaştır</button>
-    </div>
-    
-    <div class="country-selector">
-      <span class="selector-label b">🟣 Rakip B</span>
-      <select class="country-select b" id="countryB">
-        <option value="">Ülke Seçin...</option>
-      </select>
+    <!-- Country Selectors -->
+    <div class="countries-row">
+      <div class="country-selector">
+        <span class="selector-label a">Pazar A</span>
+        <select class="country-select a" id="countryA" disabled>
+          <option value="">Önce sektör seçin...</option>
+        </select>
+      </div>
+      
+      <div class="vs-divider">
+        <div class="vs-text">↔</div>
+        <button class="compare-btn" id="compareBtn" disabled>Karşılaştır</button>
+      </div>
+      
+      <div class="country-selector">
+        <span class="selector-label b">Pazar B</span>
+        <select class="country-select b" id="countryB" disabled>
+          <option value="">Önce sektör seçin...</option>
+        </select>
+      </div>
     </div>
   </div>
 
   <!-- ==================== EMPTY STATE ==================== -->
   <div class="empty-state" id="emptyState">
-    <div class="icon">⚔️</div>
-    <h3>İki Ülke Seçin</h3>
-    <p>Yukarıdaki dropdown'lardan karşılaştırmak istediğiniz iki ülkeyi seçin ve "Karşılaştır" butonuna tıklayın.</p>
+    <div class="icon">📊</div>
+    <h3>Sektör Bazlı Karşılaştırma</h3>
+    <p>
+      <strong>1.</strong> Önce analiz edilecek sektörü seçin<br>
+      <strong>2.</strong> Ardından karşılaştırılacak iki pazarı belirleyin<br>
+      <strong>3.</strong> "Karşılaştır" butonuna tıklayın
+    </p>
+    <div class="empty-state-steps">
+      <div class="step" id="stepSector">
+        <span class="step-num">1</span>
+        <span class="step-text">Sektör</span>
+      </div>
+      <div class="step-arrow">→</div>
+      <div class="step" id="stepCountryA">
+        <span class="step-num">2</span>
+        <span class="step-text">Pazar A</span>
+      </div>
+      <div class="step-arrow">→</div>
+      <div class="step" id="stepCountryB">
+        <span class="step-num">3</span>
+        <span class="step-text">Pazar B</span>
+      </div>
+    </div>
   </div>
 
   <!-- ==================== DUEL CONTENT ==================== -->
   <div class="duel-content" id="duelContent">
+    <!-- Sector Context Banner -->
+    <div class="sector-context-banner" id="sectorBanner">
+      <div class="sector-context-left">
+        <span class="sector-context-label">Sektör Analizi</span>
+        <span class="sector-context-name" id="sectorContextName">-</span>
+      </div>
+      <div class="sector-context-right">
+        <div class="sector-winner-verdict" id="sectorWinnerVerdict">
+          <span class="verdict-icon">⚖️</span>
+          <span class="verdict-text" id="verdictText">Karşılaştırma bekleniyor...</span>
+        </div>
+      </div>
+    </div>
+
     <!-- Score Header -->
     <div class="score-header">
       <div class="country-score-card a" id="scoreCardA">
-        <div class="winner-badge" id="winnerBadgeA">🏆 KAZANAN</div>
+        <div class="winner-badge" id="winnerBadgeA">✓ Daha Uygun</div>
         <div class="country-flag" id="flagA">🌍</div>
         <div class="country-name" id="nameA">-</div>
         <div class="country-region" id="regionA">-</div>
@@ -854,11 +1294,11 @@
       </div>
       
       <div class="vs-center">
-        <div class="vs-circle">VS</div>
+        <div class="vs-circle">↔</div>
       </div>
       
       <div class="country-score-card b" id="scoreCardB">
-        <div class="winner-badge" id="winnerBadgeB">🏆 KAZANAN</div>
+        <div class="winner-badge" id="winnerBadgeB">✓ Daha Uygun</div>
         <div class="country-flag" id="flagB">🌍</div>
         <div class="country-name" id="nameB">-</div>
         <div class="country-region" id="regionB">-</div>
@@ -867,31 +1307,67 @@
       </div>
     </div>
 
-    <!-- Cost Comparison -->
+    <!-- Sector Velocity (Growth & Investment) -->
+    <div class="comparison-section">
+      <div class="section-header">
+        <div class="section-title">
+          <span class="icon cost">📈</span>
+          Sektör Dinamikleri (Büyüme & Yatırım)
+        </div>
+        <div class="section-winner" id="velocityWinner"></div>
+      </div>
+      <div class="cost-chart-container">
+        <div class="chart-wrapper">
+          <canvas id="velocityChart"></canvas>
+        </div>
+        <div class="cost-legend">
+          <div class="legend-item">
+            <div class="legend-dot" style="background:var(--success)"></div>
+            <span>Sektörel Büyüme (%)</span>
+          </div>
+          <div class="legend-item">
+            <div class="legend-dot" style="background:var(--purple)"></div>
+            <span>Yatırım Hacmi (Norm.)</span>
+          </div>
+          <div class="legend-item">
+            <div class="legend-dot" style="background:var(--warning)"></div>
+            <span>İstihdam (Norm.)</span>
+          </div>
+        </div>
+        <!-- Smart Insight Card for Velocity -->
+        <div class="smart-insight" id="velocityInsightCard">
+          <div class="smart-insight-header">
+            <span class="smart-insight-icon">💡</span>
+            <span class="smart-insight-title">Sektör Dinamikleri Analizi</span>
+          </div>
+          <div class="smart-insight-body" id="velocityInsightBody">
+            Karşılaştırma yapılıyor...
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Market Volume Comparison -->
     <div class="comparison-section">
       <div class="section-header">
         <div class="section-title">
           <span class="icon cost">💰</span>
-          Maliyet Karşılaştırması
+          Pazar Hacmi (İthalat Değeri)
         </div>
-        <div class="section-winner" id="costWinner"></div>
+        <div class="section-winner" id="volumeWinner"></div>
       </div>
       <div class="cost-chart-container">
-        <div class="chart-wrapper">
-          <canvas id="costChart"></canvas>
+        <div class="chart-wrapper" style="height: 250px;">
+          <canvas id="volumeChart"></canvas>
         </div>
-        <div class="cost-legend">
-          <div class="legend-item">
-            <div class="legend-dot" style="background:var(--accent)"></div>
-            <span>Nakliye Maliyeti</span>
+        <!-- Smart Insight Card for Volume -->
+        <div class="smart-insight" id="volumeInsightCard">
+          <div class="smart-insight-header">
+            <span class="smart-insight-icon">💡</span>
+            <span class="smart-insight-title">Pazar Hacmi Analizi</span>
           </div>
-          <div class="legend-item">
-            <div class="legend-dot" style="background:var(--purple)"></div>
-            <span>Gümrük & Vergi</span>
-          </div>
-          <div class="legend-item">
-            <div class="legend-dot" style="background:var(--warning)"></div>
-            <span>Yerel Dağıtım</span>
+          <div class="smart-insight-body" id="volumeInsightBody">
+            Karşılaştırma yapılıyor...
           </div>
         </div>
       </div>
@@ -944,6 +1420,16 @@
               <div class="pie-stat-value import" id="importB">0%</div>
             </div>
           </div>
+        </div>
+      </div>
+      <!-- Smart Insight Card for Market -->
+      <div class="smart-insight" id="marketInsightCard">
+        <div class="smart-insight-header">
+          <span class="smart-insight-icon">💡</span>
+          <span class="smart-insight-title">Pazar Fırsatı Analizi</span>
+        </div>
+        <div class="smart-insight-body" id="marketInsightBody">
+          Pazar yapısı analiz ediliyor...
         </div>
       </div>
     </div>
@@ -1026,8 +1512,13 @@
   <script>
     // ==================== STATE ====================
     let allCountries = [];
+    let allSectors = [];
+    let selectedSector = null;
     let countryA = null;
     let countryB = null;
+    let sectorDataA = null;
+    let sectorDataB = null;
+    let comparisonResult = null;
     let charts = {};
     let selectedForSave = null;
 
@@ -1104,8 +1595,23 @@
 
     // ==================== INIT ====================
     async function init() {
-      await loadCountries();
+      await Promise.all([loadSectors(), loadCountries()]);
       setupEventListeners();
+    }
+
+    // ==================== LOAD SECTORS ====================
+    async function loadSectors() {
+      try {
+        const response = await fetch('/dashboard/api/sectors');
+        const result = await response.json();
+        
+        if (result.status === 'success' && result.data.sectors) {
+          allSectors = result.data.sectors;
+          populateSectorDropdown();
+        }
+      } catch (error) {
+        console.error('Error loading sectors:', error);
+      }
     }
 
     // ==================== LOAD COUNTRIES ====================
@@ -1116,7 +1622,6 @@
         
         if (result.status === 'success' && result.data.countries) {
           allCountries = result.data.countries;
-          populateDropdowns();
         }
       } catch (error) {
         console.error('Error loading countries:', error);
@@ -1124,9 +1629,24 @@
     }
 
     // ==================== POPULATE DROPDOWNS ====================
-    function populateDropdowns() {
+    function populateSectorDropdown() {
+      const sectorSelect = document.getElementById('sectorSelect');
+      
+      allSectors.forEach(s => {
+        const opt = document.createElement('option');
+        opt.value = s.sektor_id;
+        opt.textContent = s.sektor_adi;
+        sectorSelect.appendChild(opt);
+      });
+    }
+
+    function populateCountryDropdowns() {
       const selectA = document.getElementById('countryA');
       const selectB = document.getElementById('countryB');
+      
+      // Clear existing options
+      selectA.innerHTML = '<option value="">Ülke Seçin...</option>';
+      selectB.innerHTML = '<option value="">Ülke Seçin...</option>';
       
       allCountries.forEach(c => {
         const optA = document.createElement('option');
@@ -1139,11 +1659,25 @@
         optB.textContent = c.ulke_adi;
         selectB.appendChild(optB);
       });
+      
+      // Enable dropdowns
+      selectA.disabled = false;
+      selectB.disabled = false;
     }
 
     // ==================== SETUP EVENT LISTENERS ====================
     function setupEventListeners() {
+      // Sector selection
+      document.getElementById('sectorSelect').addEventListener('change', handleSectorChange);
+      
+      // Country selections
+      document.getElementById('countryA').addEventListener('change', updateStepIndicators);
+      document.getElementById('countryB').addEventListener('change', updateStepIndicators);
+      
+      // Compare button
       document.getElementById('compareBtn').addEventListener('click', startComparison);
+      
+      // Action buttons
       document.getElementById('selectBtnA').addEventListener('click', () => openSaveModal('A'));
       document.getElementById('selectBtnB').addEventListener('click', () => openSaveModal('B'));
       document.getElementById('modalClose').addEventListener('click', closeModal);
@@ -1151,10 +1685,68 @@
       document.getElementById('confirmSave').addEventListener('click', saveDecision);
     }
 
+    // ==================== HANDLE SECTOR CHANGE ====================
+    function handleSectorChange(e) {
+      const sectorId = e.target.value;
+      
+      if (sectorId) {
+        selectedSector = allSectors.find(s => s.sektor_id == sectorId);
+        populateCountryDropdowns();
+        
+        // Update step indicator
+        document.getElementById('stepSector').classList.add('active');
+        
+        // Show sector badge
+        const badge = document.getElementById('sectorBadge');
+        badge.textContent = selectedSector.sektor_adi;
+        badge.classList.add('show');
+      } else {
+        selectedSector = null;
+        document.getElementById('countryA').disabled = true;
+        document.getElementById('countryB').disabled = true;
+        document.getElementById('countryA').innerHTML = '<option value="">Önce sektör seçin...</option>';
+        document.getElementById('countryB').innerHTML = '<option value="">Önce sektör seçin...</option>';
+        document.getElementById('stepSector').classList.remove('active');
+        document.getElementById('sectorBadge').classList.remove('show');
+      }
+      
+      updateCompareButtonState();
+      updateStepIndicators();
+    }
+
+    // ==================== UPDATE UI STATES ====================
+    function updateStepIndicators() {
+      const sectorSelected = document.getElementById('sectorSelect').value;
+      const countryASelected = document.getElementById('countryA').value;
+      const countryBSelected = document.getElementById('countryB').value;
+      
+      // Update step indicators
+      document.getElementById('stepSector').classList.toggle('active', !!sectorSelected);
+      document.getElementById('stepCountryA').classList.toggle('active', !!countryASelected);
+      document.getElementById('stepCountryB').classList.toggle('active', !!countryBSelected);
+      
+      updateCompareButtonState();
+    }
+
+    function updateCompareButtonState() {
+      const sectorSelected = document.getElementById('sectorSelect').value;
+      const countryASelected = document.getElementById('countryA').value;
+      const countryBSelected = document.getElementById('countryB').value;
+      
+      const btn = document.getElementById('compareBtn');
+      btn.disabled = !(sectorSelected && countryASelected && countryBSelected && countryASelected !== countryBSelected);
+    }
+
     // ==================== START COMPARISON ====================
-    function startComparison() {
+    async function startComparison() {
+      const sectorId = document.getElementById('sectorSelect').value;
       const idA = document.getElementById('countryA').value;
       const idB = document.getElementById('countryB').value;
+      
+      if (!sectorId) {
+        alert('Lütfen bir sektör seçin!');
+        return;
+      }
       
       if (!idA || !idB) {
         alert('Lütfen iki ülke seçin!');
@@ -1166,35 +1758,66 @@
         return;
       }
       
-      countryA = allCountries.find(c => c.ulke_id == idA);
-      countryB = allCountries.find(c => c.ulke_id == idB);
+      // Show loading state
+      const btn = document.getElementById('compareBtn');
+      btn.textContent = '⏳ Yükleniyor...';
+      btn.disabled = true;
       
-      if (!countryA || !countryB) return;
-      
-      document.getElementById('emptyState').style.display = 'none';
-      document.getElementById('duelContent').classList.add('show');
-      
-      renderComparison();
+      try {
+        // Fetch sector-specific comparison data
+        const response = await fetch(`/dashboard/api/sectors/${sectorId}/compare?ulkeA=${idA}&ulkeB=${idB}`);
+        const result = await response.json();
+        
+        if (result.status === 'success') {
+          comparisonResult = result.data;
+          sectorDataA = result.data.countryA;
+          sectorDataB = result.data.countryB;
+          
+          // Also get general country data
+          countryA = allCountries.find(c => c.ulke_id == idA) || { ulke_id: idA, ulke_adi: sectorDataA.ulke_adi };
+          countryB = allCountries.find(c => c.ulke_id == idB) || { ulke_id: idB, ulke_adi: sectorDataB.ulke_adi };
+          
+          document.getElementById('emptyState').style.display = 'none';
+          document.getElementById('duelContent').classList.add('show');
+          
+          renderComparison();
+        } else {
+          alert('Veri alınamadı: ' + (result.message || 'Bilinmeyen hata'));
+        }
+      } catch (error) {
+        console.error('Comparison error:', error);
+        alert('Karşılaştırma sırasında hata: ' + error.message);
+      } finally {
+        btn.textContent = 'Karşılaştır';
+        btn.disabled = false;
+      }
     }
 
     // ==================== RENDER COMPARISON ====================
     function renderComparison() {
-      // Score Cards
-      const scoreA = countryA.totalScore || 0;
-      const scoreB = countryB.totalScore || 0;
+      // Sector Context Banner
+      document.getElementById('sectorContextName').textContent = selectedSector.sektor_adi;
       
-      document.getElementById('nameA').textContent = countryA.ulke_adi;
-      document.getElementById('nameB').textContent = countryB.ulke_adi;
-      document.getElementById('regionA').textContent = countryA.bolge_adi || 'Global';
-      document.getElementById('regionB').textContent = countryB.bolge_adi || 'Global';
+      // Render Winner Verdict
+      renderWinnerVerdict();
+      
+      // Score Cards - Now using sector scores
+      const scoreA = comparisonResult.scores.A || 0;
+      const scoreB = comparisonResult.scores.B || 0;
+      
+      document.getElementById('nameA').textContent = sectorDataA.ulke_adi;
+      document.getElementById('nameB').textContent = sectorDataB.ulke_adi;
+      document.getElementById('regionA').textContent = selectedSector.sektor_adi;
+      document.getElementById('regionB').textContent = selectedSector.sektor_adi;
       document.getElementById('scoreA').textContent = scoreA.toFixed(0);
       document.getElementById('scoreB').textContent = scoreB.toFixed(0);
       
-      // Winner badges
-      if (scoreA > scoreB) {
+      // Winner badges based on sector comparison
+      const winner = comparisonResult.winner;
+      if (winner === 'A') {
         document.getElementById('winnerBadgeA').classList.add('show');
         document.getElementById('winnerBadgeB').classList.remove('show');
-      } else if (scoreB > scoreA) {
+      } else if (winner === 'B') {
         document.getElementById('winnerBadgeB').classList.add('show');
         document.getElementById('winnerBadgeA').classList.remove('show');
       } else {
@@ -1203,69 +1826,97 @@
       }
 
       // Action buttons
-      document.getElementById('selectNameA').textContent = countryA.ulke_adi;
-      document.getElementById('selectNameB').textContent = countryB.ulke_adi;
+      document.getElementById('selectNameA').textContent = sectorDataA.ulke_adi;
+      document.getElementById('selectNameB').textContent = sectorDataB.ulke_adi;
 
-      renderCostChart();
+      // Render all charts
+      renderVelocityChart();
+      renderVolumeChart();
       renderPieCharts();
       renderSWOT();
     }
 
-    // ==================== RENDER COST CHART ====================
-    function renderCostChart() {
-      const mockA = generateMockData(countryA);
-      const mockB = generateMockData(countryB);
+    // ==================== RENDER WINNER VERDICT ====================
+    function renderWinnerVerdict() {
+      const verdict = document.getElementById('sectorWinnerVerdict');
+      const verdictText = document.getElementById('verdictText');
+      const winner = comparisonResult.winner;
       
-      const freightA = countryA.konteyner_maliyeti || 1200;
-      const freightB = countryB.konteyner_maliyeti || 1200;
+      verdict.classList.remove('winner-a', 'winner-b', 'tie');
       
-      const tariffA = mockA.tariffRate * 50; // 5% of $50k base
-      const tariffB = mockB.tariffRate * 50;
-      
-      const localA = mockA.localDistribution;
-      const localB = mockB.localDistribution;
-      
-      const totalA = freightA + tariffA + localA;
-      const totalB = freightB + tariffB + localB;
-      
-      // Cost winner
-      const costWinner = document.getElementById('costWinner');
-      if (totalA < totalB) {
-        costWinner.className = 'section-winner a';
-        costWinner.innerHTML = '🏆 ' + countryA.ulke_adi + ' daha ucuz';
-      } else if (totalB < totalA) {
-        costWinner.className = 'section-winner b';
-        costWinner.innerHTML = '🏆 ' + countryB.ulke_adi + ' daha ucuz';
+      if (winner === 'A') {
+        verdict.classList.add('winner-a');
+        verdict.querySelector('.verdict-icon').textContent = '🏅';
+        verdictText.innerHTML = `<strong>${sectorDataA.ulke_adi}</strong> ${selectedSector.sektor_adi} sektöründe stratejik tercih`;
+      } else if (winner === 'B') {
+        verdict.classList.add('winner-b');
+        verdict.querySelector('.verdict-icon').textContent = '🏅';
+        verdictText.innerHTML = `<strong>${sectorDataB.ulke_adi}</strong> ${selectedSector.sektor_adi} sektöründe stratejik tercih`;
       } else {
-        costWinner.className = 'section-winner tie';
-        costWinner.innerHTML = '🤝 Eşit';
+        verdict.classList.add('tie');
+        verdict.querySelector('.verdict-icon').textContent = '⚖️';
+        verdictText.innerHTML = `Her iki pazar da ${selectedSector.sektor_adi} için benzer fırsatlar sunuyor`;
+      }
+    }
+
+    // ==================== RENDER VELOCITY CHART (Growth & Investment) ====================
+    function renderVelocityChart() {
+      const growthA = sectorDataA.buyume || 0;
+      const growthB = sectorDataB.buyume || 0;
+      const investA = sectorDataA.yatirim || 0;
+      const investB = sectorDataB.yatirim || 0;
+      const employA = sectorDataA.istihdam || 0;
+      const employB = sectorDataB.istihdam || 0;
+      
+      // Normalize investment and employment for chart (scale to 0-10)
+      const maxInvest = Math.max(investA, investB, 1);
+      const maxEmploy = Math.max(employA, employB, 1);
+      const normInvestA = (investA / maxInvest) * 10;
+      const normInvestB = (investB / maxInvest) * 10;
+      const normEmployA = (employA / maxEmploy) * 10;
+      const normEmployB = (employB / maxEmploy) * 10;
+      
+      // Velocity winner (growth focused)
+      const velocityWinner = document.getElementById('velocityWinner');
+      if (growthA > growthB) {
+        velocityWinner.className = 'section-winner a';
+        velocityWinner.innerHTML = '✓ ' + sectorDataA.ulke_adi + ' daha hızlı büyüyor';
+      } else if (growthB > growthA) {
+        velocityWinner.className = 'section-winner b';
+        velocityWinner.innerHTML = '✓ ' + sectorDataB.ulke_adi + ' daha hızlı büyüyor';
+      } else {
+        velocityWinner.className = 'section-winner tie';
+        velocityWinner.innerHTML = '= Benzer büyüme hızı';
       }
       
-      if (charts.cost) charts.cost.destroy();
+      if (charts.velocity) charts.velocity.destroy();
       
-      const ctx = document.getElementById('costChart').getContext('2d');
-      charts.cost = new Chart(ctx, {
+      const ctx = document.getElementById('velocityChart').getContext('2d');
+      charts.velocity = new Chart(ctx, {
         type: 'bar',
         data: {
-          labels: [countryA.ulke_adi, countryB.ulke_adi],
+          labels: [sectorDataA.ulke_adi, sectorDataB.ulke_adi],
           datasets: [
             {
-              label: 'Nakliye',
-              data: [freightA, freightB],
-              backgroundColor: 'rgba(0,212,255,0.8)',
-              borderRadius: 4
+              label: 'Sektörel Büyüme (%)',
+              data: [growthA, growthB],
+              backgroundColor: growthA > growthB ? ['rgba(0,255,136,0.8)', 'rgba(0,255,136,0.4)'] : ['rgba(0,255,136,0.4)', 'rgba(0,255,136,0.8)'],
+              borderRadius: 4,
+              yAxisID: 'y'
             },
             {
-              label: 'Gümrük & Vergi',
-              data: [tariffA, tariffB],
-              backgroundColor: 'rgba(168,85,247,0.8)',
-              borderRadius: 4
+              label: 'Yatırım (Normalize)',
+              data: [normInvestA, normInvestB],
+              backgroundColor: 'rgba(168,85,247,0.6)',
+              borderRadius: 4,
+              yAxisID: 'y'
             },
             {
-              label: 'Yerel Dağıtım',
-              data: [localA, localB],
-              backgroundColor: 'rgba(255,170,0,0.8)',
-              borderRadius: 4
+              label: 'İstihdam (Normalize)',
+              data: [normEmployA, normEmployB],
+              backgroundColor: 'rgba(255,170,0,0.6)',
+              borderRadius: 4,
+              yAxisID: 'y'
             }
           ]
         },
@@ -1276,39 +1927,171 @@
             legend: { display: false },
             tooltip: {
               callbacks: {
-                label: ctx => `${ctx.dataset.label}: $${ctx.raw.toLocaleString()}`
+                label: function(ctx) {
+                  if (ctx.datasetIndex === 0) return `Büyüme: %${ctx.raw.toFixed(1)}`;
+                  if (ctx.datasetIndex === 1) return `Yatırım: $${(ctx.dataIndex === 0 ? investA : investB).toLocaleString()}M`;
+                  return `İstihdam: ${(ctx.dataIndex === 0 ? employA : employB).toLocaleString()}K kişi`;
+                }
               }
             }
           },
           scales: {
             x: {
-              stacked: true,
               grid: { display: false },
               ticks: { color: '#e8eaed', font: { weight: '600' } }
             },
             y: {
-              stacked: true,
               grid: { color: 'rgba(37,41,49,0.5)' },
-              ticks: {
-                color: '#6b7280',
-                callback: v => '$' + (v/1000).toFixed(0) + 'k'
-              }
+              ticks: { color: '#6b7280' }
             }
           }
         }
       });
+
+      // Update Velocity Insight Card
+      updateVelocityInsightCard(growthA, growthB, investA, investB);
     }
 
-    // ==================== RENDER PIE CHARTS ====================
+    // ==================== RENDER VOLUME CHART (Import Value) ====================
+    function renderVolumeChart() {
+      const volumeA = sectorDataA.ithalat || 0;
+      const volumeB = sectorDataB.ithalat || 0;
+      
+      // Volume winner
+      const volumeWinner = document.getElementById('volumeWinner');
+      if (volumeA > volumeB) {
+        volumeWinner.className = 'section-winner a';
+        volumeWinner.innerHTML = '✓ ' + sectorDataA.ulke_adi + ' daha büyük pazar';
+      } else if (volumeB > volumeA) {
+        volumeWinner.className = 'section-winner b';
+        volumeWinner.innerHTML = '✓ ' + sectorDataB.ulke_adi + ' daha büyük pazar';
+      } else {
+        volumeWinner.className = 'section-winner tie';
+        volumeWinner.innerHTML = '= Benzer pazar boyutu';
+      }
+      
+      if (charts.volume) charts.volume.destroy();
+      
+      const ctx = document.getElementById('volumeChart').getContext('2d');
+      charts.volume = new Chart(ctx, {
+        type: 'bar',
+        data: {
+          labels: [sectorDataA.ulke_adi, sectorDataB.ulke_adi],
+          datasets: [{
+            label: 'İthalat Hacmi ($M)',
+            data: [volumeA, volumeB],
+            backgroundColor: volumeA > volumeB ? ['rgba(0,212,255,0.9)', 'rgba(168,85,247,0.6)'] : ['rgba(0,212,255,0.6)', 'rgba(168,85,247,0.9)'],
+            borderRadius: 6,
+            barThickness: 60
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          indexAxis: 'y',
+          plugins: {
+            legend: { display: false },
+            tooltip: {
+              callbacks: {
+                label: ctx => `İthalat: $${ctx.raw.toLocaleString()}M`
+              }
+            }
+          },
+          scales: {
+            x: {
+              grid: { color: 'rgba(37,41,49,0.5)' },
+              ticks: {
+                color: '#6b7280',
+                callback: v => '$' + (v >= 1000 ? (v/1000).toFixed(1) + 'B' : v + 'M')
+              }
+            },
+            y: {
+              grid: { display: false },
+              ticks: { color: '#e8eaed', font: { weight: '600' } }
+            }
+          }
+        }
+      });
+
+      // Update Volume Insight Card
+      updateVolumeInsightCard(volumeA, volumeB);
+    }
+
+    // ==================== INSIGHT CARD GENERATORS ====================
+    function updateVelocityInsightCard(growthA, growthB, investA, investB) {
+      const card = document.getElementById('velocityInsightCard');
+      const body = document.getElementById('velocityInsightBody');
+      
+      const fasterGrower = growthA > growthB ? sectorDataA : sectorDataB;
+      const slowerGrower = growthA > growthB ? sectorDataB : sectorDataA;
+      const fasterGrowth = Math.max(growthA, growthB);
+      const slowerGrowth = Math.min(growthA, growthB);
+      
+      let insightType = fasterGrowth > 5 ? 'positive' : fasterGrowth > 2 ? 'caution' : 'neutral';
+      let verdict = comparisonResult.insights.sectorVelocity;
+      
+      card.className = `smart-insight ${insightType}`;
+      body.innerHTML = `
+        <div style="margin-bottom:10px">
+          📊 <strong>Bu grafik ne gösteriyor?</strong> ${selectedSector.sektor_adi} sektöründe büyüme oranı, 
+          yatırım hacmi ve istihdam verilerini karşılaştırır.
+        </div>
+        <div class="insight-verdict">
+          <div class="verdict-badge ${insightType === 'positive' ? 'go' : insightType === 'caution' ? 'caution' : 'go'}">
+            ${fasterGrowth > 5 ? '🚀' : fasterGrowth > 2 ? '📈' : '📊'}
+          </div>
+          <div class="verdict-text">${verdict}</div>
+        </div>
+        <div class="insight-details">
+          <span class="insight-tag">📈 ${fasterGrower.ulke_adi}: %${fasterGrowth.toFixed(1)} büyüme</span>
+          <span class="insight-tag">📉 ${slowerGrower.ulke_adi}: %${slowerGrowth.toFixed(1)} büyüme</span>
+        </div>
+      `;
+    }
+
+    function updateVolumeInsightCard(volumeA, volumeB) {
+      const card = document.getElementById('volumeInsightCard');
+      const body = document.getElementById('volumeInsightBody');
+      
+      const biggerMarket = volumeA > volumeB ? sectorDataA : sectorDataB;
+      const smallerMarket = volumeA > volumeB ? sectorDataB : sectorDataA;
+      const biggerVolume = Math.max(volumeA, volumeB);
+      const smallerVolume = Math.min(volumeA, volumeB);
+      const ratio = smallerVolume > 0 ? (biggerVolume / smallerVolume).toFixed(1) : 'N/A';
+      
+      let insightType = biggerVolume > 5000 ? 'positive' : biggerVolume > 1000 ? 'caution' : 'neutral';
+      let verdict = comparisonResult.insights.marketVolume;
+      
+      card.className = `smart-insight ${insightType}`;
+      body.innerHTML = `
+        <div style="margin-bottom:10px">
+          📊 <strong>Bu grafik ne gösteriyor?</strong> ${selectedSector.sektor_adi} sektöründeki toplam 
+          ithalat hacmini (pazar büyüklüğü göstergesi) karşılaştırır.
+        </div>
+        <div class="insight-verdict">
+          <div class="verdict-badge ${insightType === 'positive' ? 'go' : insightType === 'caution' ? 'caution' : 'go'}">
+            ${biggerVolume > 5000 ? '💰' : biggerVolume > 1000 ? '📊' : '📋'}
+          </div>
+          <div class="verdict-text">${verdict}</div>
+        </div>
+        <div class="insight-details">
+          <span class="insight-tag">💰 ${biggerMarket.ulke_adi}: $${biggerVolume.toLocaleString()}M</span>
+          <span class="insight-tag">📊 Oran: ${ratio}x büyük</span>
+        </div>
+      `;
+    }
+
+    // ==================== RENDER PIE CHARTS (Market Saturation) ====================
     function renderPieCharts() {
-      const localA = countryA.yerli_uretim_orani || 50;
-      const localB = countryB.yerli_uretim_orani || 50;
-      const importA = 100 - localA;
-      const importB = 100 - localB;
+      // Use sector-specific local production data
+      const localA = sectorDataA.yerliUretim || 50;
+      const localB = sectorDataB.yerliUretim || 50;
+      const importA = sectorDataA.ithalatFirsati || (100 - localA);
+      const importB = sectorDataB.ithalatFirsati || (100 - localB);
       
       // Update stats
-      document.getElementById('pieNameA').textContent = countryA.ulke_adi;
-      document.getElementById('pieNameB').textContent = countryB.ulke_adi;
+      document.getElementById('pieNameA').textContent = sectorDataA.ulke_adi;
+      document.getElementById('pieNameB').textContent = sectorDataB.ulke_adi;
       document.getElementById('localA').textContent = localA.toFixed(0) + '%';
       document.getElementById('localB').textContent = localB.toFixed(0) + '%';
       document.getElementById('importA').textContent = importA.toFixed(0) + '%';
@@ -1340,17 +2123,17 @@
         oppB.className = 'opportunity-badge low';
       }
       
-      // Market winner
+      // Market winner (based on import opportunity)
       const marketWinner = document.getElementById('marketWinner');
       if (importA > importB) {
         marketWinner.className = 'section-winner a';
-        marketWinner.innerHTML = '🏆 ' + countryA.ulke_adi + ' daha açık pazar';
+        marketWinner.innerHTML = '✓ ' + sectorDataA.ulke_adi + ' daha açık pazar';
       } else if (importB > importA) {
         marketWinner.className = 'section-winner b';
-        marketWinner.innerHTML = '🏆 ' + countryB.ulke_adi + ' daha açık pazar';
+        marketWinner.innerHTML = '✓ ' + sectorDataB.ulke_adi + ' daha açık pazar';
       } else {
         marketWinner.className = 'section-winner tie';
-        marketWinner.innerHTML = '🤝 Eşit';
+        marketWinner.innerHTML = '= Benzer pazar yapısı';
       }
       
       // Pie Chart A
@@ -1404,18 +2187,116 @@
           }
         }
       });
+
+      // Update Market Insight Card
+      updateMarketInsightCard(importA, importB);
+    }
+
+    function updateMarketInsightCard(importA, importB) {
+      const card = document.getElementById('marketInsightCard');
+      const body = document.getElementById('marketInsightBody');
+      
+      const betterMarket = importA > importB ? sectorDataA : sectorDataB;
+      const betterImport = Math.max(importA, importB);
+      const worseImport = Math.min(importA, importB);
+      const diff = betterImport - worseImport;
+      
+      let insightType = 'positive';
+      let verdict = '';
+      let explanation = '';
+      
+      if (betterImport >= 60) {
+        insightType = 'positive';
+        explanation = `<strong>${betterMarket.ulke_adi}</strong> pazarı %${betterImport.toFixed(0)} ithalat fırsatı ile ${selectedSector.sektor_adi} sektöründe yüksek potansiyel sunuyor!`;
+        verdict = comparisonResult.insights.marketSaturation;
+      } else if (betterImport >= 40) {
+        insightType = 'caution';
+        explanation = `Her iki pazarda da ${selectedSector.sektor_adi} için orta düzey fırsat var.`;
+        verdict = `Yerel üreticiler aktif, ancak hala ithalat için alan mevcut. Farklılaşma stratejisi gerekli.`;
+      } else {
+        insightType = 'negative';
+        explanation = `Her iki pazar da ${selectedSector.sektor_adi} sektöründe yerel üretim ile doymuş durumda.`;
+        verdict = `İthalat ihtiyacı düşük. Niş segment veya premium ürünlerle giriş düşünülebilir.`;
+      }
+      
+      card.className = `smart-insight ${insightType}`;
+      body.innerHTML = `
+        <div style="margin-bottom:10px">
+          📊 <strong>Bu grafik ne gösteriyor?</strong> ${selectedSector.sektor_adi} sektöründe yerel üretim kapasitesi ile 
+          ithalat fırsatı oranını gösterir. %60+ ithalat fırsatı = Yüksek pazar potansiyeli.
+        </div>
+        <div style="margin-bottom:10px">${explanation}</div>
+        <div class="insight-verdict">
+          <div class="verdict-badge ${insightType === 'positive' ? 'go' : insightType === 'caution' ? 'caution' : 'stop'}">
+            ${insightType === 'positive' ? '✓' : insightType === 'caution' ? '!' : '✗'}
+          </div>
+          <div class="verdict-text">${verdict}</div>
+        </div>
+        <div class="insight-details">
+          <span class="insight-tag">🏭 ${sectorDataA.ulke_adi}: %${importA.toFixed(0)} açık</span>
+          <span class="insight-tag">🏭 ${sectorDataB.ulke_adi}: %${importB.toFixed(0)} açık</span>
+        </div>
+      `;
     }
 
     // ==================== RENDER SWOT ====================
     function renderSWOT() {
-      const swotA = generateSWOT(countryA);
-      const swotB = generateSWOT(countryB);
+      const swotA = generateSectorSWOT(sectorDataA);
+      const swotB = generateSectorSWOT(sectorDataB);
       
-      document.getElementById('swotNameA').textContent = countryA.ulke_adi;
-      document.getElementById('swotNameB').textContent = countryB.ulke_adi;
+      document.getElementById('swotNameA').textContent = sectorDataA.ulke_adi;
+      document.getElementById('swotNameB').textContent = sectorDataB.ulke_adi;
       
       document.getElementById('swotMatrixA').innerHTML = renderSWOTMatrix(swotA);
       document.getElementById('swotMatrixB').innerHTML = renderSWOTMatrix(swotB);
+    }
+
+    // ==================== SECTOR-SPECIFIC SWOT GENERATOR ====================
+    function generateSectorSWOT(data) {
+      const swot = {
+        strengths: [],
+        weaknesses: [],
+        opportunities: [],
+        threats: []
+      };
+
+      const growth = data.buyume || 0;
+      const volume = data.ithalat || 0;
+      const localProd = data.yerliUretim || 50;
+      const importGap = data.ithalatFirsati || (100 - localProd);
+      const investment = data.yatirim || 0;
+      const employment = data.istihdam || 0;
+
+      // STRENGTHS (Sektör bazlı)
+      if (growth >= 5) swot.strengths.push(`Yüksek Sektörel Büyüme (%${growth.toFixed(1)})`);
+      if (volume >= 3000) swot.strengths.push(`Büyük Pazar Hacmi ($${volume.toLocaleString()}M)`);
+      if (investment >= 500) swot.strengths.push(`Güçlü Yatırım Ortamı ($${investment}M)`);
+      if (employment >= 200) swot.strengths.push(`Geniş Sektörel İşgücü (${employment}K)`);
+
+      // WEAKNESSES (Sektör bazlı)
+      if (growth < 0) swot.weaknesses.push(`Daralan Sektör (%${growth.toFixed(1)})`);
+      if (localProd >= 80) swot.weaknesses.push(`Yüksek Yerel Rekabet (%${localProd.toFixed(0)})`);
+      if (volume < 500) swot.weaknesses.push(`Küçük Pazar Hacmi ($${volume}M)`);
+      if (investment < 100) swot.weaknesses.push(`Düşük Yatırım İlgisi`);
+
+      // OPPORTUNITIES (Sektör bazlı)
+      if (importGap >= 60) swot.opportunities.push(`Yüksek İthalat Fırsatı (%${importGap.toFixed(0)})`);
+      if (growth >= 3 && growth < 5) swot.opportunities.push(`İstikrarlı Büyüme Trendi`);
+      if (localProd < 40) swot.opportunities.push(`Düşük Yerel Rekabet`);
+      if (volume >= 1000 && volume < 3000) swot.opportunities.push(`Gelişen Pazar`);
+
+      // THREATS (Sektör bazlı)
+      if (importGap < 30) swot.threats.push(`Sınırlı İthalat Alanı (%${importGap.toFixed(0)})`);
+      if (growth >= 8) swot.threats.push(`Aşırı Rekabet Potansiyeli`);
+      if (localProd >= 60 && localProd < 80) swot.threats.push(`Güçlenen Yerel Üretim`);
+
+      // Default items if empty
+      if (swot.strengths.length === 0) swot.strengths.push('Veri yetersiz');
+      if (swot.weaknesses.length === 0) swot.weaknesses.push('Belirgin zayıflık yok');
+      if (swot.opportunities.length === 0) swot.opportunities.push('Standart pazar koşulları');
+      if (swot.threats.length === 0) swot.threats.push('Düşük risk ortamı');
+
+      return swot;
     }
 
     function renderSWOTMatrix(swot) {
@@ -1461,26 +2342,36 @@
 
     // ==================== MODAL ====================
     function openSaveModal(side) {
-      selectedForSave = side === 'A' ? countryA : countryB;
-      const otherCountry = side === 'A' ? countryB : countryA;
+      const selectedData = side === 'A' ? sectorDataA : sectorDataB;
+      const otherData = side === 'A' ? sectorDataB : sectorDataA;
+      const score = side === 'A' ? comparisonResult.scores.A : comparisonResult.scores.B;
+      const otherScore = side === 'A' ? comparisonResult.scores.B : comparisonResult.scores.A;
+      
+      selectedForSave = {
+        ...selectedData,
+        ulke_id: side === 'A' ? document.getElementById('countryA').value : document.getElementById('countryB').value,
+        sektor_id: selectedSector.sektor_id,
+        sektor_adi: selectedSector.sektor_adi,
+        totalScore: score
+      };
       
       document.getElementById('modalSummary').innerHTML = `
         <div class="modal-stat">
           <div class="modal-stat-label">Seçilen Ülke</div>
-          <div class="modal-stat-value">${selectedForSave.ulke_adi}</div>
+          <div class="modal-stat-value">${selectedData.ulke_adi}</div>
         </div>
         <div class="modal-stat">
-          <div class="modal-stat-label">Uygunluk Skoru</div>
-          <div class="modal-stat-value" style="color:var(--accent)">${(selectedForSave.totalScore || 0).toFixed(0)}/100</div>
+          <div class="modal-stat-label">Sektör</div>
+          <div class="modal-stat-value" style="color:var(--purple)">${selectedSector.sektor_adi}</div>
         </div>
         <div class="modal-stat">
-          <div class="modal-stat-label">Karşılaştırılan</div>
-          <div class="modal-stat-value">${otherCountry.ulke_adi}</div>
+          <div class="modal-stat-label">Sektör Skoru</div>
+          <div class="modal-stat-value" style="color:var(--accent)">${score.toFixed(0)}/100</div>
         </div>
         <div class="modal-stat">
           <div class="modal-stat-label">Karşılaştırma Sonucu</div>
           <div class="modal-stat-value" style="color:var(--success)">
-            ${(selectedForSave.totalScore || 0) > (otherCountry.totalScore || 0) ? '🏆 Kazanan' : '📊 Alternatif'}
+            ${comparisonResult.winner === side ? '✓ Stratejik Tercih' : comparisonResult.winner === 'TIE' ? '⚖️ Eşit' : '◯ Alternatif'}
           </div>
         </div>
       `;
@@ -1498,28 +2389,49 @@
       
       const status = document.getElementById('decisionStatus').value;
       const note = document.getElementById('managerNote').value;
+      const saveBtn = document.getElementById('confirmSave');
+      
+      // Loading state
+      const originalText = saveBtn.textContent;
+      saveBtn.textContent = '⏳ Kaydediliyor...';
+      saveBtn.disabled = true;
+      
+      const payload = {
+        ulke_id: selectedForSave.ulke_id,
+        ulke_adi: selectedForSave.ulke_adi,
+        sektor_id: selectedForSave.sektor_id,
+        sektor_adi: selectedForSave.sektor_adi,
+        karar_durumu: status,
+        yonetici_notu: note || `${sectorDataA.ulke_adi} vs ${sectorDataB.ulke_adi} karşılaştırması - ${selectedSector.sektor_adi} sektörü. ${comparisonResult.winnerReason}`,
+        hesaplanan_skor: selectedForSave.totalScore || 0
+      };
+      
+      console.log('📤 Frontend gönderilen veri:', payload);
       
       try {
         const response = await fetch('/api/decisions', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            ulke_id: selectedForSave.ulke_id,
-            ulke_adi: selectedForSave.ulke_adi,
-            sektor_id: null,
-            sektor_adi: 'Karşılaştırma Analizi',
-            karar_durumu: status,
-            yonetici_notu: note || `${countryA.ulke_adi} vs ${countryB.ulke_adi} karşılaştırması sonucu seçildi.`,
-            hesaplanan_skor: selectedForSave.totalScore || 0
-          })
+          body: JSON.stringify(payload)
         });
 
-        if (response.ok) {
+        const result = await response.json();
+        console.log('📥 Backend yanıtı:', result);
+
+        if (response.ok && result.status === 'success') {
           closeModal();
-          showToast('✓ Strateji başarıyla kaydedildi!');
+          showToast('✓ Strateji başarıyla kaydedildi! (ID: ' + result.data?.id + ')');
+        } else {
+          console.error('API Hatası:', result);
+          showToast('⚠️ Hata: ' + (result.message || 'Bilinmeyen hata'));
         }
       } catch (error) {
         console.error('Save error:', error);
+        showToast('❌ Bağlantı hatası: ' + error.message);
+      } finally {
+        // Reset button
+        saveBtn.textContent = originalText;
+        saveBtn.disabled = false;
       }
     }
 

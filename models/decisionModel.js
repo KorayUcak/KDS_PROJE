@@ -1,5 +1,6 @@
 const { pool } = require('../config/db');
 const AdvancedMetricsSimulator = require('../utils/advancedMetricsSimulator');
+const UnifiedScoringEngine = require('../utils/unifiedScoringEngine');
 
 /**
  * Decision Support Model
@@ -347,59 +348,107 @@ class DecisionModel {
 
   /**
    * Karar kaydet (kayitli_analizler tablosuna)
+   * 
+   * GERÇEK TABLO ŞEMASI:
+   * - analiz_id (INT, PK, Auto Increment)
+   * - kullanici_id (INT, FK)
+   * - hedef_ulke_id (INT, FK -> ulkeler.ulke_id)
+   * - hedef_sektor_id (INT, FK -> sektorler.sektor_id)
+   * - hesaplanan_skor (DECIMAL)
+   * - yonetici_notu (TEXT)
+   * - aciklama (TEXT)
+   * - olusturulma_tarihi (TIMESTAMP)
+   * 
+   * NOT: Mock data'daki ulke_id'ler DB'deki gerçek ID'lerle eşleşmeyebilir.
+   * Bu yüzden ulke_adi'na göre gerçek ID'yi DB'den buluyoruz.
    */
   static async saveDecision(decisionData) {
+    console.log('📝 [DecisionModel.saveDecision] Gelen data:', JSON.stringify(decisionData, null, 2));
+    
     try {
       const {
         kullanici_id = 1, // Varsayılan kullanıcı (auth yoksa)
-        analiz_adi,
-        analiz_tipi = 'ulke_degerlendirme',
         ulke_id,
         ulke_adi,
         sektor_id,
         sektor_adi,
         karar_durumu,
         yonetici_notu,
-        hesaplanan_skor,
-        parametreler = {}
+        hesaplanan_skor
       } = decisionData;
 
-      // Parametreleri JSON olarak hazırla
-      const params = JSON.stringify({
-        ...parametreler,
-        ulke_id,
-        ulke_adi,
-        sektor_id,
-        sektor_adi
-      });
+      // 1. Ülke adına göre GERÇEK ulke_id'yi veritabanından bul
+      let gercek_ulke_id = null;
+      if (ulke_adi) {
+        console.log('🔍 [DecisionModel.saveDecision] Ülke adı ile DB\'de arama:', ulke_adi);
+        
+        const [ulkeRows] = await pool.query(
+          'SELECT ulke_id FROM ulkeler WHERE ulke_adi = ? OR ulke_adi LIKE ? LIMIT 1',
+          [ulke_adi, `%${ulke_adi}%`]
+        );
+        
+        if (ulkeRows.length > 0) {
+          gercek_ulke_id = ulkeRows[0].ulke_id;
+          console.log('✅ [DecisionModel.saveDecision] DB\'de ülke bulundu:', { ulke_adi, gercek_ulke_id });
+        } else {
+          console.log('⚠️ [DecisionModel.saveDecision] Ülke DB\'de bulunamadı, NULL olarak kaydedilecek');
+        }
+      }
 
-      // Durumu belirle
-      const durum = karar_durumu === 'Ready to Launch' ? 'tamamlandi' : 
-                    karar_durumu === 'Risk/Avoid' ? 'iptal' : 'devam_ediyor';
+      // 2. Sektör adına göre GERÇEK sektor_id'yi veritabanından bul
+      let gercek_sektor_id = sektor_id;
+      if (sektor_adi && !sektor_id) {
+        console.log('🔍 [DecisionModel.saveDecision] Sektör adı ile DB\'de arama:', sektor_adi);
+        
+        const [sektorRows] = await pool.query(
+          'SELECT sektor_id FROM sektorler WHERE sektor_adi = ? OR sektor_adi LIKE ? LIMIT 1',
+          [sektor_adi, `%${sektor_adi}%`]
+        );
+        
+        if (sektorRows.length > 0) {
+          gercek_sektor_id = sektorRows[0].sektor_id;
+          console.log('✅ [DecisionModel.saveDecision] DB\'de sektör bulundu:', { sektor_adi, gercek_sektor_id });
+        }
+      }
 
-      // Sonuçları JSON olarak hazırla (durum bilgisini de içine koy)
-      const sonuclar = JSON.stringify({
+      // aciklama alanı = karar durumu + ülke/sektör bilgisi
+      const aciklama = `[${karar_durumu || 'Değerlendirme'}] ${ulke_adi || 'Ülke'} - ${sektor_adi || 'Genel'}`;
+
+      console.log('🔄 [DecisionModel.saveDecision] SQL parametreleri:', {
+        kullanici_id,
+        hedef_ulke_id: gercek_ulke_id,
+        hedef_sektor_id: gercek_sektor_id,
         hesaplanan_skor,
-        karar_durumu,
-        yonetici_notu,
-        durum, // durum bilgisini JSON içine kaydet
-        karar_tarihi: new Date().toISOString()
+        aciklama
       });
 
-      // durum sütunu olmayabilir, sadece mevcut sütunlara insert yap
+      // INSERT - Gerçek şemaya uygun (DB'den bulunan ID'lerle)
       const [result] = await pool.query(`
         INSERT INTO kayitli_analizler 
-        (kullanici_id, analiz_adi, analiz_tipi, parametreler, sonuclar)
-        VALUES (?, ?, ?, ?, ?)
-      `, [kullanici_id, analiz_adi, analiz_tipi, params, sonuclar]);
+        (kullanici_id, hedef_ulke_id, hedef_sektor_id, hesaplanan_skor, yonetici_notu, aciklama)
+        VALUES (?, ?, ?, ?, ?, ?)
+      `, [
+        kullanici_id,
+        gercek_ulke_id,  // Mock ID yerine DB'deki gerçek ID
+        gercek_sektor_id || null,
+        hesaplanan_skor || 0,
+        yonetici_notu || '',
+        aciklama
+      ]);
+
+      console.log('✅ [DecisionModel.saveDecision] INSERT başarılı, ID:', result.insertId);
 
       return {
         success: true,
         id: result.insertId,
-        message: 'Karar başarıyla kaydedildi'
+        message: 'Karar başarıyla kaydedildi',
+        saved_ulke_id: gercek_ulke_id,
+        saved_sektor_id: gercek_sektor_id
       };
     } catch (error) {
-      console.error('Karar kaydedilemedi:', error);
+      console.error('❌ [DecisionModel.saveDecision] Hata:', error.message);
+      console.error('SQL State:', error.sqlState);
+      console.error('SQL:', error.sql);
       throw error;
     }
   }
@@ -409,23 +458,30 @@ class DecisionModel {
    */
   static async getSavedDecisions(kullaniciId = null, limit = 50) {
     try {
-      // Basit sorgu - kullanicilar tablosu olmayabilir
       const query = `
-        SELECT *
-        FROM kayitli_analizler
-        ORDER BY olusturma_tarihi DESC
+        SELECT 
+          a.analiz_id as id,
+          a.kullanici_id,
+          a.hedef_ulke_id,
+          a.hedef_sektor_id,
+          a.hesaplanan_skor,
+          a.yonetici_notu,
+          a.aciklama,
+          a.olusturulma_tarihi,
+          u.ulke_adi,
+          s.sektor_adi
+        FROM kayitli_analizler a
+        LEFT JOIN ulkeler u ON a.hedef_ulke_id = u.ulke_id
+        LEFT JOIN sektorler s ON a.hedef_sektor_id = s.sektor_id
+        ORDER BY a.olusturulma_tarihi DESC
         LIMIT ?
       `;
-      const params = [limit];
 
-      const [rows] = await pool.query(query, params);
+      const [rows] = await pool.query(query, [limit]);
       
-      // Parse JSON fields
       return rows.map(row => ({
         ...row,
-        kullanici_adi: 'Admin', // Default kullanıcı adı
-        parametreler: typeof row.parametreler === 'string' ? JSON.parse(row.parametreler || '{}') : (row.parametreler || {}),
-        sonuclar: typeof row.sonuclar === 'string' ? JSON.parse(row.sonuclar || '{}') : (row.sonuclar || {})
+        kullanici_adi: 'Admin'
       }));
     } catch (error) {
       console.error('Kayıtlı kararlar alınamadı:', error);
@@ -439,19 +495,28 @@ class DecisionModel {
   static async getDecisionById(id) {
     try {
       const [rows] = await pool.query(`
-        SELECT *
-        FROM kayitli_analizler
-        WHERE id = ?
+        SELECT 
+          a.analiz_id as id,
+          a.kullanici_id,
+          a.hedef_ulke_id,
+          a.hedef_sektor_id,
+          a.hesaplanan_skor,
+          a.yonetici_notu,
+          a.aciklama,
+          a.olusturulma_tarihi,
+          u.ulke_adi,
+          s.sektor_adi
+        FROM kayitli_analizler a
+        LEFT JOIN ulkeler u ON a.hedef_ulke_id = u.ulke_id
+        LEFT JOIN sektorler s ON a.hedef_sektor_id = s.sektor_id
+        WHERE a.analiz_id = ?
       `, [id]);
 
       if (!rows[0]) return null;
 
-      const row = rows[0];
       return {
-        ...row,
-        kullanici_adi: 'Admin',
-        parametreler: typeof row.parametreler === 'string' ? JSON.parse(row.parametreler || '{}') : (row.parametreler || {}),
-        sonuclar: typeof row.sonuclar === 'string' ? JSON.parse(row.sonuclar || '{}') : (row.sonuclar || {})
+        ...rows[0],
+        kullanici_adi: 'Admin'
       };
     } catch (error) {
       console.error('Karar bulunamadı:', error);
@@ -460,40 +525,19 @@ class DecisionModel {
   }
 
   /**
-   * Karar durumunu güncelle (sonuclar JSON içinde sakla)
+   * Karar notunu güncelle
    */
-  static async updateDecisionStatus(id, newStatus) {
+  static async updateDecisionStatus(id, newNote) {
     try {
-      const validStatuses = ['taslak', 'devam_ediyor', 'tamamlandi', 'iptal'];
-      if (!validStatuses.includes(newStatus)) {
-        throw new Error('Geçersiz durum');
-      }
-
-      // Önce mevcut sonucları al
-      const [existing] = await pool.query('SELECT sonuclar FROM kayitli_analizler WHERE id = ?', [id]);
-      if (!existing[0]) return false;
-
-      let sonuclar = {};
-      try {
-        sonuclar = typeof existing[0].sonuclar === 'string' 
-          ? JSON.parse(existing[0].sonuclar || '{}') 
-          : (existing[0].sonuclar || {});
-      } catch (e) {
-        sonuclar = {};
-      }
-
-      sonuclar.durum = newStatus;
-      sonuclar.guncelleme_tarihi = new Date().toISOString();
-
       const [result] = await pool.query(`
         UPDATE kayitli_analizler 
-        SET sonuclar = ?
-        WHERE id = ?
-      `, [JSON.stringify(sonuclar), id]);
+        SET yonetici_notu = ?
+        WHERE analiz_id = ?
+      `, [newNote, id]);
 
       return result.affectedRows > 0;
     } catch (error) {
-      console.error('Durum güncellenemedi:', error);
+      console.error('Not güncellenemedi:', error);
       throw error;
     }
   }
@@ -504,7 +548,7 @@ class DecisionModel {
   static async deleteDecision(id) {
     try {
       const [result] = await pool.query(`
-        DELETE FROM kayitli_analizler WHERE id = ?
+        DELETE FROM kayitli_analizler WHERE analiz_id = ?
       `, [id]);
 
       return result.affectedRows > 0;
@@ -519,25 +563,24 @@ class DecisionModel {
    */
   static async getDecisionStats() {
     try {
-      // Basit toplam sayı - durum sütunu olmayabilir
       const [rows] = await pool.query(`
-        SELECT COUNT(*) as toplam
+        SELECT 
+          COUNT(*) as toplam,
+          AVG(hesaplanan_skor) as ortalama_skor,
+          MAX(hesaplanan_skor) as max_skor,
+          MIN(hesaplanan_skor) as min_skor
         FROM kayitli_analizler
       `);
       
-      const toplam = rows[0]?.toplam || 0;
-      
-      // Durum bilgisi sonuclar JSON içinde olabilir, şimdilik basit istatistik döndür
-      return { 
-        toplam, 
-        tamamlandi: Math.floor(toplam * 0.4), // Yaklaşık değerler
-        devam_ediyor: Math.floor(toplam * 0.3),
-        taslak: Math.floor(toplam * 0.2),
-        iptal: Math.floor(toplam * 0.1)
+      return {
+        toplam: rows[0]?.toplam || 0,
+        ortalama_skor: Math.round(rows[0]?.ortalama_skor || 0),
+        max_skor: rows[0]?.max_skor || 0,
+        min_skor: rows[0]?.min_skor || 0
       };
     } catch (error) {
       console.error('İstatistikler alınamadı:', error);
-      return { toplam: 0, tamamlandi: 0, devam_ediyor: 0, taslak: 0, iptal: 0 };
+      return { toplam: 0, ortalama_skor: 0, max_skor: 0, min_skor: 0 };
     }
   }
 
@@ -587,14 +630,25 @@ class DecisionModel {
 
   /**
    * 7 Stratejik Karar önerisi getir
+   * Artık Birleşik Skorlama Motoru kullanılıyor
+   * Bu sayede Global Skor ve 7 Karar matematiksel olarak tutarlı
    */
   static getStrategicDecisions(countryData) {
+    // YENİ: Birleşik Skorlama Motoru ile tutarlı sonuçlar
+    return UnifiedScoringEngine.calculateGlobalScore(countryData);
+  }
+
+  /**
+   * Legacy: Eski 7 karar sistemi (geriye dönük uyumluluk için)
+   */
+  static getLegacyStrategicDecisions(countryData) {
     const advancedMetrics = this.getAdvancedMetrics(countryData);
     return AdvancedMetricsSimulator.getEnhancedStrategicDecisions(countryData, advancedMetrics);
   }
 
   /**
    * Strategy Wizard için tam veri paketi getir
+   * Artık Birleşik Skorlama Motoru kullanılıyor
    */
   static async getStrategyWizardData(ulkeId, sektorId) {
     try {
@@ -606,7 +660,7 @@ class DecisionModel {
       const rankings = await this.getCountryRankings(sektorId);
       const countryRank = rankings.find(r => r.ulke_id == ulkeId);
 
-      // Gelişmiş metrikleri hesapla
+      // Gelişmiş metrikleri hesapla (legacy)
       const advancedMetrics = this.getAdvancedMetrics({
         ulke_id: ulkeId,
         bolge_id: countryDetail.bolge_id,
@@ -620,18 +674,37 @@ class DecisionModel {
         lpi_skoru: countryDetail.lpi_skoru_ham
       });
 
-      // 7 Stratejik Karar
-      const strategicDecisions = AdvancedMetricsSimulator.getEnhancedStrategicDecisions({
-        ...countryDetail,
-        lpi_skoru: countryDetail.lpi_skoru_ham
-      }, advancedMetrics);
+      // YENİ: Birleşik Skorlama ile 7 Stratejik Karar
+      const countryDataForScoring = {
+        risk_notu_kodu: countryDetail.risk_notu_kodu,
+        yerli_uretim_karsilama_orani_yuzde: countryDetail.yerli_uretim_karsilama_orani_yuzde,
+        gsyh_kisi_basi_usd: countryDetail.gsyh_kisi_basi_usd,
+        lpi_skoru: countryDetail.lpi_skoru_ham,
+        gumruk_bekleme_suresi_gun: countryDetail.gumruk_bekleme_suresi_gun,
+        enflasyon_orani_yuzde: countryDetail.enflasyon_orani_yuzde,
+        nufus_milyon: countryDetail.nufus_milyon,
+        sektorel_buyume_orani_yuzde: countryDetail.sektorel_buyume_orani_yuzde,
+        anlasma_sayisi: countryDetail.agreements?.length || 0,
+        agreements: countryDetail.agreements,
+        issizlik_orani_yuzde: countryDetail.issizlik_orani_yuzde,
+        buyume_orani_yuzde: countryDetail.buyume_orani_yuzde
+      };
+
+      const unifiedResult = UnifiedScoringEngine.calculateGlobalScore(countryDataForScoring);
 
       return {
         country: countryDetail,
         ranking: countryRank,
         advancedMetrics,
-        strategicDecisions,
-        score: countryRank ? countryRank.totalScore : 0
+        // YENİ: Birleşik skorlama sonuçları
+        strategicDecisions: unifiedResult.decisions,
+        globalScore: unifiedResult.globalScore,
+        globalVerdict: unifiedResult.globalVerdict,
+        decisionCounts: unifiedResult.counts,
+        recommendation: unifiedResult.recommendation,
+        summary: unifiedResult.summary,
+        // Eski uyumluluk için de skor
+        score: unifiedResult.globalScore
       };
     } catch (error) {
       console.error('Strategy Wizard verisi alınamadı:', error);

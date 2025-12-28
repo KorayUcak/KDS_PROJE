@@ -31,11 +31,20 @@
       --cyan: #06b6d4;
     }
 
+    html, body {
+      height: 100%;
+      width: 100%;
+      margin: 0;
+      padding: 0;
+      overflow-x: hidden;
+    }
+
     body {
       font-family: 'Inter', -apple-system, sans-serif;
       background: var(--bg-dark);
       color: var(--text);
       min-height: 100vh;
+      max-width: 100vw;
       overflow-x: hidden;
     }
 
@@ -46,6 +55,8 @@
       display: grid;
       grid-template-rows: 56px 1fr;
       min-height: 100vh;
+      max-width: 100vw;
+      overflow-x: hidden;
     }
 
     /* ==================== TOPBAR ==================== */
@@ -89,55 +100,77 @@
       flex: 1;
     }
 
-    .sector-select {
-      padding: 8px 16px;
+    .sector-select-wrapper {
+      display: flex;
+      align-items: center;
+      gap: 10px;
       background: var(--bg-input);
       border: 1px solid var(--border);
       border-radius: 8px;
-      color: var(--text);
-      font-size: 13px;
-      min-width: 200px;
-      cursor: pointer;
+      padding: 4px 4px 4px 14px;
       transition: all 0.2s;
     }
 
-    .sector-select:hover { border-color: var(--accent); }
-    .sector-select:focus { outline: none; border-color: var(--accent); box-shadow: 0 0 0 3px var(--accent-glow); }
+    .sector-select-wrapper:hover,
+    .sector-select-wrapper:focus-within {
+      border-color: var(--accent);
+      box-shadow: 0 0 0 3px var(--accent-glow);
+    }
 
-    .analyze-btn {
-      padding: 8px 20px;
-      background: linear-gradient(135deg, var(--accent), var(--cyan));
+    .sector-label {
+      font-size: 11px;
+      color: var(--text-dim);
+      font-weight: 500;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    .sector-select {
+      padding: 8px 14px;
+      background: transparent;
       border: none;
-      border-radius: 8px;
-      color: #000;
+      color: var(--text);
       font-size: 13px;
-      font-weight: 600;
+      font-weight: 500;
+      min-width: 180px;
       cursor: pointer;
-      transition: all 0.3s;
-      position: relative;
-      overflow: hidden;
     }
 
-    .analyze-btn::before {
-      content: '';
-      position: absolute;
-      top: -50%;
-      left: -50%;
-      width: 200%;
-      height: 200%;
-      background: linear-gradient(45deg, transparent, rgba(255,255,255,0.3), transparent);
-      transform: rotate(45deg);
-      animation: shimmer 2s infinite;
+    .sector-select:focus { outline: none; }
+
+    .sector-select option {
+      background: var(--bg-card);
+      color: var(--text);
     }
 
-    @keyframes shimmer {
-      0% { transform: translateX(-100%) rotate(45deg); }
-      100% { transform: translateX(100%) rotate(45deg); }
+    /* Live Data Indicator */
+    .live-indicator {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      padding: 6px 12px;
+      background: rgba(0, 255, 136, 0.1);
+      border: 1px solid rgba(0, 255, 136, 0.3);
+      border-radius: 20px;
     }
 
-    .analyze-btn:hover {
-      transform: translateY(-2px);
-      box-shadow: 0 4px 20px var(--accent-glow);
+    .live-dot {
+      width: 8px;
+      height: 8px;
+      background: var(--success);
+      border-radius: 50%;
+      animation: livePulse 2s ease-in-out infinite;
+    }
+
+    @keyframes livePulse {
+      0%, 100% { opacity: 1; transform: scale(1); }
+      50% { opacity: 0.5; transform: scale(0.8); }
+    }
+
+    .live-text {
+      font-size: 11px;
+      color: var(--success);
+      font-weight: 500;
     }
 
     .topbar-right {
@@ -166,9 +199,10 @@
     /* ==================== MAIN CONTENT ==================== */
     .main-content {
       display: grid;
-      grid-template-columns: 260px 1fr;
+      grid-template-columns: 260px minmax(0, 1fr);
       height: calc(100vh - 56px);
       overflow: hidden;
+      max-width: 100%;
     }
 
     /* ==================== SIDEBAR ==================== */
@@ -273,6 +307,81 @@
       margin-top: 6px;
     }
 
+    /* ==================== FILTER CHECKBOX STYLING ==================== */
+    .filter-checkbox {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      cursor: pointer;
+      user-select: none;
+    }
+
+    .filter-checkbox input[type="checkbox"] {
+      display: none;
+    }
+
+    .filter-checkbox .checkmark {
+      width: 16px;
+      height: 16px;
+      border: 2px solid var(--border);
+      border-radius: 4px;
+      background: var(--bg-input);
+      position: relative;
+      transition: all 0.2s ease;
+      flex-shrink: 0;
+    }
+
+    .filter-checkbox input[type="checkbox"]:checked + .checkmark {
+      background: var(--accent);
+      border-color: var(--accent);
+    }
+
+    .filter-checkbox input[type="checkbox"]:checked + .checkmark::after {
+      content: '✓';
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      color: #000;
+      font-size: 10px;
+      font-weight: bold;
+    }
+
+    .filter-checkbox:hover .checkmark {
+      border-color: var(--accent);
+      box-shadow: 0 0 8px var(--accent-glow);
+    }
+
+    /* Disabled slider styling */
+    .filter-slider:disabled {
+      opacity: 0.4;
+      cursor: not-allowed;
+    }
+
+    .filter-slider:disabled::-webkit-slider-thumb {
+      background: var(--text-dim);
+      box-shadow: none;
+    }
+
+    .filter-select:disabled {
+      opacity: 0.4;
+      cursor: not-allowed;
+    }
+
+    /* Active filter group styling */
+    .filter-item.active {
+      background: rgba(0,212,255,0.05);
+      border-radius: 8px;
+      padding: 10px;
+      margin: -4px -4px 12px -4px;
+      border: 1px solid rgba(0,212,255,0.2);
+    }
+
+    .filter-item.active .filter-value {
+      background: var(--accent);
+      color: #000;
+    }
+
     .reset-btn {
       width: 100%;
       padding: 10px;
@@ -320,16 +429,20 @@
       display: flex;
       flex-direction: column;
       overflow: hidden;
+      min-width: 0;
+      max-width: 100%;
     }
 
     /* ==================== STRATEGIC COMMAND DECK ==================== */
     .command-deck {
       display: grid;
-      grid-template-columns: repeat(3, 1fr);
+      grid-template-columns: repeat(3, minmax(0, 1fr));
       gap: 16px;
       padding: 16px;
       background: linear-gradient(180deg, var(--bg-panel) 0%, var(--bg-dark) 100%);
       border-bottom: 1px solid var(--border);
+      max-width: 100%;
+      overflow: hidden;
     }
 
     .chart-card {
@@ -339,6 +452,8 @@
       padding: 16px;
       position: relative;
       overflow: hidden;
+      min-width: 0; /* Critical for flex/grid children to shrink */
+      max-width: 100%;
     }
 
     .chart-card::before {
@@ -392,6 +507,257 @@
     .chart-container {
       height: 200px;
       position: relative;
+      min-width: 0;
+      max-width: 100%;
+      overflow: hidden;
+    }
+
+    /* ==================== SWOT ANALYSIS CARD ==================== */
+    .swot-card {
+      grid-column: span 1;
+    }
+
+    .swot-container {
+      height: 200px;
+      overflow: hidden;
+    }
+
+    .swot-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      grid-template-rows: 1fr 1fr;
+      gap: 6px;
+      height: 100%;
+    }
+
+    .swot-quadrant {
+      border-radius: 6px;
+      padding: 8px;
+      overflow: hidden;
+    }
+
+    .swot-quadrant.strength {
+      background: rgba(0,255,136,0.1);
+      border: 1px solid rgba(0,255,136,0.3);
+    }
+
+    .swot-quadrant.weakness {
+      background: rgba(255,170,0,0.1);
+      border: 1px solid rgba(255,170,0,0.3);
+    }
+
+    .swot-quadrant.opportunity {
+      background: rgba(0,212,255,0.1);
+      border: 1px solid rgba(0,212,255,0.3);
+    }
+
+    .swot-quadrant.threat {
+      background: rgba(255,68,102,0.1);
+      border: 1px solid rgba(255,68,102,0.3);
+    }
+
+    .swot-title {
+      font-size: 9px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      margin-bottom: 4px;
+      opacity: 0.9;
+    }
+
+    .swot-quadrant.strength .swot-title { color: var(--success); }
+    .swot-quadrant.weakness .swot-title { color: var(--warning); }
+    .swot-quadrant.opportunity .swot-title { color: var(--accent); }
+    .swot-quadrant.threat .swot-title { color: var(--danger); }
+
+    .swot-list {
+      list-style: none;
+      padding: 0;
+      margin: 0;
+      font-size: 9px;
+      color: var(--text);
+      max-height: 60px;
+      overflow-y: auto;
+    }
+
+    .swot-list li {
+      padding: 2px 0;
+      display: flex;
+      align-items: flex-start;
+      gap: 4px;
+    }
+
+    .swot-list li::before {
+      content: '•';
+      opacity: 0.5;
+      flex-shrink: 0;
+    }
+
+    .swot-list::-webkit-scrollbar {
+      width: 3px;
+    }
+
+    .swot-list::-webkit-scrollbar-thumb {
+      background: var(--border);
+      border-radius: 2px;
+    }
+
+    /* ==================== 4-QUADRANT MATRIX ==================== */
+    .quadrant-container {
+      position: relative;
+    }
+
+    .quadrant-bg {
+      position: absolute;
+      top: 0;
+      left: 40px;
+      right: 10px;
+      bottom: 30px;
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      grid-template-rows: 1fr 1fr;
+      z-index: 0;
+      pointer-events: none;
+    }
+
+    .quadrant {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: all 0.3s ease;
+      cursor: pointer;
+      pointer-events: auto;
+    }
+
+    .quadrant:hover {
+      opacity: 0.9;
+    }
+
+    .q1 { /* Stars - Top Right - Green */
+      background: rgba(0,255,136,0.12);
+      border-right: 1px dashed rgba(255,255,255,0.1);
+      border-bottom: 1px dashed rgba(255,255,255,0.1);
+      grid-column: 2;
+      grid-row: 1;
+    }
+
+    .q2 { /* Question Marks - Top Left - Yellow */
+      background: rgba(255,170,0,0.12);
+      border-bottom: 1px dashed rgba(255,255,255,0.1);
+      grid-column: 1;
+      grid-row: 1;
+    }
+
+    .q3 { /* Cash Cows - Bottom Right - Blue */
+      background: rgba(0,212,255,0.08);
+      border-right: 1px dashed rgba(255,255,255,0.1);
+      grid-column: 2;
+      grid-row: 2;
+    }
+
+    .q4 { /* Dogs - Bottom Left - Red */
+      background: rgba(255,68,102,0.12);
+      grid-column: 1;
+      grid-row: 2;
+    }
+
+    .q-label {
+      font-size: 8px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      opacity: 0.6;
+      pointer-events: none;
+    }
+
+    .q1 .q-label { color: var(--success); }
+    .q2 .q-label { color: var(--warning); }
+    .q3 .q-label { color: var(--accent); }
+    .q4 .q-label { color: var(--danger); }
+
+    /* ==================== SMART INSIGHT CARDS ==================== */
+    .insight-card {
+      background: rgba(0,255,136,0.05);
+      border-left: 3px solid var(--success);
+      border-radius: 0 8px 8px 0;
+      padding: 10px 12px;
+      margin-top: 12px;
+    }
+
+    .insight-card.caution {
+      background: rgba(255,170,0,0.05);
+      border-left-color: var(--warning);
+    }
+
+    .insight-card.negative {
+      background: rgba(255,68,102,0.05);
+      border-left-color: var(--danger);
+    }
+
+    .insight-card.neutral {
+      background: rgba(0,212,255,0.05);
+      border-left-color: var(--accent);
+    }
+
+    .insight-header {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin-bottom: 6px;
+    }
+
+    .insight-icon {
+      font-size: 12px;
+    }
+
+    .insight-title {
+      font-size: 10px;
+      font-weight: 700;
+      color: var(--success);
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    .insight-card.caution .insight-title { color: var(--warning); }
+    .insight-card.negative .insight-title { color: var(--danger); }
+    .insight-card.neutral .insight-title { color: var(--accent); }
+
+    .insight-body {
+      font-size: 11px;
+      color: var(--text);
+      line-height: 1.5;
+    }
+
+    .insight-verdict {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin-top: 8px;
+      padding: 8px 10px;
+      background: rgba(0,0,0,0.2);
+      border-radius: 6px;
+    }
+
+    .verdict-icon {
+      width: 20px;
+      height: 20px;
+      border-radius: 4px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 10px;
+      font-weight: 700;
+      flex-shrink: 0;
+    }
+
+    .verdict-icon.go { background: var(--success); color: #000; }
+    .verdict-icon.caution { background: var(--warning); color: #000; }
+    .verdict-icon.stop { background: var(--danger); color: #fff; }
+
+    .verdict-text {
+      font-size: 11px;
+      font-weight: 600;
+      color: var(--text);
     }
 
     /* ==================== MAP SECTION ==================== */
@@ -399,11 +765,14 @@
       flex: 1;
       position: relative;
       min-height: 400px;
+      max-height: calc(100vh - 56px - 320px); /* Viewport - topbar - command deck */
+      overflow: hidden;
     }
 
     #map {
       width: 100%;
       height: 100%;
+      max-width: 100%;
     }
 
     .leaflet-container { 
@@ -876,6 +1245,139 @@
       box-shadow: 0 4px 16px var(--success-glow);
     }
 
+    /* ==================== SECTOR PULSE BAR ==================== */
+    .sector-pulse-bar {
+      background: linear-gradient(90deg, var(--bg-panel), var(--bg-card));
+      border-bottom: 1px solid var(--border);
+      padding: 10px 20px;
+      animation: slideDown 0.3s ease;
+    }
+
+    @keyframes slideDown {
+      from { opacity: 0; transform: translateY(-10px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    .pulse-bar-content {
+      display: flex;
+      align-items: center;
+      gap: 24px;
+      flex-wrap: wrap;
+    }
+
+    .pulse-item {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .pulse-icon {
+      font-size: 18px;
+      width: 32px;
+      height: 32px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: var(--bg-input);
+      border-radius: 8px;
+    }
+
+    .pulse-text {
+      display: flex;
+      flex-direction: column;
+    }
+
+    .pulse-label {
+      font-size: 9px;
+      color: var(--text-dim);
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    .pulse-value {
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--text);
+    }
+
+    .pulse-value.trend-up {
+      color: var(--success);
+    }
+
+    .pulse-value.trend-down {
+      color: var(--danger);
+    }
+
+    .pulse-item.sector-info {
+      padding-right: 20px;
+      border-right: 1px solid var(--border);
+    }
+
+    .pulse-item.sector-info .pulse-icon {
+      background: linear-gradient(135deg, var(--accent), var(--cyan));
+      font-size: 16px;
+    }
+
+    /* Weights Preview Bar */
+    .pulse-item.weights-preview {
+      flex: 1;
+      min-width: 150px;
+      max-width: 250px;
+    }
+
+    .weights-bar {
+      display: flex;
+      height: 8px;
+      border-radius: 4px;
+      overflow: hidden;
+      background: var(--bg-input);
+    }
+
+    .weight-segment {
+      transition: width 0.5s ease;
+    }
+
+    .weight-segment.logistics { background: var(--accent); }
+    .weight-segment.cost { background: var(--warning); }
+    .weight-segment.market { background: var(--success); }
+    .weight-segment.economy { background: var(--purple); }
+    .weight-segment.growth { background: var(--cyan); }
+
+    .weights-label {
+      font-size: 8px;
+      color: var(--text-dim);
+      text-align: center;
+      margin-top: 3px;
+    }
+
+    /* Sector Insight Toast */
+    .sector-insight {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 8px 14px;
+      background: rgba(0,212,255,0.1);
+      border: 1px solid rgba(0,212,255,0.3);
+      border-radius: 8px;
+      font-size: 11px;
+      color: var(--text);
+      margin-left: auto;
+      max-width: 400px;
+    }
+
+    .sector-insight .insight-icon {
+      font-size: 14px;
+      flex-shrink: 0;
+    }
+
+    .sector-insight .insight-text {
+      line-height: 1.4;
+    }
+
+    .sector-insight .insight-text strong {
+      color: var(--accent);
+    }
+
     /* ==================== TOAST ==================== */
     .toast {
       position: fixed;
@@ -933,6 +1435,104 @@
       background: var(--bg-panel);
       border: 1px solid var(--border);
     }
+
+    /* ==================== RESPONSIVE DESIGN ==================== */
+    @media (max-width: 1400px) {
+      .command-deck {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+      }
+      
+      .chart-card:nth-child(3) {
+        grid-column: span 2;
+      }
+    }
+
+    @media (max-width: 1024px) {
+      .main-content {
+        grid-template-columns: 220px minmax(0, 1fr);
+      }
+      
+      .sidebar {
+        width: 220px;
+      }
+      
+      .decisions-panel {
+        width: 300px;
+      }
+      
+      .panel-toggle {
+        right: 316px;
+      }
+    }
+
+    @media (max-width: 768px) {
+      .main-content {
+        grid-template-columns: 1fr;
+      }
+      
+      .sidebar {
+        display: none;
+      }
+      
+      .command-deck {
+        grid-template-columns: 1fr;
+        padding: 12px;
+        gap: 12px;
+      }
+      
+      .chart-card:nth-child(3) {
+        grid-column: span 1;
+      }
+      
+      .decisions-panel {
+        width: calc(100% - 32px);
+        max-width: 340px;
+        right: 16px;
+      }
+      
+      .panel-toggle {
+        display: none;
+      }
+      
+      .topbar-center {
+        flex: none;
+      }
+      
+      .sector-select {
+        min-width: 150px;
+      }
+    }
+
+    /* ==================== SCROLLBAR STYLING ==================== */
+    ::-webkit-scrollbar {
+      width: 8px;
+      height: 8px;
+    }
+
+    ::-webkit-scrollbar-track {
+      background: var(--bg-dark);
+    }
+
+    ::-webkit-scrollbar-thumb {
+      background: var(--border);
+      border-radius: 4px;
+    }
+
+    ::-webkit-scrollbar-thumb:hover {
+      background: var(--text-dim);
+    }
+
+    /* ==================== TEXT OVERFLOW HANDLING ==================== */
+    .truncate {
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    .break-words {
+      word-wrap: break-word;
+      overflow-wrap: break-word;
+    }
   </style>
 </head>
 <body>
@@ -945,22 +1545,87 @@
       </div>
       
       <div class="topbar-center">
-        <select class="sector-select" id="sectorSelect">
-          <option value="">📦 Tüm Sektörler</option>
-          <% if (sectors && sectors.length > 0) { %>
-            <% sectors.forEach(sektor => { %>
-              <option value="<%= sektor.sektor_id %>"><%= sektor.sektor_adi %></option>
-            <% }); %>
-          <% } %>
-        </select>
-        <button class="analyze-btn" id="analyzeBtn">⚡ Analizi Başlat</button>
+        <div class="sector-select-wrapper">
+          <span class="sector-label">Sektör:</span>
+          <select class="sector-select" id="sectorSelect">
+            <option value="">Tüm Sektörler</option>
+            <% if (sectors && sectors.length > 0) { %>
+              <% sectors.forEach(sektor => { %>
+                <option value="<%= sektor.sektor_id %>"><%= sektor.sektor_adi %></option>
+              <% }); %>
+            <% } %>
+          </select>
+        </div>
+        <div class="live-indicator">
+          <span class="live-dot"></span>
+          <span class="live-text">Canlı Veri</span>
+        </div>
       </div>
       
       <div class="topbar-right">
-        <a href="/compare" class="top-btn">🥊 Ülke Düellosu</a>
+        <a href="/compare" class="top-btn">⚖️ Stratejik Karşılaştırma</a>
         <a href="/decisions" class="top-btn">📋 Kayıtlı Kararlar</a>
       </div>
     </header>
+
+    <!-- ==================== SECTOR PULSE BAR ==================== -->
+    <div class="sector-pulse-bar" id="sectorPulseBar" style="display: none;">
+      <div class="pulse-bar-content">
+        <!-- Sector Info -->
+        <div class="pulse-item sector-info">
+          <span class="pulse-icon" id="sectorIcon">⚖️</span>
+          <div class="pulse-text">
+            <div class="pulse-label">Sektör Modu</div>
+            <div class="pulse-value" id="sectorModeName">Dengeli</div>
+          </div>
+        </div>
+        
+        <!-- Growth Rate -->
+        <div class="pulse-item">
+          <span class="pulse-icon">📈</span>
+          <div class="pulse-text">
+            <div class="pulse-label">Global Büyüme</div>
+            <div class="pulse-value trend-up" id="sectorGrowth">+0.0%</div>
+          </div>
+        </div>
+        
+        <!-- Market Volume -->
+        <div class="pulse-item">
+          <span class="pulse-icon">💰</span>
+          <div class="pulse-text">
+            <div class="pulse-label">Pazar Hacmi</div>
+            <div class="pulse-value" id="sectorVolume">$0B</div>
+          </div>
+        </div>
+        
+        <!-- Top Region -->
+        <div class="pulse-item">
+          <span class="pulse-icon">🌍</span>
+          <div class="pulse-text">
+            <div class="pulse-label">Yüksek Talep</div>
+            <div class="pulse-value" id="sectorTopRegion">-</div>
+          </div>
+        </div>
+        
+        <!-- Algorithm Weights -->
+        <div class="pulse-item weights-preview">
+          <div class="weights-bar">
+            <div class="weight-segment logistics" id="weightLogistics" style="width: 25%;" title="Lojistik"></div>
+            <div class="weight-segment cost" id="weightCost" style="width: 20%;" title="Maliyet"></div>
+            <div class="weight-segment market" id="weightMarket" style="width: 25%;" title="Pazar"></div>
+            <div class="weight-segment economy" id="weightEconomy" style="width: 15%;" title="Ekonomi"></div>
+            <div class="weight-segment growth" id="weightGrowth" style="width: 15%;" title="Büyüme"></div>
+          </div>
+          <div class="weights-label">Algoritma Ağırlıkları</div>
+        </div>
+      </div>
+      
+      <!-- Sector Insight Toast -->
+      <div class="sector-insight" id="sectorInsight">
+        <span class="insight-icon">💡</span>
+        <span class="insight-text" id="sectorInsightText">Sistem dengeli modda çalışıyor.</span>
+      </div>
+    </div>
 
     <!-- ==================== MAIN CONTENT ==================== -->
     <main class="main-content">
@@ -968,66 +1633,102 @@
       <aside class="sidebar">
         <div class="sidebar-section">
           <div class="section-title">📊 VERİ FİLTRELERİ</div>
+          <p style="font-size: 10px; color: var(--text-dim); margin-bottom: 12px;">
+            ✓ İşaretli filtreler aktif olarak uygulanır
+          </p>
           
-          <div class="filter-item">
+          <!-- Max Lojistik Maliyeti -->
+          <div class="filter-item" id="costFilterGroup">
             <div class="filter-header">
-              <span class="filter-label">Max. Lojistik Maliyeti</span>
+              <label class="filter-checkbox">
+                <input type="checkbox" id="costActive" class="filter-toggle">
+                <span class="checkmark"></span>
+                <span class="filter-label">Max. Lojistik Maliyeti</span>
+              </label>
               <span class="filter-value" id="costVal">$5,000</span>
             </div>
-            <input type="range" id="costFilter" min="500" max="5000" value="5000" step="100">
+            <input type="range" id="costFilter" min="500" max="5000" value="5000" step="100" class="filter-slider" disabled>
           </div>
           
-          <div class="filter-item">
+          <!-- Max Gümrük Süresi -->
+          <div class="filter-item" id="customsFilterGroup">
             <div class="filter-header">
-              <span class="filter-label">Max. Gümrük Süresi</span>
+              <label class="filter-checkbox">
+                <input type="checkbox" id="customsActive" class="filter-toggle">
+                <span class="checkmark"></span>
+                <span class="filter-label">Max. Gümrük Süresi</span>
+              </label>
               <span class="filter-value" id="customsVal">30 gün</span>
             </div>
-            <input type="range" id="customsFilter" min="1" max="30" value="30">
+            <input type="range" id="customsFilter" min="1" max="30" value="30" class="filter-slider" disabled>
           </div>
           
-          <div class="filter-item">
+          <!-- Min GSYİH -->
+          <div class="filter-item" id="gdpFilterGroup">
             <div class="filter-header">
-              <span class="filter-label">Min. Kişi Başı GSYİH</span>
+              <label class="filter-checkbox">
+                <input type="checkbox" id="gdpActive" class="filter-toggle">
+                <span class="checkmark"></span>
+                <span class="filter-label">Min. Kişi Başı GSYİH</span>
+              </label>
               <span class="filter-value" id="gdpVal">$0</span>
             </div>
-            <input type="range" id="gdpFilter" min="0" max="80000" value="0" step="1000">
+            <input type="range" id="gdpFilter" min="0" max="80000" value="0" step="1000" class="filter-slider" disabled>
           </div>
           
-          <div class="filter-item">
+          <!-- Min LPI -->
+          <div class="filter-item" id="lpiFilterGroup">
             <div class="filter-header">
-              <span class="filter-label">Min. LPI Skoru</span>
+              <label class="filter-checkbox">
+                <input type="checkbox" id="lpiActive" class="filter-toggle">
+                <span class="checkmark"></span>
+                <span class="filter-label">Min. LPI Skoru</span>
+              </label>
               <span class="filter-value" id="lpiVal">1.0</span>
             </div>
-            <input type="range" id="lpiFilter" min="1" max="5" value="1" step="0.1">
+            <input type="range" id="lpiFilter" min="1" max="5" value="1" step="0.1" class="filter-slider" disabled>
           </div>
         </div>
 
         <div class="sidebar-section">
           <div class="section-title">🔮 SİMÜLASYON</div>
           
-          <div class="filter-item">
+          <!-- Politik Stabilite -->
+          <div class="filter-item" id="politicsFilterGroup">
             <div class="filter-header">
-              <span class="filter-label">Min. Politik Stabilite</span>
+              <label class="filter-checkbox">
+                <input type="checkbox" id="politicsActive" class="filter-toggle">
+                <span class="checkmark"></span>
+                <span class="filter-label">Min. Politik Stabilite</span>
+              </label>
               <span class="filter-value" id="politicsVal">1/10</span>
             </div>
-            <input type="range" id="politicsFilter" min="1" max="10" value="1">
-            <span class="filter-badge">🧪 Mock Data</span>
+            <input type="range" id="politicsFilter" min="1" max="10" value="1" class="filter-slider" disabled>
           </div>
           
-          <div class="filter-item">
+          <!-- Kurumlar Vergisi -->
+          <div class="filter-item" id="taxFilterGroup">
             <div class="filter-header">
-              <span class="filter-label">Max. Kurumlar Vergisi</span>
+              <label class="filter-checkbox">
+                <input type="checkbox" id="taxActive" class="filter-toggle">
+                <span class="checkmark"></span>
+                <span class="filter-label">Max. Kurumlar Vergisi</span>
+              </label>
               <span class="filter-value" id="taxVal">40%</span>
             </div>
-            <input type="range" id="taxFilter" min="5" max="40" value="40">
-            <span class="filter-badge">🧪 Mock Data</span>
+            <input type="range" id="taxFilter" min="5" max="40" value="40" class="filter-slider" disabled>
           </div>
           
-          <div class="filter-item">
+          <!-- Dijital Altyapı -->
+          <div class="filter-item" id="digitalFilterGroup">
             <div class="filter-header">
-              <span class="filter-label">Dijital Altyapı</span>
+              <label class="filter-checkbox">
+                <input type="checkbox" id="digitalActive" class="filter-toggle">
+                <span class="checkmark"></span>
+                <span class="filter-label">Dijital Altyapı</span>
+              </label>
             </div>
-            <select class="filter-select" id="digitalFilter">
+            <select class="filter-select" id="digitalFilter" disabled>
               <option value="all">Tümü</option>
               <option value="high">Yüksek</option>
               <option value="medium">Orta</option>
@@ -1042,23 +1743,89 @@
           <div class="num" id="matchCount">0</div>
           <div class="label">Uygun Pazar</div>
         </div>
+        
+        <!-- Active Filters Summary -->
+        <div class="active-filters-summary" id="activeFiltersSummary" style="margin-top: 12px; display: none;">
+          <div style="font-size: 10px; color: var(--accent); font-weight: 600; margin-bottom: 6px;">
+            🎯 AKTİF FİLTRELER
+          </div>
+          <div id="activeFiltersList" style="font-size: 10px; color: var(--text-dim);"></div>
+        </div>
       </aside>
 
       <!-- ==================== DASHBOARD AREA ==================== -->
       <div class="dashboard-area">
         <!-- STRATEGIC COMMAND DECK -->
         <div class="command-deck">
-          <!-- Risk vs Reward Scatter -->
-          <div class="chart-card">
+          <!-- SWOT Analysis Card (Replaced Risk Matrix) -->
+          <div class="chart-card swot-card">
             <div class="chart-header">
               <div class="chart-title">
-                <span class="icon scatter">📈</span>
-                Risk vs Fırsat Matrisi
+                <span class="icon scatter">🎯</span>
+                <span id="swotCountryName">SWOT Analizi</span>
               </div>
-              <span class="chart-badge">Scatter</span>
+              <span class="chart-badge" id="swotCountryScore">--</span>
             </div>
-            <div class="chart-container">
+            <div class="swot-container" id="swotContainer">
+              <!-- SWOT Grid -->
+              <div class="swot-grid">
+                <!-- Strengths -->
+                <div class="swot-quadrant strength">
+                  <div class="swot-title">💪 GÜÇLÜ YANLAR</div>
+                  <ul class="swot-list" id="swotStrengths">
+                    <li>Analiz bekleniyor...</li>
+                  </ul>
+                </div>
+                <!-- Weaknesses -->
+                <div class="swot-quadrant weakness">
+                  <div class="swot-title">⚠️ ZAYIF YANLAR</div>
+                  <ul class="swot-list" id="swotWeaknesses">
+                    <li>Analiz bekleniyor...</li>
+                  </ul>
+                </div>
+                <!-- Opportunities -->
+                <div class="swot-quadrant opportunity">
+                  <div class="swot-title">🚀 FIRSATLAR</div>
+                  <ul class="swot-list" id="swotOpportunities">
+                    <li>Analiz bekleniyor...</li>
+                  </ul>
+                </div>
+                <!-- Threats -->
+                <div class="swot-quadrant threat">
+                  <div class="swot-title">🔴 TEHDİTLER</div>
+                  <ul class="swot-list" id="swotThreats">
+                    <li>Analiz bekleniyor...</li>
+                  </ul>
+                </div>
+              </div>
+            </div>
+            <!-- Hidden: Old 4-Quadrant Matrix -->
+            <div class="chart-container quadrant-container" style="display: none;">
+              <div class="quadrant-bg">
+                <div class="quadrant q1" title="Stars - Yüksek Fırsat, Düşük Risk">
+                  <span class="q-label">⭐ STARS</span>
+                </div>
+                <div class="quadrant q2" title="Question Marks - Yüksek Fırsat, Yüksek Risk">
+                  <span class="q-label">❓ QUESTION</span>
+                </div>
+                <div class="quadrant q3" title="Cash Cows - Düşük Fırsat, Düşük Risk">
+                  <span class="q-label">🐄 COWS</span>
+                </div>
+                <div class="quadrant q4" title="Dogs - Düşük Fırsat, Yüksek Risk">
+                  <span class="q-label">🐕 DOGS</span>
+                </div>
+              </div>
               <canvas id="scatterChart"></canvas>
+            </div>
+            <!-- Smart Insight Card for Risk Matrix -->
+            <div class="insight-card" id="riskInsight">
+              <div class="insight-header">
+                <span class="insight-icon">💡</span>
+                <span class="insight-title">Matris Analizi</span>
+              </div>
+              <div class="insight-body" id="riskInsightBody">
+                Ülkeleri görmek için filtreleri ayarlayın
+              </div>
             </div>
           </div>
 
@@ -1074,6 +1841,16 @@
             <div class="chart-container">
               <canvas id="radarChart"></canvas>
             </div>
+            <!-- Smart Insight Card for Radar -->
+            <div class="insight-card" id="radarInsight">
+              <div class="insight-header">
+                <span class="insight-icon">💡</span>
+                <span class="insight-title">Performans Özeti</span>
+              </div>
+              <div class="insight-body" id="radarInsightBody">
+                Seçili ülke yok - haritadan bir ülke seçin
+              </div>
+            </div>
           </div>
 
           <!-- Cost Breakdown Bar -->
@@ -1087,6 +1864,16 @@
             </div>
             <div class="chart-container">
               <canvas id="barChart"></canvas>
+            </div>
+            <!-- Smart Insight Card for Cost -->
+            <div class="insight-card" id="costInsight">
+              <div class="insight-header">
+                <span class="insight-icon">💡</span>
+                <span class="insight-title">Maliyet Analizi</span>
+              </div>
+              <div class="insight-body" id="costInsightBody">
+                En düşük maliyetli pazarları analiz ediyorum...
+              </div>
             </div>
           </div>
         </div>
@@ -1210,6 +1997,88 @@
       };
     }
 
+    // ==================== SWOT ANALYSIS GENERATOR ====================
+    function generateSWOT(country) {
+      if (!country) return { strengths: [], weaknesses: [], opportunities: [], threats: [] };
+
+      const mock = generateMockData(country);
+      const lpi = parseFloat(country.lpi_skoru || country.lpi_skoru_ham || 0);
+      const gdp = parseFloat(country.gsyh_kisi_basi || country.gsyh_kisi_basi_usd || 0);
+      const inflation = parseFloat(country.enflasyon || country.enflasyon_orani_yuzde || 0);
+      const customs = parseFloat(country.gumruk_suresi || country.gumruk_bekleme_suresi_gun || 99);
+      const localProd = parseFloat(country.yerli_uretim_orani || country.yerli_uretim_karsilama_orani_yuzde || 0);
+      const population = parseFloat(country.nufus_milyon || 0);
+      const growth = parseFloat(country.sektorel_buyume || country.sektorel_buyume_orani_yuzde || 0);
+      const agreements = parseInt(country.anlasma_sayisi || 0);
+      const riskNotu = country.risk_notu || country.risk_notu_kodu || 'C';
+
+      const strengths = [];
+      const weaknesses = [];
+      const opportunities = [];
+      const threats = [];
+
+      // STRENGTHS (Internal Positives)
+      if (lpi >= 3.8) strengths.push('Yüksek Lojistik Altyapısı (LPI: ' + lpi.toFixed(1) + ')');
+      if (customs <= 3) strengths.push('Hızlı Gümrük İşlemleri (' + customs + ' gün)');
+      if (agreements >= 2) strengths.push('Aktif Ticaret Anlaşmaları (' + agreements + ' adet)');
+      if (mock.easeOfBusiness >= 70) strengths.push('İş Yapma Kolaylığı Yüksek');
+      if (mock.politicalStability >= 7) strengths.push('Politik İstikrar Güçlü');
+      if (['AAA', 'AA', 'A'].some(r => riskNotu.startsWith(r))) strengths.push('Düşük Ülke Riski (' + riskNotu + ')');
+      if (strengths.length === 0) strengths.push('Belirgin avantaj tespit edilmedi');
+
+      // WEAKNESSES (Internal Negatives)
+      if (lpi < 2.5) weaknesses.push('Zayıf Lojistik Altyapısı (LPI: ' + lpi.toFixed(1) + ')');
+      if (customs > 15) weaknesses.push('Yavaş Gümrük Süreçleri (' + customs + ' gün)');
+      if (['CCC', 'CC', 'C', 'D'].some(r => riskNotu.includes(r))) weaknesses.push('Yüksek Ülke Riski (' + riskNotu + ')');
+      if (mock.corporateTax > 30) weaknesses.push('Yüksek Kurumlar Vergisi (%' + mock.corporateTax + ')');
+      if (mock.easeOfBusiness < 40) weaknesses.push('Bürokratik Engeller');
+      if (weaknesses.length === 0) weaknesses.push('Kritik zayıflık tespit edilmedi');
+
+      // OPPORTUNITIES (External Positives)
+      if (growth >= 5) opportunities.push('Yüksek Sektörel Büyüme (%' + growth.toFixed(1) + ')');
+      if (population >= 50) opportunities.push('Geniş Pazar Potansiyeli (' + population.toFixed(0) + 'M nüfus)');
+      if (localProd < 40) opportunities.push('Düşük Yerel Rekabet (%' + localProd.toFixed(0) + ' yerli üretim)');
+      if (gdp >= 30000) opportunities.push('Yüksek Satın Alma Gücü ($' + gdp.toLocaleString() + ')');
+      if (mock.internetUsage >= 70) opportunities.push('Dijital Pazarlama Potansiyeli');
+      if (opportunities.length === 0) opportunities.push('Belirgin fırsat tespit edilmedi');
+
+      // THREATS (External Negatives)
+      if (inflation > 10) threats.push('Yüksek Enflasyon Riski (%' + inflation.toFixed(1) + ')');
+      if (localProd >= 80) threats.push('Doymuş Pazar (%' + localProd.toFixed(0) + ' yerli üretim)');
+      if (mock.currencyVolatility === 'high') threats.push('Kur Dalgalanma Riski');
+      if (mock.competitorIndex > 60) threats.push('Yoğun Rekabet Ortamı');
+      if (mock.politicalStability < 4) threats.push('Politik İstikrarsızlık');
+      if (threats.length === 0) threats.push('Kritik tehdit tespit edilmedi');
+
+      return { strengths, weaknesses, opportunities, threats };
+    }
+
+    // Update SWOT Analysis display
+    function updateSWOTAnalysis() {
+      // Get the top country (or selected country)
+      const topCountry = selectedCountry || (filteredCountries.length > 0 ? filteredCountries[0] : null);
+      
+      if (!topCountry) {
+        document.getElementById('swotCountryName').textContent = 'Ülke seçiniz';
+        document.getElementById('swotCountryScore').textContent = '--';
+        return;
+      }
+
+      const swot = generateSWOT(topCountry);
+      const countryName = topCountry.ulke_adi || 'Bilinmeyen';
+      const score = topCountry.totalScore || topCountry.unifiedScore || 0;
+
+      // Update header
+      document.getElementById('swotCountryName').textContent = countryName + ' SWOT';
+      document.getElementById('swotCountryScore').textContent = Math.round(score) + '/100';
+
+      // Update SWOT lists
+      document.getElementById('swotStrengths').innerHTML = swot.strengths.map(s => `<li>${s}</li>`).join('');
+      document.getElementById('swotWeaknesses').innerHTML = swot.weaknesses.map(w => `<li>${w}</li>`).join('');
+      document.getElementById('swotOpportunities').innerHTML = swot.opportunities.map(o => `<li>${o}</li>`).join('');
+      document.getElementById('swotThreats').innerHTML = swot.threats.map(t => `<li>${t}</li>`).join('');
+    }
+
     // ==================== DECISION ENGINE ====================
     function generateDecisions(country) {
       const mock = generateMockData(country);
@@ -1305,7 +2174,7 @@
 
     // ==================== INIT CHARTS ====================
     function initCharts() {
-      // Scatter Chart
+      // Scatter Chart - 4 Quadrant Matrix
       const scatterCtx = document.getElementById('scatterChart').getContext('2d');
       charts.scatter = new Chart(scatterCtx, {
         type: 'scatter',
@@ -1315,8 +2184,8 @@
             data: [],
             backgroundColor: 'rgba(0, 212, 255, 0.6)',
             borderColor: 'rgba(0, 212, 255, 1)',
-            pointRadius: 8,
-            pointHoverRadius: 12
+            pointRadius: 10,
+            pointHoverRadius: 14
           }]
         },
         options: {
@@ -1326,30 +2195,46 @@
           plugins: {
             legend: { display: false },
             tooltip: {
-              backgroundColor: 'rgba(10,13,18,0.95)',
+              backgroundColor: 'rgba(10,13,18,0.98)',
               titleColor: '#e8eaed',
+              titleFont: { weight: '700', size: 13 },
               bodyColor: '#6b7280',
               borderColor: '#252931',
               borderWidth: 1,
-              padding: 12,
+              padding: 14,
+              displayColors: false,
               callbacks: {
+                title: (ctx) => {
+                  const country = filteredCountries[ctx[0]?.dataIndex];
+                  return country?.ulke_adi || '';
+                },
                 label: (ctx) => {
                   const country = filteredCountries[ctx.dataIndex];
-                  return country ? `${country.ulke_adi}: ${country.totalScore?.toFixed(0) || 0}` : '';
+                  if (!country) return '';
+                  const quadrant = getQuadrantName(ctx.parsed.x, ctx.parsed.y);
+                  return [
+                    `📊 Skor: ${country.totalScore?.toFixed(0) || 0}/100`,
+                    `📈 Risk: ${ctx.parsed.x.toFixed(0)} | Fırsat: ${ctx.parsed.y.toFixed(0)}`,
+                    `🏷️ Kategori: ${quadrant}`
+                  ];
                 }
               }
             }
           },
           scales: {
             x: {
-              title: { display: true, text: 'Risk (Düşük →)', color: '#6b7280', font: { size: 10 } },
-              grid: { color: 'rgba(37,41,49,0.5)' },
-              ticks: { color: '#6b7280' }
+              min: 0,
+              max: 100,
+              title: { display: true, text: '← Yüksek Risk | Düşük Risk →', color: '#6b7280', font: { size: 9 } },
+              grid: { color: 'rgba(37,41,49,0.3)', drawBorder: false },
+              ticks: { display: false }
             },
             y: {
-              title: { display: true, text: '↑ Fırsat', color: '#6b7280', font: { size: 10 } },
-              grid: { color: 'rgba(37,41,49,0.5)' },
-              ticks: { color: '#6b7280' }
+              min: 0,
+              max: 100,
+              title: { display: true, text: '↑ Fırsat Seviyesi', color: '#6b7280', font: { size: 9 } },
+              grid: { color: 'rgba(37,41,49,0.3)', drawBorder: false },
+              ticks: { display: false }
             }
           },
           onClick: (e, elements) => {
@@ -1360,6 +2245,14 @@
           }
         }
       });
+
+    // Helper function for quadrant names
+    function getQuadrantName(x, y) {
+      if (x >= 50 && y >= 50) return '⭐ Star (Hedef)';
+      if (x < 50 && y >= 50) return '❓ Soru İşareti';
+      if (x >= 50 && y < 50) return '🐄 Nakit İneği';
+      return '🐕 Köpek (Risk)';
+    }
 
       // Radar Chart
       const radarCtx = document.getElementById('radarChart').getContext('2d');
@@ -1448,6 +2341,10 @@
         
         if (result.status === 'success' && result.data.countries) {
           allCountries = result.data.countries;
+          
+          // Apply current sector weights
+          recalculateScoresWithWeights();
+          
           filterCountries();
         }
       } catch (error) {
@@ -1479,6 +2376,7 @@
 
     // ==================== FILTER COUNTRIES ====================
     function filterCountries() {
+      // Get filter values
       const maxCost = parseInt(document.getElementById('costFilter').value);
       const maxCustoms = parseInt(document.getElementById('customsFilter').value);
       const minGdp = parseInt(document.getElementById('gdpFilter').value);
@@ -1486,6 +2384,20 @@
       const minPolitics = parseInt(document.getElementById('politicsFilter').value);
       const digitalLevel = document.getElementById('digitalFilter').value;
       const maxTax = parseInt(document.getElementById('taxFilter').value);
+
+      // Get active filter states (checkbox checked = active)
+      const activeFilters = {
+        cost: document.getElementById('costActive').checked,
+        customs: document.getElementById('customsActive').checked,
+        gdp: document.getElementById('gdpActive').checked,
+        lpi: document.getElementById('lpiActive').checked,
+        politics: document.getElementById('politicsActive').checked,
+        digital: document.getElementById('digitalActive').checked,
+        tax: document.getElementById('taxActive').checked
+      };
+
+      // Update active filters summary
+      updateActiveFiltersSummary(activeFilters);
 
       filteredCountries = allCountries.filter(c => {
         const mock = generateMockData(c);
@@ -1495,21 +2407,55 @@
         const gdp = parseFloat(c.gsyh_kisi_basi || c.gsyh_kisi_basi_usd || 0);
         const lpi = parseFloat(c.lpi_skoru || c.lpi_skoru_ham || 0);
         
-        if (cost > maxCost) return false;
-        if (customs > maxCustoms) return false;
-        if (gdp < minGdp) return false;
-        if (lpi < minLpi) return false;
-        if (mock.politicalStability < minPolitics) return false;
-        if (digitalLevel !== 'all' && mock.digitalInfrastructure !== digitalLevel) return false;
-        if (mock.corporateTax > maxTax) return false;
+        // Only apply filter if its checkbox is checked
+        if (activeFilters.cost && cost > maxCost) return false;
+        if (activeFilters.customs && customs > maxCustoms) return false;
+        if (activeFilters.gdp && gdp < minGdp) return false;
+        if (activeFilters.lpi && lpi < minLpi) return false;
+        if (activeFilters.politics && mock.politicalStability < minPolitics) return false;
+        if (activeFilters.digital && digitalLevel !== 'all' && mock.digitalInfrastructure !== digitalLevel) return false;
+        if (activeFilters.tax && mock.corporateTax > maxTax) return false;
         
         return true;
       });
 
-      filteredCountries.sort((a, b) => (b.totalScore || 0) - (a.totalScore || 0));
+      filteredCountries.sort((a, b) => (b.totalScore || b.unifiedScore || 0) - (a.totalScore || a.unifiedScore || 0));
       document.getElementById('matchCount').textContent = filteredCountries.length;
       
       updateAllVisuals();
+      updateSWOTAnalysis(); // Update SWOT for top country
+    }
+
+    // Update active filters summary display
+    function updateActiveFiltersSummary(activeFilters) {
+      const summaryEl = document.getElementById('activeFiltersSummary');
+      const listEl = document.getElementById('activeFiltersList');
+      
+      const activeCount = Object.values(activeFilters).filter(v => v).length;
+      
+      if (activeCount === 0) {
+        summaryEl.style.display = 'none';
+        return;
+      }
+      
+      summaryEl.style.display = 'block';
+      
+      const labels = {
+        cost: 'Lojistik Maliyet',
+        customs: 'Gümrük Süresi',
+        gdp: 'GSYİH',
+        lpi: 'LPI Skoru',
+        politics: 'Politik Stabilite',
+        digital: 'Dijital Altyapı',
+        tax: 'Kurumlar Vergisi'
+      };
+      
+      const activeList = Object.entries(activeFilters)
+        .filter(([k, v]) => v)
+        .map(([k, v]) => `• ${labels[k]}`)
+        .join('<br>');
+      
+      listEl.innerHTML = activeList;
     }
 
     // ==================== UPDATE ALL VISUALS ====================
@@ -1602,15 +2548,151 @@
 
       const colors = filteredCountries.map(c => {
         const score = c.totalScore || 0;
-        if (score >= 70) return 'rgba(0,255,136,0.7)';
-        if (score >= 50) return 'rgba(255,170,0,0.7)';
-        return 'rgba(255,68,102,0.7)';
+        if (score >= 70) return 'rgba(0,255,136,0.8)';
+        if (score >= 50) return 'rgba(255,170,0,0.8)';
+        return 'rgba(255,68,102,0.8)';
+      });
+
+      // Calculate point sizes based on score (larger = better)
+      const sizes = filteredCountries.map(c => {
+        const score = c.totalScore || 0;
+        return Math.max(6, Math.min(16, score / 7));
       });
 
       charts.scatter.data.datasets[0].data = data;
       charts.scatter.data.datasets[0].backgroundColor = colors;
-      charts.scatter.data.datasets[0].borderColor = colors.map(c => c.replace('0.7', '1'));
+      charts.scatter.data.datasets[0].borderColor = colors.map(c => c.replace('0.8', '1'));
+      charts.scatter.data.datasets[0].pointRadius = sizes;
       charts.scatter.update('none');
+
+      // Update Risk Matrix Insight
+      updateRiskMatrixInsight(data);
+    }
+
+    // ==================== INSIGHT GENERATORS ====================
+    function updateRiskMatrixInsight(data) {
+      const insightCard = document.getElementById('riskInsight');
+      const insightBody = document.getElementById('riskInsightBody');
+      
+      if (filteredCountries.length === 0) {
+        insightCard.className = 'insight-card neutral';
+        insightBody.innerHTML = 'Filtre kriterlerine uygun ülke bulunamadı.';
+        return;
+      }
+
+      // Count countries in each quadrant
+      let stars = 0, questions = 0, cows = 0, dogs = 0;
+      let starCountries = [];
+      
+      data.forEach((point, i) => {
+        const country = filteredCountries[i];
+        if (point.x >= 50 && point.y >= 50) {
+          stars++;
+          starCountries.push(country.ulke_adi);
+        } else if (point.x < 50 && point.y >= 50) {
+          questions++;
+        } else if (point.x >= 50 && point.y < 50) {
+          cows++;
+        } else {
+          dogs++;
+        }
+      });
+
+      // Generate insight based on distribution
+      let insightType = 'neutral';
+      let insightHtml = '';
+
+      if (stars > 0) {
+        insightType = 'positive';
+        const topStars = starCountries.slice(0, 3).join(', ');
+        insightHtml = `
+          <div style="margin-bottom:8px">
+            <strong style="color:var(--success)">⭐ ${stars} ülke "Star" kategorisinde</strong> - 
+            Yüksek fırsat, düşük risk ile öncelikli hedefler.
+          </div>
+          <div class="insight-verdict">
+            <div class="verdict-icon go">✓</div>
+            <div class="verdict-text">Öncelikli Hedefler: ${topStars}</div>
+          </div>
+        `;
+      } else if (questions > 0) {
+        insightType = 'caution';
+        insightHtml = `
+          <div style="margin-bottom:8px">
+            <strong style="color:var(--warning)">❓ ${questions} ülke "Soru İşareti" kategorisinde</strong> - 
+            Yüksek potansiyel var ancak riskler değerlendirilmeli.
+          </div>
+          <div class="insight-verdict">
+            <div class="verdict-icon caution">!</div>
+            <div class="verdict-text">Detaylı risk analizi önerilir</div>
+          </div>
+        `;
+      } else if (dogs > filteredCountries.length / 2) {
+        insightType = 'negative';
+        insightHtml = `
+          <div style="margin-bottom:8px">
+            <strong style="color:var(--danger)">⚠️ Çoğunluk "Dogs" kategorisinde</strong> - 
+            Mevcut filtrelerle düşük fırsatlı, yüksek riskli pazarlar görünüyor.
+          </div>
+          <div class="insight-verdict">
+            <div class="verdict-icon stop">✗</div>
+            <div class="verdict-text">Filtre kriterlerini gevşetin</div>
+          </div>
+        `;
+      } else {
+        insightHtml = `
+          <div>
+            📊 <strong>${filteredCountries.length}</strong> ülke görüntüleniyor: 
+            ⭐${stars} Star, ❓${questions} Soru, 🐄${cows} İnek, 🐕${dogs} Köpek
+          </div>
+        `;
+      }
+
+      insightCard.className = `insight-card ${insightType === 'positive' ? '' : insightType}`;
+      insightBody.innerHTML = insightHtml;
+    }
+
+    function updateCostInsight() {
+      const insightCard = document.getElementById('costInsight');
+      const insightBody = document.getElementById('costInsightBody');
+      
+      const top5 = filteredCountries.slice(0, 5);
+      
+      if (top5.length === 0) {
+        insightCard.className = 'insight-card neutral';
+        insightBody.innerHTML = 'Maliyet analizi için ülke bulunamadı.';
+        return;
+      }
+
+      // Find cheapest and most expensive
+      const sorted = [...top5].sort((a, b) => 
+        (a.konteyner_maliyeti || 9999) - (b.konteyner_maliyeti || 9999)
+      );
+      
+      const cheapest = sorted[0];
+      const expensive = sorted[sorted.length - 1];
+      const avgCost = top5.reduce((sum, c) => sum + (c.konteyner_maliyeti || 0), 0) / top5.length;
+      
+      const diff = ((expensive.konteyner_maliyeti || 0) - (cheapest.konteyner_maliyeti || 0));
+      const diffPercent = cheapest.konteyner_maliyeti ? 
+        ((diff / cheapest.konteyner_maliyeti) * 100).toFixed(0) : 0;
+
+      let insightType = diff < 500 ? 'positive' : diff < 1000 ? 'caution' : 'neutral';
+      
+      insightCard.className = `insight-card ${insightType === 'positive' ? '' : insightType}`;
+      insightBody.innerHTML = `
+        <div style="margin-bottom:8px">
+          💰 <strong>${cheapest.ulke_adi}</strong> en düşük maliyetli pazar 
+          ($${(cheapest.konteyner_maliyeti || 0).toLocaleString()}).
+          ${diffPercent > 20 ? `<span style="color:var(--warning)">${expensive.ulke_adi} %${diffPercent} daha pahalı.</span>` : ''}
+        </div>
+        <div class="insight-verdict">
+          <div class="verdict-icon ${insightType === 'positive' ? 'go' : 'caution'}">
+            ${insightType === 'positive' ? '✓' : '$'}
+          </div>
+          <div class="verdict-text">Ort. Maliyet: $${avgCost.toLocaleString()}</div>
+        </div>
+      `;
     }
 
     // ==================== UPDATE RADAR CHART ====================
@@ -1645,7 +2727,7 @@
       if (selectedCountry) {
         const mock = generateMockData(selectedCountry);
         const riskScore = { 'AAA': 100, 'AA': 85, 'A': 70, 'BBB': 55, 'BB': 40, 'B': 25 }[selectedCountry.risk_notu] || 50;
-        charts.radar.data.datasets[1].data = [
+        const countryData = [
           (selectedCountry.lpi_skoru || 2.5) * 20,
           Math.max(0, 100 - ((selectedCountry.konteyner_maliyeti || 1500) / 50)),
           riskScore,
@@ -1653,11 +2735,61 @@
           Math.max(0, 100 - (selectedCountry.yerli_uretim_orani || 50)),
           mock.internetUsage
         ];
+        charts.radar.data.datasets[1].data = countryData;
+        
+        // Update Radar Insight
+        updateRadarInsight(countryData, avg);
       } else {
         charts.radar.data.datasets[1].data = [0, 0, 0, 0, 0, 0];
+        updateRadarInsight(null, avg);
       }
 
       charts.radar.update('none');
+    }
+
+    function updateRadarInsight(countryData, avgData) {
+      const insightCard = document.getElementById('radarInsight');
+      const insightBody = document.getElementById('radarInsightBody');
+      
+      if (!countryData || !selectedCountry) {
+        insightCard.className = 'insight-card neutral';
+        insightBody.innerHTML = `
+          <div>Seçili ülke yok. Haritadan veya grafiklerden bir ülke seçin.</div>
+        `;
+        return;
+      }
+
+      // Find strongest and weakest dimensions
+      const dimensions = ['Lojistik', 'Maliyet', 'Stabilite', 'Büyüme', 'Pazar Açıklığı', 'Dijital'];
+      let strongest = { idx: 0, val: countryData[0], diff: countryData[0] - avgData.logistics };
+      let weakest = { idx: 0, val: countryData[0], diff: countryData[0] - avgData.logistics };
+      
+      const avgValues = [avgData.logistics, avgData.cost, avgData.stability, avgData.growth, avgData.market, avgData.digital];
+      
+      countryData.forEach((val, i) => {
+        const diff = val - avgValues[i];
+        if (diff > strongest.diff) strongest = { idx: i, val, diff };
+        if (diff < weakest.diff) weakest = { idx: i, val, diff };
+      });
+
+      const overallScore = countryData.reduce((a, b) => a + b, 0) / 6;
+      const avgOverall = avgValues.reduce((a, b) => a + b, 0) / 6;
+      
+      let insightType = overallScore > avgOverall + 10 ? 'positive' : 
+                        overallScore < avgOverall - 10 ? 'negative' : 'caution';
+
+      insightCard.className = `insight-card ${insightType === 'positive' ? '' : insightType}`;
+      insightBody.innerHTML = `
+        <div style="margin-bottom:8px">
+          <strong>${selectedCountry.ulke_adi}</strong> ortalamanın 
+          ${overallScore > avgOverall ? `<span style="color:var(--success)">üzerinde (+${(overallScore - avgOverall).toFixed(0)})</span>` : 
+            `<span style="color:var(--warning)">altında (${(overallScore - avgOverall).toFixed(0)})</span>`}
+        </div>
+        <div style="display:flex;gap:12px;font-size:10px;">
+          <span style="color:var(--success)">💪 Güçlü: ${dimensions[strongest.idx]}</span>
+          <span style="color:var(--danger)">⚠️ Zayıf: ${dimensions[weakest.idx]}</span>
+        </div>
+      `;
     }
 
     // ==================== UPDATE BAR CHART ====================
@@ -1676,6 +2808,9 @@
       });
       
       charts.bar.update('none');
+      
+      // Update Cost Insight
+      updateCostInsight();
     }
 
     // ==================== SELECT COUNTRY ====================
@@ -1685,6 +2820,9 @@
       document.getElementById('saveBtn').disabled = false;
       
       map.setView([country.latitude, country.longitude], 5);
+      
+      // Update SWOT Analysis for selected country
+      updateSWOTAnalysis();
       
       renderDecisions(country);
       renderGauge(country.totalScore || 0);
@@ -1752,16 +2890,17 @@
 
     // ==================== EVENT LISTENERS ====================
     function setupEventListeners() {
-      // Sliders
+      // Slider configurations with their corresponding checkboxes
       const sliderConfigs = [
-        { id: 'costFilter', valId: 'costVal', format: v => `$${Number(v).toLocaleString()}` },
-        { id: 'customsFilter', valId: 'customsVal', format: v => `${v} gün` },
-        { id: 'gdpFilter', valId: 'gdpVal', format: v => `$${Number(v).toLocaleString()}` },
-        { id: 'lpiFilter', valId: 'lpiVal', format: v => v },
-        { id: 'politicsFilter', valId: 'politicsVal', format: v => `${v}/10` },
-        { id: 'taxFilter', valId: 'taxVal', format: v => `${v}%` }
+        { id: 'costFilter', valId: 'costVal', checkId: 'costActive', groupId: 'costFilterGroup', format: v => `$${Number(v).toLocaleString()}` },
+        { id: 'customsFilter', valId: 'customsVal', checkId: 'customsActive', groupId: 'customsFilterGroup', format: v => `${v} gün` },
+        { id: 'gdpFilter', valId: 'gdpVal', checkId: 'gdpActive', groupId: 'gdpFilterGroup', format: v => `$${Number(v).toLocaleString()}` },
+        { id: 'lpiFilter', valId: 'lpiVal', checkId: 'lpiActive', groupId: 'lpiFilterGroup', format: v => v },
+        { id: 'politicsFilter', valId: 'politicsVal', checkId: 'politicsActive', groupId: 'politicsFilterGroup', format: v => `${v}/10` },
+        { id: 'taxFilter', valId: 'taxVal', checkId: 'taxActive', groupId: 'taxFilterGroup', format: v => `${v}%` }
       ];
 
+      // Setup slider input listeners
       sliderConfigs.forEach(cfg => {
         const slider = document.getElementById(cfg.id);
         const valEl = document.getElementById(cfg.valId);
@@ -1772,10 +2911,48 @@
         });
       });
 
-      document.getElementById('digitalFilter').addEventListener('change', filterCountries);
+      // Setup checkbox toggle listeners
+      sliderConfigs.forEach(cfg => {
+        const checkbox = document.getElementById(cfg.checkId);
+        const slider = document.getElementById(cfg.id);
+        const group = document.getElementById(cfg.groupId);
+        
+        checkbox.addEventListener('change', () => {
+          // Enable/disable the slider based on checkbox state
+          slider.disabled = !checkbox.checked;
+          
+          // Add/remove active class for visual feedback
+          if (checkbox.checked) {
+            group.classList.add('active');
+          } else {
+            group.classList.remove('active');
+          }
+          
+          // Re-filter
+          filterCountries();
+        });
+      });
+
+      // Digital filter checkbox
+      const digitalCheckbox = document.getElementById('digitalActive');
+      const digitalSelect = document.getElementById('digitalFilter');
+      const digitalGroup = document.getElementById('digitalFilterGroup');
       
-      // Reset
+      digitalCheckbox.addEventListener('change', () => {
+        digitalSelect.disabled = !digitalCheckbox.checked;
+        if (digitalCheckbox.checked) {
+          digitalGroup.classList.add('active');
+        } else {
+          digitalGroup.classList.remove('active');
+        }
+        filterCountries();
+      });
+      
+      digitalSelect.addEventListener('change', filterCountries);
+      
+      // Reset button
       document.getElementById('resetBtn').addEventListener('click', () => {
+        // Reset slider values
         document.getElementById('costFilter').value = 5000;
         document.getElementById('customsFilter').value = 30;
         document.getElementById('gdpFilter').value = 0;
@@ -1784,18 +2961,32 @@
         document.getElementById('taxFilter').value = 40;
         document.getElementById('digitalFilter').value = 'all';
         
+        // Uncheck all checkboxes and disable sliders
         sliderConfigs.forEach(cfg => {
+          const checkbox = document.getElementById(cfg.checkId);
           const slider = document.getElementById(cfg.id);
           const valEl = document.getElementById(cfg.valId);
+          const group = document.getElementById(cfg.groupId);
+          
+          checkbox.checked = false;
+          slider.disabled = true;
+          group.classList.remove('active');
           valEl.textContent = cfg.format(slider.value);
         });
+        
+        // Reset digital filter
+        digitalCheckbox.checked = false;
+        digitalSelect.disabled = true;
+        digitalGroup.classList.remove('active');
         
         filterCountries();
       });
 
-      // Analyze
-      document.getElementById('analyzeBtn').addEventListener('click', analyze);
-      document.getElementById('sectorSelect').addEventListener('change', analyze);
+      // Sector Change - Auto Analysis
+      document.getElementById('sectorSelect').addEventListener('change', function() {
+        analyze();
+        updateSectorPulse(this.value);
+      });
 
       // Panel Toggle
       document.getElementById('panelToggle').addEventListener('click', () => {
@@ -1813,15 +3004,28 @@
     }
 
     // ==================== ANALYZE ====================
+    // Global sector weights state
+    let currentSectorWeights = {
+      logistics: 25,
+      cost: 20,
+      market: 25,
+      economy: 15,
+      growth: 15
+    };
+
     async function analyze() {
       const sectorId = document.getElementById('sectorSelect').value;
+      const sectorName = sectorId ? 
+        document.getElementById('sectorSelect').options[document.getElementById('sectorSelect').selectedIndex].text :
+        'Tüm Sektörler';
       
       selectedSector = {
         id: sectorId || 'all',
-        name: sectorId ? 
-          document.getElementById('sectorSelect').options[document.getElementById('sectorSelect').selectedIndex].text :
-          'Tüm Sektörler'
+        name: sectorName
       };
+
+      // Fetch sector intelligence (weights, stats, insight)
+      await updateSectorIntelligence(sectorId, sectorName);
 
       if (!sectorId) {
         await loadGlobalMarkets();
@@ -1834,12 +3038,148 @@
 
         if (result.status === 'success' && result.data.rankings) {
           allCountries = result.data.rankings;
+          
+          // Recalculate scores with new sector weights
+          recalculateScoresWithWeights();
+          
           filterCountries();
         }
       } catch (error) {
         console.error('Sector analysis failed:', error);
         await loadGlobalMarkets();
       }
+    }
+
+    // Fetch and display sector intelligence
+    async function updateSectorIntelligence(sectorId, sectorName) {
+      const pulseBar = document.getElementById('sectorPulseBar');
+      
+      if (!sectorId) {
+        pulseBar.style.display = 'none';
+        // Reset to balanced weights
+        currentSectorWeights = { logistics: 25, cost: 20, market: 25, economy: 15, growth: 15 };
+        return;
+      }
+
+      try {
+        const response = await fetch(`/api/sector/${sectorId}/intelligence?name=${encodeURIComponent(sectorName)}`);
+        const result = await response.json();
+
+        if (result.status === 'success') {
+          const data = result.data;
+          
+          // Update sector weights
+          currentSectorWeights = data.weights;
+          
+          // Show pulse bar
+          pulseBar.style.display = 'block';
+          
+          // Update UI elements
+          document.getElementById('sectorIcon').textContent = data.archetype.icon;
+          document.getElementById('sectorModeName').textContent = data.archetype.name;
+          
+          // Growth with trend indicator
+          const growth = parseFloat(data.stats.avgGrowth) || 0;
+          const growthEl = document.getElementById('sectorGrowth');
+          growthEl.textContent = (growth >= 0 ? '+' : '') + growth.toFixed(1) + '%';
+          growthEl.className = 'pulse-value ' + (growth >= 0 ? 'trend-up' : 'trend-down');
+          
+          document.getElementById('sectorVolume').textContent = data.stats.totalVolumeFormatted || '$0B';
+          document.getElementById('sectorTopRegion').textContent = data.stats.topRegion || '-';
+          
+          // Update weight segments
+          const total = Object.values(data.weights).reduce((a, b) => a + b, 0);
+          document.getElementById('weightLogistics').style.width = (data.weights.logistics / total * 100) + '%';
+          document.getElementById('weightCost').style.width = (data.weights.cost / total * 100) + '%';
+          document.getElementById('weightMarket').style.width = (data.weights.market / total * 100) + '%';
+          document.getElementById('weightEconomy').style.width = (data.weights.economy / total * 100) + '%';
+          document.getElementById('weightGrowth').style.width = (data.weights.growth / total * 100) + '%';
+          
+          // Update insight text
+          document.getElementById('sectorInsightText').innerHTML = data.insight || 'Sistem aktif.';
+          
+          // Show toast notification
+          showSectorToast(data.archetype.name, data.insight);
+        }
+      } catch (error) {
+        console.error('Sector intelligence fetch failed:', error);
+        pulseBar.style.display = 'none';
+      }
+    }
+
+    // Show sector change toast
+    function showSectorToast(modeName, insight) {
+      // Create a temporary toast for sector change
+      const toast = document.getElementById('toast');
+      const originalBg = toast.style.background;
+      
+      toast.style.background = 'linear-gradient(135deg, var(--accent), var(--cyan))';
+      toast.innerHTML = `
+        <span style="font-size: 16px;">🎯</span>
+        <span>"${selectedSector.name}" sektörü seçildi. <strong>${modeName}</strong> modu aktif.</span>
+      `;
+      toast.classList.add('show');
+      
+      setTimeout(() => {
+        toast.classList.remove('show');
+        toast.style.background = originalBg;
+      }, 4000);
+    }
+
+    // Recalculate country scores with current sector weights
+    function recalculateScoresWithWeights() {
+      allCountries = allCountries.map(country => {
+        // Calculate weighted score based on sector archetype
+        const lpi = parseFloat(country.lpi_skoru || country.lpi_skoru_ham || 2.5);
+        const customs = parseFloat(country.gumruk_suresi || country.gumruk_bekleme_suresi_gun || 15);
+        const cost = parseFloat(country.konteyner_maliyeti || country.konteyner_ihracat_maliyeti_usd || 2000);
+        const gdp = parseFloat(country.gsyh_kisi_basi || country.gsyh_kisi_basi_usd || 10000);
+        const growth = parseFloat(country.sektorel_buyume || country.sektorel_buyume_orani_yuzde || 0);
+        const risk = country.risk_notu || country.risk_notu_kodu || 'BBB';
+        
+        // Normalize values to 0-100
+        const logisticsScore = (lpi / 5 * 50) + Math.max(0, 50 - customs * 2);
+        const costScore = Math.max(0, 100 - (cost - 500) / 40);
+        const marketScore = Math.min(100, (gdp / 80000) * 100);
+        const economyScore = getRiskScore(risk) * 100;
+        const growthScore = Math.min(100, Math.max(0, growth * 10 + 50));
+        
+        // Apply sector weights
+        const w = currentSectorWeights;
+        const totalWeight = w.logistics + w.cost + w.market + w.economy + w.growth;
+        
+        const weightedScore = (
+          logisticsScore * (w.logistics / totalWeight) +
+          costScore * (w.cost / totalWeight) +
+          marketScore * (w.market / totalWeight) +
+          economyScore * (w.economy / totalWeight) +
+          growthScore * (w.growth / totalWeight)
+        );
+        
+        return {
+          ...country,
+          sectorWeightedScore: Math.round(weightedScore),
+          // Use sector weighted score as the main score
+          totalScore: Math.round(weightedScore),
+          unifiedScore: Math.round(weightedScore)
+        };
+      });
+      
+      // Re-sort by new score
+      allCountries.sort((a, b) => (b.totalScore || 0) - (a.totalScore || 0));
+    }
+
+    // Helper: Risk code to numeric score
+    function getRiskScore(riskNotu) {
+      const riskScores = {
+        'AAA': 1.0, 'AA+': 0.95, 'AA': 0.90, 'AA-': 0.85,
+        'A+': 0.80, 'A': 0.75, 'A-': 0.70,
+        'BBB+': 0.65, 'BBB': 0.60, 'BBB-': 0.55,
+        'BB+': 0.50, 'BB': 0.45, 'BB-': 0.40,
+        'B+': 0.35, 'B': 0.30, 'B-': 0.25,
+        'CCC': 0.20, 'CC': 0.15, 'C': 0.10, 'D': 0.05
+      };
+      return riskScores[riskNotu] || 0.5;
     }
 
     // ==================== SAVE MODAL ====================
@@ -1878,31 +3218,51 @@
     async function saveDecision() {
       const status = document.getElementById('decisionStatus').value;
       const note = document.getElementById('managerNote').value;
+      const saveBtn = document.getElementById('confirmSave');
+      
+      // Loading state
+      const originalText = saveBtn.textContent;
+      saveBtn.textContent = '⏳ Kaydediliyor...';
+      saveBtn.disabled = true;
+      
+      const payload = {
+        ulke_id: selectedCountry.ulke_id,
+        ulke_adi: selectedCountry.ulke_adi,
+        sektor_id: selectedSector?.id || null,
+        sektor_adi: selectedSector?.name || 'Genel',
+        karar_durumu: status,
+        yonetici_notu: note || 'Karar kaydedildi.',
+        hesaplanan_skor: selectedCountry.totalScore || 0
+      };
+      
+      console.log('📤 Frontend gönderilen veri:', payload);
       
       try {
         const response = await fetch('/api/decisions', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            ulke_id: selectedCountry.ulke_id,
-            ulke_adi: selectedCountry.ulke_adi,
-            sektor_id: selectedSector?.id,
-            sektor_adi: selectedSector?.name,
-            karar_durumu: status,
-            yonetici_notu: note || 'Karar kaydedildi.',
-            hesaplanan_skor: selectedCountry.totalScore || 0
-          })
+          body: JSON.stringify(payload)
         });
 
-        if (response.ok) {
+        const result = await response.json();
+        console.log('📥 Backend yanıtı:', result);
+
+        if (response.ok && result.status === 'success') {
           analyzedCountries.add(selectedCountry.ulke_id);
           updateMapMarkers();
           closeSaveModal();
-          showToast('✓ Strateji başarıyla kaydedildi!');
+          showToast('✓ Strateji başarıyla kaydedildi! (ID: ' + result.data?.id + ')');
+        } else {
+          console.error('API Hatası:', result);
+          showToast('⚠️ Hata: ' + (result.message || 'Bilinmeyen hata'));
         }
       } catch (error) {
         console.error('Save error:', error);
-        showToast('Hata: Kaydedilemedi');
+        showToast('❌ Bağlantı hatası: ' + error.message);
+      } finally {
+        // Reset button
+        saveBtn.textContent = originalText;
+        saveBtn.disabled = false;
       }
     }
 

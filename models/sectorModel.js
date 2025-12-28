@@ -73,6 +73,37 @@ class SectorModel {
   }
 
   /**
+   * İki ülke için sektör-spesifik karşılaştırma verisi
+   */
+  static async getComparisonData(sektorId, ulkeIdA, ulkeIdB) {
+    try {
+      const [rows] = await pool.query(`
+        SELECT 
+          usv.ulke_id,
+          usv.sektor_id,
+          usv.sektorel_ihracat_milyon_usd,
+          usv.sektorel_ithalat_milyon_usd,
+          usv.sektorel_buyume_orani_yuzde,
+          usv.sektorel_istihdam_bin_kisi,
+          usv.sektorel_yatirim_milyon_usd,
+          usv.yerli_uretim_karsilama_orani_yuzde,
+          u.ulke_adi,
+          u.ISO_KODU,
+          s.sektor_adi
+        FROM ulke_sektor_verileri usv
+        INNER JOIN ulkeler u ON usv.ulke_id = u.ulke_id
+        INNER JOIN sektorler s ON usv.sektor_id = s.sektor_id
+        WHERE usv.sektor_id = ? AND usv.ulke_id IN (?, ?)
+      `, [sektorId, ulkeIdA, ulkeIdB]);
+      
+      return rows || [];
+    } catch (error) {
+      console.warn('⚠️ Karşılaştırma verisi alınamadı:', error.message);
+      return [];
+    }
+  }
+
+  /**
    * Sektör özet istatistikleri (JavaScript'te hesaplanacak)
    */
   static async getSectorStats(sektorId) {

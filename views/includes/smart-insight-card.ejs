@@ -1,0 +1,224 @@
+<%# 
+  SmartInsightCard - Reusable Insight Component
+  
+  Usage: <%- include('includes/smart-insight-card', { 
+    type: 'positive' | 'caution' | 'negative',
+    title: 'Chart Title',
+    explanation: 'What this chart shows...',
+    verdict: 'Key decision point',
+    details: ['Detail 1', 'Detail 2'],
+    icon: '💡' (optional)
+  }) %>
+%>
+
+<% 
+  const cardType = typeof type !== 'undefined' ? type : 'positive';
+  const cardTitle = typeof title !== 'undefined' ? title : 'Analiz Özeti';
+  const cardExplanation = typeof explanation !== 'undefined' ? explanation : '';
+  const cardVerdict = typeof verdict !== 'undefined' ? verdict : '';
+  const cardDetails = typeof details !== 'undefined' ? details : [];
+  const cardIcon = typeof icon !== 'undefined' ? icon : '💡';
+  
+  // Type-based styling
+  const typeStyles = {
+    positive: {
+      borderColor: 'var(--success)',
+      bgColor: 'rgba(0,255,136,0.05)',
+      accentColor: 'var(--success)',
+      icon: '✓',
+      label: 'Olumlu Sinyal'
+    },
+    caution: {
+      borderColor: 'var(--warning)',
+      bgColor: 'rgba(255,170,0,0.05)',
+      accentColor: 'var(--warning)',
+      icon: '!',
+      label: 'Dikkat Gerektiren'
+    },
+    negative: {
+      borderColor: 'var(--danger)',
+      bgColor: 'rgba(255,68,102,0.05)',
+      accentColor: 'var(--danger)',
+      icon: '✗',
+      label: 'Risk Uyarısı'
+    },
+    neutral: {
+      borderColor: 'var(--accent)',
+      bgColor: 'rgba(0,212,255,0.05)',
+      accentColor: 'var(--accent)',
+      icon: 'i',
+      label: 'Bilgi'
+    }
+  };
+  
+  const style = typeStyles[cardType] || typeStyles.neutral;
+%>
+
+<div class="smart-insight-card" style="
+  background: <%= style.bgColor %>;
+  border-left: 4px solid <%= style.borderColor %>;
+  border-radius: 0 12px 12px 0;
+  padding: 16px 20px;
+  margin-top: 16px;
+  position: relative;
+  overflow: hidden;
+">
+  <!-- Glow Effect -->
+  <div style="
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100px;
+    height: 100%;
+    background: linear-gradient(90deg, <%= style.bgColor %>, transparent);
+    opacity: 0.5;
+  "></div>
+  
+  <!-- Header -->
+  <div style="
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 12px;
+    position: relative;
+  ">
+    <div style="
+      width: 32px;
+      height: 32px;
+      border-radius: 8px;
+      background: <%= style.bgColor %>;
+      border: 1px solid <%= style.borderColor %>;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 14px;
+    "><%= cardIcon %></div>
+    <div>
+      <div style="
+        font-size: 14px;
+        font-weight: 700;
+        color: var(--text);
+      "><%= cardTitle %></div>
+      <div style="
+        font-size: 10px;
+        color: <%= style.accentColor %>;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+        font-weight: 600;
+      "><%= style.label %></div>
+    </div>
+  </div>
+  
+  <!-- Explanation Section -->
+  <% if (cardExplanation) { %>
+  <div style="
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+    margin-bottom: 12px;
+    padding: 12px;
+    background: rgba(0,0,0,0.2);
+    border-radius: 8px;
+    position: relative;
+  ">
+    <div style="
+      width: 20px;
+      height: 20px;
+      border-radius: 50%;
+      background: rgba(255,255,255,0.1);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 10px;
+      flex-shrink: 0;
+      margin-top: 2px;
+    ">💡</div>
+    <div>
+      <div style="
+        font-size: 10px;
+        font-weight: 600;
+        color: var(--text-dim);
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        margin-bottom: 4px;
+      ">Bu Grafik Ne Gösteriyor?</div>
+      <div style="
+        font-size: 12px;
+        color: var(--text);
+        line-height: 1.6;
+      "><%= cardExplanation %></div>
+    </div>
+  </div>
+  <% } %>
+  
+  <!-- Verdict Section -->
+  <% if (cardVerdict) { %>
+  <div style="
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+    padding: 12px;
+    background: <%= style.bgColor %>;
+    border: 1px solid <%= style.borderColor %>;
+    border-radius: 8px;
+    position: relative;
+  ">
+    <div style="
+      width: 24px;
+      height: 24px;
+      border-radius: 6px;
+      background: <%= style.borderColor %>;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 12px;
+      font-weight: 700;
+      color: #000;
+      flex-shrink: 0;
+    "><%= style.icon %></div>
+    <div>
+      <div style="
+        font-size: 10px;
+        font-weight: 600;
+        color: <%= style.accentColor %>;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        margin-bottom: 4px;
+      ">🎯 Karar Noktası</div>
+      <div style="
+        font-size: 13px;
+        font-weight: 600;
+        color: var(--text);
+        line-height: 1.5;
+      "><%= cardVerdict %></div>
+    </div>
+  </div>
+  <% } %>
+  
+  <!-- Detail Points -->
+  <% if (cardDetails && cardDetails.length > 0) { %>
+  <div style="
+    margin-top: 12px;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+  ">
+    <% cardDetails.forEach(detail => { %>
+    <div style="
+      padding: 6px 12px;
+      background: rgba(0,0,0,0.3);
+      border-radius: 6px;
+      font-size: 11px;
+      color: var(--text-dim);
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    ">
+      <span style="color: <%= style.accentColor %>">•</span>
+      <%= detail %>
+    </div>
+    <% }); %>
+  </div>
+  <% } %>
+</div>
+

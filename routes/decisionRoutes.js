@@ -36,4 +36,20 @@ router.patch('/api/decisions/:id/status', decisionController.updateDecisionStatu
 // API: Kararı sil
 router.delete('/api/decisions/:id', decisionController.deleteDecisionAPI);
 
+// ===== UNIFIED SCORING ENGINE API =====
+
+// API: Birleşik skorlama ile ülke değerlendirmesi
+router.post('/api/unified-score', decisionController.getUnifiedScoreAPI);
+
+// API: Birden fazla ülke için birleşik skorlama
+router.post('/api/unified-score/bulk', decisionController.getBulkUnifiedScoresAPI);
+
+// ===== SECTOR INTELLIGENCE API =====
+
+// API: Sektör zekası (istatistikler + algoritma ağırlıkları)
+router.get('/api/sector/:sektorId/intelligence', decisionController.getSectorIntelligenceAPI);
+
+// API: Tüm sektör arketipleri
+router.get('/api/sector-archetypes', decisionController.getSectorArchetypesAPI);
+
 module.exports = router;

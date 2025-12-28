@@ -2,7 +2,11 @@
  * Global Markets Data Generator
  * 30+ Major World Economy with Realistic Mock Data
  * Coordinates are accurate for map display
+ * 
+ * YENİ: UnifiedScoringEngine ile entegre
  */
+
+const UnifiedScoringEngine = require('./unifiedScoringEngine');
 
 // Country Tiers for realistic data generation
 const TIER_1 = ['USA', 'DEU', 'JPN', 'GBR', 'FRA', 'CAN', 'AUS', 'NLD', 'CHE', 'SGP'];
@@ -965,21 +969,57 @@ function calculateScore(country, weights = {}) {
 }
 
 /**
+ * Convert Global Markets format to UnifiedScoringEngine format
+ */
+function toUnifiedFormat(country) {
+  return {
+    risk_notu_kodu: country.risk_notu,
+    yerli_uretim_karsilama_orani_yuzde: country.yerli_uretim_orani,
+    gsyh_kisi_basi_usd: country.gsyh_kisi_basi,
+    lpi_skoru: country.lpi_skoru,
+    gumruk_bekleme_suresi_gun: country.gumruk_suresi,
+    enflasyon_orani_yuzde: country.enflasyon,
+    nufus_milyon: country.nufus_milyon,
+    sektorel_buyume_orani_yuzde: country.sektorel_buyume,
+    anlasma_sayisi: country.anlasma_sayisi || 0,
+    agreements: [],
+    issizlik_orani_yuzde: country.issizlik,
+    buyume_orani_yuzde: country.buyume_orani
+  };
+}
+
+/**
  * Get all global markets with calculated scores
+ * YENİ: UnifiedScoringEngine ile birleşik skorlama
  */
 function getGlobalMarkets(weights = {}) {
   return GLOBAL_MARKETS.map(country => {
-    const scores = calculateScore(country, weights);
+    // Legacy skorlama (geriye dönük uyumluluk)
+    const legacyScores = calculateScore(country, weights);
+    
+    // YENİ: Birleşik skorlama
+    const unifiedData = toUnifiedFormat(country);
+    const unifiedResult = UnifiedScoringEngine.calculateGlobalScore(unifiedData);
+    
     return {
       ...country,
-      scores,
-      totalScore: scores.total
+      // Legacy
+      scores: legacyScores,
+      totalScore: legacyScores.total,
+      // YENİ: Birleşik skorlama
+      unifiedScore: unifiedResult.globalScore,
+      unifiedVerdict: unifiedResult.globalVerdict,
+      decisionCounts: unifiedResult.counts,
+      decisions: unifiedResult.decisions,
+      recommendation: unifiedResult.recommendation,
+      summary: unifiedResult.summary
     };
-  }).sort((a, b) => b.totalScore - a.totalScore);
+  }).sort((a, b) => b.unifiedScore - a.unifiedScore);
 }
 
 /**
  * Merge DB countries with global markets (prioritize DB data)
+ * YENİ: UnifiedScoringEngine ile birleşik skorlama
  */
 function mergeWithDBData(dbCountries, weights = {}) {
   const dbMap = new Map();
@@ -1005,12 +1045,44 @@ function mergeWithDBData(dbCountries, weights = {}) {
         sektorel_buyume: dbMatch.sektorel_buyume || gm.sektorel_buyume,
         sektorel_ithalat: dbMatch.sektorel_ithalat || gm.sektorel_ithalat
       };
-      const scores = calculateScore(mergedCountry, weights);
-      merged.push({ ...mergedCountry, scores, totalScore: scores.total });
+      const legacyScores = calculateScore(mergedCountry, weights);
+      
+      // YENİ: Birleşik skorlama
+      const unifiedData = toUnifiedFormat(mergedCountry);
+      const unifiedResult = UnifiedScoringEngine.calculateGlobalScore(unifiedData);
+      
+      merged.push({ 
+        ...mergedCountry, 
+        scores: legacyScores, 
+        totalScore: legacyScores.total,
+        // YENİ
+        unifiedScore: unifiedResult.globalScore,
+        unifiedVerdict: unifiedResult.globalVerdict,
+        decisionCounts: unifiedResult.counts,
+        decisions: unifiedResult.decisions,
+        recommendation: unifiedResult.recommendation,
+        summary: unifiedResult.summary
+      });
     } else {
       // Use global market data
-      const scores = calculateScore(gm, weights);
-      merged.push({ ...gm, scores, totalScore: scores.total });
+      const legacyScores = calculateScore(gm, weights);
+      
+      // YENİ: Birleşik skorlama
+      const unifiedData = toUnifiedFormat(gm);
+      const unifiedResult = UnifiedScoringEngine.calculateGlobalScore(unifiedData);
+      
+      merged.push({ 
+        ...gm, 
+        scores: legacyScores, 
+        totalScore: legacyScores.total,
+        // YENİ
+        unifiedScore: unifiedResult.globalScore,
+        unifiedVerdict: unifiedResult.globalVerdict,
+        decisionCounts: unifiedResult.counts,
+        decisions: unifiedResult.decisions,
+        recommendation: unifiedResult.recommendation,
+        summary: unifiedResult.summary
+      });
     }
   });
 
@@ -1022,18 +1094,34 @@ function mergeWithDBData(dbCountries, weights = {}) {
     );
     
     if (!alreadyAdded && dbc.latitude && dbc.longitude) {
-      const scores = calculateScore(dbc, weights);
-      merged.push({ ...dbc, scores, totalScore: scores.total });
+      const legacyScores = calculateScore(dbc, weights);
+      
+      // YENİ: Birleşik skorlama (DB formatı direkt kullan)
+      const unifiedResult = UnifiedScoringEngine.calculateGlobalScore(dbc);
+      
+      merged.push({ 
+        ...dbc, 
+        scores: legacyScores, 
+        totalScore: legacyScores.total,
+        // YENİ
+        unifiedScore: unifiedResult.globalScore,
+        unifiedVerdict: unifiedResult.globalVerdict,
+        decisionCounts: unifiedResult.counts,
+        decisions: unifiedResult.decisions,
+        recommendation: unifiedResult.recommendation,
+        summary: unifiedResult.summary
+      });
     }
   });
 
-  return merged.sort((a, b) => b.totalScore - a.totalScore);
+  return merged.sort((a, b) => b.unifiedScore - a.unifiedScore);
 }
 
 module.exports = {
   GLOBAL_MARKETS,
   getGlobalMarkets,
   mergeWithDBData,
-  calculateScore
+  calculateScore,
+  toUnifiedFormat
 };
 
