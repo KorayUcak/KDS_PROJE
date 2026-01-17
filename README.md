@@ -1,12 +1,12 @@
-# KDS - Küresel Pazar Araştırması Karar Destek Sistemi
+ KDS - Küresel Pazar Araştırması Karar Destek Sistemi
 
 Bu proje, Yönetim Bilişim Sistemleri dersi kapsamında geliştirilmiş; MVC mimarisine ve RESTful API prensiplerine tam uyumlu, kapsamlı bir web tabanlı Karar Destek Sistemidir (KDS).
 
-## 🎯 Proje Kapsamı ve Karar Destek Yetenekleri
+ 🎯 Proje Kapsamı ve Karar Destek Yetenekleri
 
 Bu sistem, ihracat yapmak isteyen firmaların veya pazar araştırması yapan analistlerin, hedef ülke ve sektör seçimlerinde veri odaklı stratejik kararlar almasını sağlar. Sistem, farklı veri kaynaklarından (Makroekonomik, Lojistik, Sektörel) gelen verileri işleyerek karmaşık problemleri anlamlı skorlara dönüştürür.
 
-### Karar Vericiler İçin Sağlanan İçgörüler
+ Karar Vericiler İçin Sağlanan İçgörüler
 Sistemin algoritmaları ve veri yapısı sayesinde yöneticiler şu sorulara yanıt bulabilir:
 
 1. Pazar Çekiciliği Analizi:
@@ -25,7 +25,7 @@ Sistemin algoritmaları ve veri yapısı sayesinde yöneticiler şu sorulara yan
    - "Pazar doymuş mu yoksa fırsat var mı?"
    - Yerli üretim karşılama oranlarına bakılarak, ithalat açığı olan (yerli üretimin talebi karşılayamadığı) pazarlar önceliklendirilir.
 
-## 🛠️ Proje Geliştirme Adımları
+ 🛠️ Proje Geliştirme Adımları
 
 Proje hayata geçirilirken aşağıdaki teknik geliştirme süreçleri izlenmiştir:
 
@@ -38,7 +38,7 @@ Proje hayata geçirilirken aşağıdaki teknik geliştirme süreçleri izlenmiş
 7. RESTful Dönüşümü: API yapısının standart HTTP metotlarına (PUT, DELETE) uygun hale getirilmesi.
 8. Güvenlik ve Kontrol: Mükerrer kayıt engeli gibi özel iş kurallarının sisteme entegre edilmesi.
 
-## 🛡️ Özel İş Kuralları (Senaryolar)
+ 🛡️ Özel İş Kuralları (Senaryolar)
 Projede veri bütünlüğünü ve iş mantığını korumak için MVC yapısı içerisinde Controller katmanında 2 kritik iş kuralı kodlanmıştır:
 
 1. Mükerrer Kayıt Engeli:
@@ -49,7 +49,7 @@ Projede veri bütünlüğünü ve iş mantığını korumak için MVC yapısı i
    - Senaryo: Skor hesaplaması tamamlanmış, sonuç üretilmiş ve Onaylı durumdaki analizler şirket hafızası ve yasal dayanaklar sebebiyle silinemez. Sadece taslak aşamasındaki analizler silinebilir.
    - Konum: analysisController.js > deleteAnalysis
 
-## 🌐 HTTP Metotları ve REST Mimarisi
+ 🌐 HTTP Metotları ve REST Mimarisi
 Proje, kaynak yönetimi için standart HTTP fiillerini (verbs) anlamsal olarak doğru kullanan RESTful bir yapı üzerine kurulmuştur. Tarayıcıların form desteği sınırlı olduğu için method-override kütüphanesi kullanılarak tam REST desteği sağlanmıştır.
 
 - GET (Okuma): Sunucudan veri çekmek ve sayfaları görüntülemek için kullanılır. Veritabanında hiçbir değişiklik yapmaz. (Örn: Analiz listesini getirme, Detay sayfasını açma)
@@ -57,7 +57,7 @@ Proje, kaynak yönetimi için standart HTTP fiillerini (verbs) anlamsal olarak d
 - PUT (Güncelleme): Mevcut bir kaynağın verilerini değiştirmek için kullanılır. İlgili ID'ye sahip kaydı günceller. (Örn: Lojistik verisindeki gümrük süresini değiştirme)
 - DELETE (Silme): Sunucudaki bir kaynağı kalıcı olarak kaldırmak için kullanılır. (Örn: Hatalı girilmiş bir anlaşma tipini silme)
 
-## 🔗 API Endpoint Listesi
+ 🔗 API Endpoint Listesi
 
 | Metot | Endpoint | Açıklama |
 |-------|----------|-----------|
@@ -70,9 +70,10 @@ Proje, kaynak yönetimi için standart HTTP fiillerini (verbs) anlamsal olarak d
 | DELETE | /agreements/:id | Uluslararası anlaşma tipini siler |
 | GET | /dashboard | Sektörel genel bakış ekranını getirir |
 
-## 🏗️ Teknoloji Yığını
+ 🏗️ Kullanılan Teknolojiler
 - Backend: Node.js, Express.js
 - Mimari: MVC (Model-View-Controller)
 - Veritabanı: MySQL (İlişkisel Veritabanı)
 - Frontend: EJS (Embedded JavaScript Templates), CSS3
 - Araçlar: Method-Override, Dotenv
+
