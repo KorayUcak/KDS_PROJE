@@ -497,7 +497,21 @@ exports.getAnalysis = catchAsync(async (req, res, next) => {
 
 // Yeni analiz oluştur
 exports.createAnalysis = catchAsync(async (req, res, next) => {
+  
   const { kullanici_id, parametreler } = req.body;
+  // --- SENARYO 1: Mükerrer Kayıt Engelleme ---
+  // Kural: Bir kullanıcı aynı gün içinde aynı ülke-sektör için en fazla 1 analiz yapabilir.
+  // Modeldeki düzeltilmiş fonksiyonu çağırıyoruz
+  const isDuplicate = await AnalysisModel.checkDuplicateToday(
+    parseInt(kullanici_id) || 1, 
+    parseInt(parametreler.hedef_ulke_id), 
+    parseInt(parametreler.hedef_sektor_id)
+  );
+
+  if (isDuplicate) {
+    return next(new AppError('İŞ KURALI HATASI: Bu ülke ve sektör için bugün zaten bir analiz oluşturdunuz. Lütfen mevcut analizi düzenleyiniz.', 400));
+  }
+  // --- İŞ KURALI 1 BİTİŞİ ---
 
   // Gerekli alan kontrolü
   if (!parametreler || !parametreler.hedef_ulke_id || !parametreler.hedef_sektor_id) {
@@ -606,6 +620,14 @@ exports.saveResults = catchAsync(async (req, res, next) => {
 // Analiz sil
 exports.deleteAnalysis = catchAsync(async (req, res, next) => {
   const { id } = req.params;
+  // --- SENARYO 2: Veri Bütünlüğü Koruması ---
+  // Kural: Puanı hesaplanmış (sonuçlanmış) analizler silinemez.
+  const analysisCheck = await AnalysisModel.getById(id);
+  
+  if (analysisCheck && analysisCheck.hesaplanan_skor !== null && parseFloat(analysisCheck.hesaplanan_skor) > 0) {
+    return next(new AppError('GÜVENLİK UYARISI: Tamamlanmış ve skor üretilmiş analizler silinemez! Sadece arşivlenebilir.', 403));
+  }
+  // --- İŞ KURALI 2 BİTİŞİ ---
 
   // Önce analizi bul (log için)
   const analysis = await AnalysisModel.getById(id);

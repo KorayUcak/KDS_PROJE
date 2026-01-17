@@ -216,6 +216,24 @@ class AnalysisModel {
       return 0;
     }
   }
+// --- İŞ KURALI FONKSİYONU (DÜZELTİLDİ) ---
+  static async checkDuplicateToday(kullaniciId, ulkeId, sektorId) {
+    // Bugünün tarihini al (YYYY-MM-DD formatında)
+    const today = new Date().toISOString().slice(0, 10);
+    
+    const sql = `
+      SELECT analiz_id 
+      FROM kayitli_analizler 
+      WHERE kullanici_id = ? 
+      AND hedef_ulke_id = ? 
+      AND hedef_sektor_id = ?
+      AND DATE(olusturulma_tarihi) = ?
+    `;
+    
+    // DÜZELTME: 'db.execute' yerine 'pool.query' kullanıldı
+    const [rows] = await pool.query(sql, [kullaniciId, ulkeId, sektorId, today]);
+    return rows.length > 0; // Kayıt varsa true döner
+  }
 }
 
 module.exports = AnalysisModel;
