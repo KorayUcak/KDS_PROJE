@@ -3,11 +3,12 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>🇹🇷 İhracat Strateji Simülatörü - Command Deck</title>
+  <title>İhracat Strateji Simülatörü - Command Deck</title>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
   <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+  <script src="https://unpkg.com/lucide@latest"></script>
   <style>
     * { margin: 0; padding: 0; box-sizing: border-box; }
     
@@ -48,6 +49,12 @@
       overflow-x: hidden;
     }
 
+    .lucide {
+      width: 1em;
+      height: 1em;
+      vertical-align: -0.125em;
+    }
+
     .mono { font-family: 'JetBrains Mono', monospace; }
 
     /* ==================== MAIN LAYOUT ==================== */
@@ -84,6 +91,11 @@
     .logo-icon { 
       font-size: 24px;
       filter: drop-shadow(0 0 8px var(--accent-glow));
+    }
+
+    .logo-icon .lucide {
+      width: 24px;
+      height: 24px;
     }
 
     .logo span {
@@ -337,14 +349,15 @@
     }
 
     .filter-checkbox input[type="checkbox"]:checked + .checkmark::after {
-      content: '✓';
+      content: '';
       position: absolute;
       top: 50%;
       left: 50%;
-      transform: translate(-50%, -50%);
-      color: #000;
-      font-size: 10px;
-      font-weight: bold;
+      width: 4px;
+      height: 8px;
+      border: solid #000;
+      border-width: 0 2px 2px 0;
+      transform: translate(-50%, -60%) rotate(45deg);
     }
 
     .filter-checkbox:hover .checkmark {
@@ -1540,7 +1553,7 @@
     <!-- ==================== TOPBAR ==================== -->
     <header class="topbar">
       <div class="logo">
-        <span class="logo-icon">🌍</span>
+        <span class="logo-icon"><i data-lucide="globe" class="lucide"></i></span>
         <span>İhracat Strateji Merkezi</span>
       </div>
       
@@ -1563,8 +1576,8 @@
       </div>
       
       <div class="topbar-right">
-        <a href="/compare" class="top-btn">⚖️ Stratejik Karşılaştırma</a>
-        <a href="/decisions" class="top-btn">📋 Kayıtlı Kararlar</a>
+        <a href="/compare" class="top-btn"><i data-lucide="scale" class="lucide"></i> Stratejik Karşılaştırma</a>
+        <a href="/decisions" class="top-btn"><i data-lucide="list-checks" class="lucide"></i> Kayıtlı Kararlar</a>
       </div>
     </header>
 
@@ -1573,7 +1586,7 @@
       <div class="pulse-bar-content">
         <!-- Sector Info -->
         <div class="pulse-item sector-info">
-          <span class="pulse-icon" id="sectorIcon">⚖️</span>
+          <span class="pulse-icon" id="sectorIcon"><i data-lucide="scale" class="lucide"></i></span>
           <div class="pulse-text">
             <div class="pulse-label">Sektör Modu</div>
             <div class="pulse-value" id="sectorModeName">Dengeli</div>
@@ -1582,7 +1595,7 @@
         
         <!-- Growth Rate -->
         <div class="pulse-item">
-          <span class="pulse-icon">📈</span>
+          <span class="pulse-icon"><i data-lucide="trending-up" class="lucide"></i></span>
           <div class="pulse-text">
             <div class="pulse-label">Global Büyüme</div>
             <div class="pulse-value trend-up" id="sectorGrowth">+0.0%</div>
@@ -1591,7 +1604,7 @@
         
         <!-- Market Volume -->
         <div class="pulse-item">
-          <span class="pulse-icon">💰</span>
+          <span class="pulse-icon"><i data-lucide="hand-coins" class="lucide"></i></span>
           <div class="pulse-text">
             <div class="pulse-label">Pazar Hacmi</div>
             <div class="pulse-value" id="sectorVolume">$0B</div>
@@ -1600,7 +1613,7 @@
         
         <!-- Top Region -->
         <div class="pulse-item">
-          <span class="pulse-icon">🌍</span>
+          <span class="pulse-icon"><i data-lucide="globe" class="lucide"></i></span>
           <div class="pulse-text">
             <div class="pulse-label">Yüksek Talep</div>
             <div class="pulse-value" id="sectorTopRegion">-</div>
@@ -1622,7 +1635,7 @@
       
       <!-- Sector Insight Toast -->
       <div class="sector-insight" id="sectorInsight">
-        <span class="insight-icon">💡</span>
+        <span class="insight-icon"><i data-lucide="lightbulb" class="lucide"></i></span>
         <span class="insight-text" id="sectorInsightText">Sistem dengeli modda çalışıyor.</span>
       </div>
     </div>
@@ -1632,9 +1645,9 @@
       <!-- ==================== SIDEBAR ==================== -->
       <aside class="sidebar">
         <div class="sidebar-section">
-          <div class="section-title">📊 VERİ FİLTRELERİ</div>
+          <div class="section-title"><i data-lucide="sliders-horizontal" class="lucide"></i> VERİ FİLTRELERİ</div>
           <p style="font-size: 10px; color: var(--text-dim); margin-bottom: 12px;">
-            ✓ İşaretli filtreler aktif olarak uygulanır
+            <i data-lucide="check" class="lucide"></i> İşaretli filtreler aktif olarak uygulanır
           </p>
           
           <!-- Max Lojistik Maliyeti -->
@@ -1691,7 +1704,7 @@
         </div>
 
         <div class="sidebar-section">
-          <div class="section-title">🔮 SİMÜLASYON</div>
+          <div class="section-title"><i data-lucide="sparkles" class="lucide"></i> SİMÜLASYON</div>
           
           <!-- Politik Stabilite -->
           <div class="filter-item" id="politicsFilterGroup">
@@ -1737,7 +1750,7 @@
           </div>
         </div>
 
-        <button class="reset-btn" id="resetBtn">↺ Filtreleri Sıfırla</button>
+        <button class="reset-btn" id="resetBtn"><i data-lucide="rotate-ccw" class="lucide"></i> Filtreleri Sıfırla</button>
 
         <div class="stats-box">
           <div class="num" id="matchCount">0</div>
@@ -1747,7 +1760,7 @@
         <!-- Active Filters Summary -->
         <div class="active-filters-summary" id="activeFiltersSummary" style="margin-top: 12px; display: none;">
           <div style="font-size: 10px; color: var(--accent); font-weight: 600; margin-bottom: 6px;">
-            🎯 AKTİF FİLTRELER
+            <i data-lucide="filter" class="lucide"></i> AKTİF FİLTRELER
           </div>
           <div id="activeFiltersList" style="font-size: 10px; color: var(--text-dim);"></div>
         </div>
@@ -1761,7 +1774,7 @@
           <div class="chart-card swot-card">
             <div class="chart-header">
               <div class="chart-title">
-                <span class="icon scatter">🎯</span>
+                <span class="icon scatter"><i data-lucide="target" class="lucide"></i></span>
                 <span id="swotCountryName">SWOT Analizi</span>
               </div>
               <span class="chart-badge" id="swotCountryScore">--</span>
@@ -1771,28 +1784,28 @@
               <div class="swot-grid">
                 <!-- Strengths -->
                 <div class="swot-quadrant strength">
-                  <div class="swot-title">💪 GÜÇLÜ YANLAR</div>
+                  <div class="swot-title"><i data-lucide="shield" class="lucide"></i> GÜÇLÜ YANLAR</div>
                   <ul class="swot-list" id="swotStrengths">
                     <li>Analiz bekleniyor...</li>
                   </ul>
                 </div>
                 <!-- Weaknesses -->
                 <div class="swot-quadrant weakness">
-                  <div class="swot-title">⚠️ ZAYIF YANLAR</div>
+                  <div class="swot-title"><i data-lucide="alert-triangle" class="lucide"></i> ZAYIF YANLAR</div>
                   <ul class="swot-list" id="swotWeaknesses">
                     <li>Analiz bekleniyor...</li>
                   </ul>
                 </div>
                 <!-- Opportunities -->
                 <div class="swot-quadrant opportunity">
-                  <div class="swot-title">🚀 FIRSATLAR</div>
+                  <div class="swot-title"><i data-lucide="rocket" class="lucide"></i> FIRSATLAR</div>
                   <ul class="swot-list" id="swotOpportunities">
                     <li>Analiz bekleniyor...</li>
                   </ul>
                 </div>
                 <!-- Threats -->
                 <div class="swot-quadrant threat">
-                  <div class="swot-title">🔴 TEHDİTLER</div>
+                  <div class="swot-title"><i data-lucide="ban" class="lucide"></i> TEHDİTLER</div>
                   <ul class="swot-list" id="swotThreats">
                     <li>Analiz bekleniyor...</li>
                   </ul>
@@ -1803,16 +1816,16 @@
             <div class="chart-container quadrant-container" style="display: none;">
               <div class="quadrant-bg">
                 <div class="quadrant q1" title="Stars - Yüksek Fırsat, Düşük Risk">
-                  <span class="q-label">⭐ STARS</span>
+                  <span class="q-label">STARS</span>
                 </div>
                 <div class="quadrant q2" title="Question Marks - Yüksek Fırsat, Yüksek Risk">
-                  <span class="q-label">❓ QUESTION</span>
+                  <span class="q-label">QUESTION</span>
                 </div>
                 <div class="quadrant q3" title="Cash Cows - Düşük Fırsat, Düşük Risk">
-                  <span class="q-label">🐄 COWS</span>
+                  <span class="q-label">COWS</span>
                 </div>
                 <div class="quadrant q4" title="Dogs - Düşük Fırsat, Yüksek Risk">
-                  <span class="q-label">🐕 DOGS</span>
+                  <span class="q-label">DOGS</span>
                 </div>
               </div>
               <canvas id="scatterChart"></canvas>
@@ -1820,7 +1833,7 @@
             <!-- Smart Insight Card for Risk Matrix -->
             <div class="insight-card" id="riskInsight">
               <div class="insight-header">
-                <span class="insight-icon">💡</span>
+                <span class="insight-icon"><i data-lucide="lightbulb" class="lucide"></i></span>
                 <span class="insight-title">Matris Analizi</span>
               </div>
               <div class="insight-body" id="riskInsightBody">
@@ -1833,7 +1846,7 @@
           <div class="chart-card">
             <div class="chart-header">
               <div class="chart-title">
-                <span class="icon radar">🎯</span>
+                <span class="icon radar"><i data-lucide="radar" class="lucide"></i></span>
                 Rekabet Radarı
               </div>
               <span class="chart-badge">Radar</span>
@@ -1844,7 +1857,7 @@
             <!-- Smart Insight Card for Radar -->
             <div class="insight-card" id="radarInsight">
               <div class="insight-header">
-                <span class="insight-icon">💡</span>
+                <span class="insight-icon"><i data-lucide="lightbulb" class="lucide"></i></span>
                 <span class="insight-title">Performans Özeti</span>
               </div>
               <div class="insight-body" id="radarInsightBody">
@@ -1857,7 +1870,7 @@
           <div class="chart-card">
             <div class="chart-header">
               <div class="chart-title">
-                <span class="icon bar">💰</span>
+                <span class="icon bar"><i data-lucide="hand-coins" class="lucide"></i></span>
                 Maliyet Dağılımı
               </div>
               <span class="chart-badge">Top 5</span>
@@ -1868,7 +1881,7 @@
             <!-- Smart Insight Card for Cost -->
             <div class="insight-card" id="costInsight">
               <div class="insight-header">
-                <span class="insight-icon">💡</span>
+                <span class="insight-icon"><i data-lucide="lightbulb" class="lucide"></i></span>
                 <span class="insight-title">Maliyet Analizi</span>
               </div>
               <div class="insight-body" id="costInsightBody">
@@ -1899,10 +1912,10 @@
           </div>
 
           <!-- DECISIONS PANEL -->
-          <button class="panel-toggle" id="panelToggle">◀</button>
+          <button class="panel-toggle" id="panelToggle"><i data-lucide="chevron-left" class="lucide"></i></button>
           <aside class="decisions-panel" id="decisionsPanel">
             <div class="panel-header">
-              <span class="panel-title">🎯 7 Stratejik Karar</span>
+              <span class="panel-title"><i data-lucide="target" class="lucide"></i> 7 Stratejik Karar</span>
               <span class="country-badge" id="selectedCountry">Ülke Seçin</span>
             </div>
 
@@ -1915,13 +1928,13 @@
 
             <div class="decisions-list" id="decisionsList">
               <div class="empty-state">
-                <div class="icon">🗺️</div>
+                <div class="icon"><i data-lucide="map" class="lucide"></i></div>
                 <p>Haritadan bir ülkeye tıklayın<br>veya yukarıdaki grafiklerden seçin</p>
               </div>
             </div>
 
             <div class="save-section">
-              <button class="save-btn" id="saveBtn" disabled>💾 Strateji Kaydet</button>
+              <button class="save-btn" id="saveBtn" disabled><i data-lucide="save" class="lucide"></i> Strateji Kaydet</button>
             </div>
           </aside>
         </div>
@@ -1933,7 +1946,7 @@
   <div class="modal-overlay" id="modalOverlay">
     <div class="modal">
       <div class="modal-header">
-        <h3>📋 Karar Onayı</h3>
+        <h3><i data-lucide="clipboard-check" class="lucide"></i> Karar Onayı</h3>
         <button class="modal-close" id="modalClose">×</button>
       </div>
       <div class="modal-body">
@@ -1942,11 +1955,11 @@
         <div class="form-group">
           <label>Karar Durumu</label>
           <select id="decisionStatus">
-            <option value="Öncelikli Hedef">🎯 Öncelikli Hedef - DEVAM ET</option>
-            <option value="İzleme Listesi">👁️ İzleme Listesine Al</option>
-            <option value="Pilot Proje">🧪 Pilot Proje Başlat</option>
-            <option value="Şimdilik Değil">⏸️ Şimdilik Değil</option>
-            <option value="Girme">🚫 Bu Pazara Girme</option>
+            <option value="Öncelikli Hedef">Öncelikli Hedef - DEVAM ET</option>
+            <option value="İzleme Listesi">İzleme Listesine Al</option>
+            <option value="Pilot Proje">Pilot Proje Başlat</option>
+            <option value="Şimdilik Değil">Şimdilik Değil</option>
+            <option value="Girme">Bu Pazara Girme</option>
           </select>
         </div>
         
@@ -1957,7 +1970,7 @@
       </div>
       <div class="modal-footer">
         <button class="btn btn-secondary" id="cancelSave">İptal</button>
-        <button class="btn btn-primary" id="confirmSave">✓ Onayla ve Kaydet</button>
+        <button class="btn btn-primary" id="confirmSave"><i data-lucide="check" class="lucide"></i> Onayla ve Kaydet</button>
       </div>
     </div>
   </div>
@@ -2156,6 +2169,10 @@
       initCharts();
       setupEventListeners();
       loadGlobalMarkets();
+
+      if (typeof lucide !== 'undefined') {
+        lucide.createIcons();
+      }
     }
 
     // ==================== INIT MAP ====================
@@ -2213,9 +2230,9 @@
                   if (!country) return '';
                   const quadrant = getQuadrantName(ctx.parsed.x, ctx.parsed.y);
                   return [
-                    `📊 Skor: ${country.totalScore?.toFixed(0) || 0}/100`,
-                    `📈 Risk: ${ctx.parsed.x.toFixed(0)} | Fırsat: ${ctx.parsed.y.toFixed(0)}`,
-                    `🏷️ Kategori: ${quadrant}`
+                    `Skor: ${country.totalScore?.toFixed(0) || 0}/100`,
+                    `Risk: ${ctx.parsed.x.toFixed(0)} | Fırsat: ${ctx.parsed.y.toFixed(0)}`,
+                    `Kategori: ${quadrant}`
                   ];
                 }
               }
@@ -2225,14 +2242,14 @@
             x: {
               min: 0,
               max: 100,
-              title: { display: true, text: '← Yüksek Risk | Düşük Risk →', color: '#6b7280', font: { size: 9 } },
+              title: { display: true, text: 'Yüksek Risk | Düşük Risk', color: '#6b7280', font: { size: 9 } },
               grid: { color: 'rgba(37,41,49,0.3)', drawBorder: false },
               ticks: { display: false }
             },
             y: {
               min: 0,
               max: 100,
-              title: { display: true, text: '↑ Fırsat Seviyesi', color: '#6b7280', font: { size: 9 } },
+              title: { display: true, text: 'Fırsat Seviyesi', color: '#6b7280', font: { size: 9 } },
               grid: { color: 'rgba(37,41,49,0.3)', drawBorder: false },
               ticks: { display: false }
             }
@@ -2248,10 +2265,10 @@
 
     // Helper function for quadrant names
     function getQuadrantName(x, y) {
-      if (x >= 50 && y >= 50) return '⭐ Star (Hedef)';
-      if (x < 50 && y >= 50) return '❓ Soru İşareti';
-      if (x >= 50 && y < 50) return '🐄 Nakit İneği';
-      return '🐕 Köpek (Risk)';
+      if (x >= 50 && y >= 50) return 'Star (Hedef)';
+      if (x < 50 && y >= 50) return 'Soru İşareti';
+      if (x >= 50 && y < 50) return 'Nakit İneği';
+      return 'Köpek (Risk)';
     }
 
       // Radar Chart
@@ -2522,8 +2539,8 @@
             <strong style="font-size:14px;color:#e8eaed">${c.ulke_adi}</strong><br>
             <div style="font-size:11px;color:#6b7280;margin-top:4px">
               <span style="color:${color}">●</span> Skor: <b style="color:#e8eaed">${score.toFixed(0)}</b><br>
-              💰 GSYİH: $${c.gsyh_kisi_basi ? (c.gsyh_kisi_basi/1000).toFixed(0) + 'k' : 'N/A'}<br>
-              📦 LPI: ${c.lpi_skoru?.toFixed(1) || 'N/A'}
+              GSYİH: $${c.gsyh_kisi_basi ? (c.gsyh_kisi_basi/1000).toFixed(0) + 'k' : 'N/A'}<br>
+              LPI: ${c.lpi_skoru?.toFixed(1) || 'N/A'}
             </div>
           </div>
         `;
@@ -2607,11 +2624,11 @@
         const topStars = starCountries.slice(0, 3).join(', ');
         insightHtml = `
           <div style="margin-bottom:8px">
-            <strong style="color:var(--success)">⭐ ${stars} ülke "Star" kategorisinde</strong> - 
+            <strong style="color:var(--success)">${stars} ülke "Star" kategorisinde</strong> - 
             Yüksek fırsat, düşük risk ile öncelikli hedefler.
           </div>
           <div class="insight-verdict">
-            <div class="verdict-icon go">✓</div>
+            <div class="verdict-icon go"><i data-lucide="check" class="lucide"></i></div>
             <div class="verdict-text">Öncelikli Hedefler: ${topStars}</div>
           </div>
         `;
@@ -2619,11 +2636,11 @@
         insightType = 'caution';
         insightHtml = `
           <div style="margin-bottom:8px">
-            <strong style="color:var(--warning)">❓ ${questions} ülke "Soru İşareti" kategorisinde</strong> - 
+            <strong style="color:var(--warning)">${questions} ülke "Soru İşareti" kategorisinde</strong> - 
             Yüksek potansiyel var ancak riskler değerlendirilmeli.
           </div>
           <div class="insight-verdict">
-            <div class="verdict-icon caution">!</div>
+            <div class="verdict-icon caution"><i data-lucide="alert-triangle" class="lucide"></i></div>
             <div class="verdict-text">Detaylı risk analizi önerilir</div>
           </div>
         `;
@@ -2631,25 +2648,29 @@
         insightType = 'negative';
         insightHtml = `
           <div style="margin-bottom:8px">
-            <strong style="color:var(--danger)">⚠️ Çoğunluk "Dogs" kategorisinde</strong> - 
+            <strong style="color:var(--danger)">Çoğunluk "Dogs" kategorisinde</strong> - 
             Mevcut filtrelerle düşük fırsatlı, yüksek riskli pazarlar görünüyor.
           </div>
           <div class="insight-verdict">
-            <div class="verdict-icon stop">✗</div>
+            <div class="verdict-icon stop"><i data-lucide="x" class="lucide"></i></div>
             <div class="verdict-text">Filtre kriterlerini gevşetin</div>
           </div>
         `;
       } else {
         insightHtml = `
           <div>
-            📊 <strong>${filteredCountries.length}</strong> ülke görüntüleniyor: 
-            ⭐${stars} Star, ❓${questions} Soru, 🐄${cows} İnek, 🐕${dogs} Köpek
+            <strong>${filteredCountries.length}</strong> ülke görüntüleniyor: 
+            ${stars} Star, ${questions} Soru, ${cows} İnek, ${dogs} Köpek
           </div>
         `;
       }
 
       insightCard.className = `insight-card ${insightType === 'positive' ? '' : insightType}`;
       insightBody.innerHTML = insightHtml;
+
+      if (typeof lucide !== 'undefined') {
+        lucide.createIcons();
+      }
     }
 
     function updateCostInsight() {
@@ -2682,17 +2703,21 @@
       insightCard.className = `insight-card ${insightType === 'positive' ? '' : insightType}`;
       insightBody.innerHTML = `
         <div style="margin-bottom:8px">
-          💰 <strong>${cheapest.ulke_adi}</strong> en düşük maliyetli pazar 
+          <i data-lucide="hand-coins" class="lucide"></i> <strong>${cheapest.ulke_adi}</strong> en düşük maliyetli pazar 
           ($${(cheapest.konteyner_maliyeti || 0).toLocaleString()}).
           ${diffPercent > 20 ? `<span style="color:var(--warning)">${expensive.ulke_adi} %${diffPercent} daha pahalı.</span>` : ''}
         </div>
         <div class="insight-verdict">
           <div class="verdict-icon ${insightType === 'positive' ? 'go' : 'caution'}">
-            ${insightType === 'positive' ? '✓' : '$'}
+            ${insightType === 'positive' ? '<i data-lucide="check" class="lucide"></i>' : '<i data-lucide="dollar-sign" class="lucide"></i>'}
           </div>
           <div class="verdict-text">Ort. Maliyet: $${avgCost.toLocaleString()}</div>
         </div>
       `;
+
+      if (typeof lucide !== 'undefined') {
+        lucide.createIcons();
+      }
     }
 
     // ==================== UPDATE RADAR CHART ====================
@@ -2786,10 +2811,14 @@
             `<span style="color:var(--warning)">altında (${(overallScore - avgOverall).toFixed(0)})</span>`}
         </div>
         <div style="display:flex;gap:12px;font-size:10px;">
-          <span style="color:var(--success)">💪 Güçlü: ${dimensions[strongest.idx]}</span>
-          <span style="color:var(--danger)">⚠️ Zayıf: ${dimensions[weakest.idx]}</span>
+          <span style="color:var(--success)"><i data-lucide="shield" class="lucide"></i> Güçlü: ${dimensions[strongest.idx]}</span>
+          <span style="color:var(--danger)"><i data-lucide="alert-triangle" class="lucide"></i> Zayıf: ${dimensions[weakest.idx]}</span>
         </div>
       `;
+
+      if (typeof lucide !== 'undefined') {
+        lucide.createIcons();
+      }
     }
 
     // ==================== UPDATE BAR CHART ====================
@@ -2837,7 +2866,7 @@
       list.innerHTML = decisions.map(d => `
         <div class="decision-card ${d.status}">
           <div class="decision-header">
-            <div class="decision-icon">${d.status === 'go' ? '✓' : d.status === 'caution' ? '!' : '✗'}</div>
+            <div class="decision-icon">${d.status === 'go' ? '<i data-lucide="check" class="lucide"></i>' : d.status === 'caution' ? '<i data-lucide="alert-triangle" class="lucide"></i>' : '<i data-lucide="x" class="lucide"></i>'}</div>
             <span class="decision-num">Karar ${d.num}</span>
             <span class="decision-title">${d.title}</span>
           </div>
@@ -2845,6 +2874,10 @@
           <div class="decision-reason">${d.reason}</div>
         </div>
       `).join('');
+
+      if (typeof lucide !== 'undefined') {
+        lucide.createIcons();
+      }
     }
 
     // ==================== RENDER GAUGE ====================
@@ -2993,7 +3026,14 @@
         const panel = document.getElementById('decisionsPanel');
         const toggle = document.getElementById('panelToggle');
         panel.classList.toggle('hidden');
-        toggle.textContent = panel.classList.contains('hidden') ? '▶' : '◀';
+
+        toggle.innerHTML = panel.classList.contains('hidden')
+          ? '<i data-lucide="chevron-right" class="lucide"></i>'
+          : '<i data-lucide="chevron-left" class="lucide"></i>';
+
+        if (typeof lucide !== 'undefined') {
+          lucide.createIcons();
+        }
       });
 
       // Save Modal
@@ -3115,10 +3155,14 @@
       
       toast.style.background = 'linear-gradient(135deg, var(--accent), var(--cyan))';
       toast.innerHTML = `
-        <span style="font-size: 16px;">🎯</span>
+        <span style="font-size: 16px;"><i data-lucide="target" class="lucide"></i></span>
         <span>"${selectedSector.name}" sektörü seçildi. <strong>${modeName}</strong> modu aktif.</span>
       `;
       toast.classList.add('show');
+
+      if (typeof lucide !== 'undefined') {
+        lucide.createIcons();
+      }
       
       setTimeout(() => {
         toast.classList.remove('show');
@@ -3222,7 +3266,7 @@
       
       // Loading state
       const originalText = saveBtn.textContent;
-      saveBtn.textContent = '⏳ Kaydediliyor...';
+      saveBtn.textContent = 'Kaydediliyor...';
       saveBtn.disabled = true;
       
       const payload = {
@@ -3235,7 +3279,7 @@
         hesaplanan_skor: selectedCountry.totalScore || 0
       };
       
-      console.log('📤 Frontend gönderilen veri:', payload);
+      console.log('Frontend gönderilen veri:', payload);
       
       try {
         const response = await fetch('/api/decisions', {
@@ -3245,20 +3289,20 @@
         });
 
         const result = await response.json();
-        console.log('📥 Backend yanıtı:', result);
+        console.log('Backend yanıtı:', result);
 
         if (response.ok && result.status === 'success') {
           analyzedCountries.add(selectedCountry.ulke_id);
           updateMapMarkers();
           closeSaveModal();
-          showToast('✓ Strateji başarıyla kaydedildi! (ID: ' + result.data?.id + ')');
+          showToast('Strateji başarıyla kaydedildi (ID: ' + result.data?.id + ')');
         } else {
           console.error('API Hatası:', result);
-          showToast('⚠️ Hata: ' + (result.message || 'Bilinmeyen hata'));
+          showToast('Hata: ' + (result.message || 'Bilinmeyen hata'));
         }
       } catch (error) {
         console.error('Save error:', error);
-        showToast('❌ Bağlantı hatası: ' + error.message);
+        showToast('Bağlantı hatası: ' + error.message);
       } finally {
         // Reset button
         saveBtn.textContent = originalText;
@@ -3271,6 +3315,10 @@
       toast.textContent = message;
       toast.classList.add('show');
       setTimeout(() => toast.classList.remove('show'), 3500);
+    }
+
+    if (typeof lucide !== 'undefined') {
+      lucide.createIcons();
     }
 
     // ==================== START ====================

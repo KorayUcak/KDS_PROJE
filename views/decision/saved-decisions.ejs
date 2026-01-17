@@ -3,10 +3,17 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>📋 Kayıtlı Kararlar - Türkiye İhracat KDS</title>
+  <title>Kayıtlı Kararlar - Türkiye İhracat KDS</title>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <script src="https://unpkg.com/lucide@latest"></script>
   <style>
     * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    .lucide {
+      width: 1em;
+      height: 1em;
+      vertical-align: -0.125em;
+    }
     
     body {
       font-family: 'Inter', sans-serif;
@@ -286,14 +293,14 @@
   <!-- HEADER -->
   <header class="header">
     <div class="logo">
-      <span class="logo-icon">🇹🇷</span>
+      <span class="logo-icon"><i data-lucide="globe" class="lucide"></i></span>
       <h1>Türkiye <span>İhracat</span> KDS</h1>
     </div>
-    <a href="/" class="back-btn">← Ana Sayfaya Dön</a>
+    <a href="/" class="back-btn"><i data-lucide="arrow-left" class="lucide"></i> Ana Sayfaya Dön</a>
   </header>
 
   <div class="container">
-    <h1 class="page-title">📋 Kayıtlı Kararlarınız</h1>
+    <h1 class="page-title"><i data-lucide="list-checks" class="lucide"></i> Kayıtlı Kararlarınız</h1>
 
     <!-- STATS -->
     <div class="stats-row">
@@ -319,22 +326,34 @@
     <% if (decisions && decisions.length > 0) { %>
       <div class="decisions-list">
         <% decisions.forEach(decision => { 
-          const params = decision.parametreler || {};
-          const results = decision.sonuclar || {};
-          const statusClass = decision.durum === 'tamamlandi' ? 'completed' : 
-                              decision.durum === 'devam_ediyor' ? 'progress' : 
-                              decision.durum === 'iptal' ? 'cancelled' : 'draft';
-          const statusText = decision.durum === 'tamamlandi' ? '✅ Tamamlandı' : 
-                             decision.durum === 'devam_ediyor' ? '🔄 Devam Ediyor' : 
-                             decision.durum === 'iptal' ? '❌ İptal' : '📝 Taslak';
+          const params = decision.parametreler || {
+            ulke_adi: decision.ulke_adi,
+            sektor_adi: decision.sektor_adi
+          };
+
+          const kararFromAciklama = typeof decision.aciklama === 'string'
+            ? (decision.aciklama.match(/\[(.*?)\]/)?.[1] || null)
+            : null;
+
+          const results = decision.sonuclar || {
+            karar_durumu: kararFromAciklama,
+            yonetici_notu: decision.yonetici_notu,
+            hesaplanan_skor: decision.hesaplanan_skor
+          };
+
+          const createdAtRaw = decision.olusturma_tarihi || decision.olusturulma_tarihi;
+          const createdAt = createdAtRaw ? new Date(createdAtRaw) : null;
+
+          const statusClass = 'completed';
+          const statusText = 'Kaydedildi';
         %>
           <div class="decision-card" data-id="<%= decision.id %>">
-            <div class="decision-flag">🏳️</div>
+            <div class="decision-flag"><i data-lucide="flag" class="lucide"></i></div>
             <div class="decision-info">
               <h3><%= params.ulke_adi || 'Ülke' %> - <%= params.sektor_adi || 'Sektör' %></h3>
               <div class="meta">
-                <span>📅 <%= new Date(decision.olusturma_tarihi).toLocaleDateString('tr-TR') %></span>
-                <span>🎯 <%= results.karar_durumu || decision.analiz_tipi || 'Değerlendirme' %></span>
+                <span><i data-lucide="calendar" class="lucide"></i> <%= createdAt ? createdAt.toLocaleDateString('tr-TR') : '-' %></span>
+                <span><i data-lucide="target" class="lucide"></i> <%= results.karar_durumu || 'Değerlendirme' %></span>
               </div>
               <% if (results.yonetici_notu) { %>
                 <div class="note">"<%= results.yonetici_notu.substring(0, 100) %><%= results.yonetici_notu.length > 100 ? '...' : '' %>"</div>
@@ -344,19 +363,19 @@
               <div class="value"><%= Math.round(results.hesaplanan_skor || 0) %></div>
               <div class="label">Puan</div>
             </div>
-            <div class="decision-status status-<%= statusClass %>"><%= statusText %></div>
+            <div class="decision-status status-<%= statusClass %>"><i data-lucide="bookmark" class="lucide"></i> <%= statusText %></div>
             <div class="decision-actions">
-              <button class="action-btn delete" onclick="deleteDecision(<%= decision.id %>)" title="Sil">🗑️</button>
+              <button class="action-btn delete" data-id="<%= decision.id %>" onclick="deleteDecision(this.dataset.id)" title="Sil"><i data-lucide="trash-2" class="lucide"></i></button>
             </div>
           </div>
         <% }); %>
       </div>
     <% } else { %>
       <div class="empty-state">
-        <div class="icon">📭</div>
+        <div class="icon"><i data-lucide="inbox" class="lucide"></i></div>
         <h3>Henüz karar kaydedilmemiş</h3>
         <p>Sektör seçip ülke değerlendirmesi yaparak ilk kararınızı kaydedin.</p>
-        <a href="/">🎯 Analiz Başlat</a>
+        <a href="/"><i data-lucide="target" class="lucide"></i> Analiz Başlat</a>
       </div>
     <% } %>
   </div>
@@ -372,14 +391,14 @@
         const response = await fetch(`/api/decisions/${id}`, { method: 'DELETE' });
         
         if (response.ok) {
-          showToast('✅ Karar silindi');
+          showToast('Karar silindi');
           // Remove card from DOM
           document.querySelector(`[data-id="${id}"]`).remove();
         } else {
           throw new Error('Silme başarısız');
         }
       } catch (error) {
-        showToast('❌ ' + error.message, 'error');
+        showToast(error.message, 'error');
       }
     }
 
@@ -388,6 +407,10 @@
       toast.textContent = message;
       toast.className = `toast show ${type}`;
       setTimeout(() => toast.classList.remove('show'), 3000);
+    }
+
+    if (typeof lucide !== 'undefined') {
+      lucide.createIcons();
     }
   </script>
 </body>

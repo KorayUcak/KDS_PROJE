@@ -3,9 +3,10 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>⚖️ Stratejik Karşılaştırma - Head-to-Head Analiz</title>
+  <title>Stratejik Karşılaştırma - Head-to-Head Analiz</title>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
   <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+  <script src="https://unpkg.com/lucide@latest"></script>
   <style>
     * { margin: 0; padding: 0; box-sizing: border-box; }
     
@@ -47,6 +48,12 @@
       color: var(--text);
       min-height: 100vh;
       max-width: 100vw;
+    }
+
+    .lucide {
+      width: 1em;
+      height: 1em;
+      vertical-align: -0.125em;
     }
 
     .mono { font-family: 'JetBrains Mono', monospace; }
@@ -112,6 +119,13 @@
       color: var(--text-dim);
       text-transform: uppercase;
       letter-spacing: 0.5px;
+      transition: all 0.3s ease;
+    }
+
+    .vs-badge.active {
+      background: linear-gradient(135deg, rgba(0,212,255,0.2), rgba(168,85,247,0.2));
+      border-color: var(--accent);
+      color: var(--accent);
     }
 
     /* ==================== SELECTOR HEADER (TRIPLE) ==================== */
@@ -528,6 +542,24 @@
       width: 12px;
       height: 12px;
       border-radius: 3px;
+    }
+
+    .legend-divider {
+      color: var(--border);
+      margin: 0 8px;
+    }
+
+    .legend-item.metric {
+      display: flex;
+      gap: 16px;
+    }
+
+    .legend-metric-label {
+      font-size: 10px;
+      color: var(--text-dim);
+      padding: 4px 8px;
+      background: var(--bg-input);
+      border-radius: 4px;
     }
 
     /* ==================== PIE CHARTS ==================== */
@@ -1196,11 +1228,11 @@
   <!-- ==================== TOPBAR ==================== -->
   <header class="topbar">
     <div class="topbar-left">
-      <a href="/" class="back-btn">← Komuta Merkezi</a>
+      <a href="/" class="back-btn"><i data-lucide="arrow-left" class="lucide"></i> Komuta Merkezi</a>
       <h1 class="page-title">
-        <span class="icon">⚖️</span>
-        Stratejik Karşılaştırma
-        <span class="vs-badge">Head-to-Head Analiz</span>
+        <span class="icon"><i data-lucide="scale" class="lucide"></i></span>
+        <span id="pageMainTitle">Stratejik Karşılaştırma</span>
+        <span class="vs-badge" id="comparisonBadge">Head-to-Head Analiz</span>
       </h1>
     </div>
   </header>
@@ -1219,7 +1251,7 @@
     <!-- Country Selectors -->
     <div class="countries-row">
       <div class="country-selector">
-        <span class="selector-label a">Pazar A</span>
+        <span class="selector-label a" id="countryLabelA">Pazar A</span>
         <select class="country-select a" id="countryA" disabled>
           <option value="">Önce sektör seçin...</option>
         </select>
@@ -1231,7 +1263,7 @@
       </div>
       
       <div class="country-selector">
-        <span class="selector-label b">Pazar B</span>
+        <span class="selector-label b" id="countryLabelB">Pazar B</span>
         <select class="country-select b" id="countryB" disabled>
           <option value="">Önce sektör seçin...</option>
         </select>
@@ -1241,7 +1273,7 @@
 
   <!-- ==================== EMPTY STATE ==================== -->
   <div class="empty-state" id="emptyState">
-    <div class="icon">📊</div>
+    <div class="icon"><i data-lucide="bar-chart-3" class="lucide"></i></div>
     <h3>Sektör Bazlı Karşılaştırma</h3>
     <p>
       <strong>1.</strong> Önce analiz edilecek sektörü seçin<br>
@@ -1256,12 +1288,12 @@
       <div class="step-arrow">→</div>
       <div class="step" id="stepCountryA">
         <span class="step-num">2</span>
-        <span class="step-text">Pazar A</span>
+        <span class="step-text" id="stepTextCountryA">Pazar A</span>
       </div>
       <div class="step-arrow">→</div>
       <div class="step" id="stepCountryB">
         <span class="step-num">3</span>
-        <span class="step-text">Pazar B</span>
+        <span class="step-text" id="stepTextCountryB">Pazar B</span>
       </div>
     </div>
   </div>
@@ -1276,7 +1308,7 @@
       </div>
       <div class="sector-context-right">
         <div class="sector-winner-verdict" id="sectorWinnerVerdict">
-          <span class="verdict-icon">⚖️</span>
+          <span class="verdict-icon" id="verdictIcon"><i data-lucide="scale" class="lucide"></i></span>
           <span class="verdict-text" id="verdictText">Karşılaştırma bekleniyor...</span>
         </div>
       </div>
@@ -1285,8 +1317,8 @@
     <!-- Score Header -->
     <div class="score-header">
       <div class="country-score-card a" id="scoreCardA">
-        <div class="winner-badge" id="winnerBadgeA">✓ Daha Uygun</div>
-        <div class="country-flag" id="flagA">🌍</div>
+        <div class="winner-badge" id="winnerBadgeA"><i data-lucide="check" class="lucide"></i> Daha Uygun</div>
+        <div class="country-flag" id="flagA"><i data-lucide="flag" class="lucide"></i></div>
         <div class="country-name" id="nameA">-</div>
         <div class="country-region" id="regionA">-</div>
         <div class="score-display" id="scoreA">0</div>
@@ -1298,8 +1330,8 @@
       </div>
       
       <div class="country-score-card b" id="scoreCardB">
-        <div class="winner-badge" id="winnerBadgeB">✓ Daha Uygun</div>
-        <div class="country-flag" id="flagB">🌍</div>
+        <div class="winner-badge" id="winnerBadgeB"><i data-lucide="check" class="lucide"></i> Daha Uygun</div>
+        <div class="country-flag" id="flagB"><i data-lucide="flag" class="lucide"></i></div>
         <div class="country-name" id="nameB">-</div>
         <div class="country-region" id="regionB">-</div>
         <div class="score-display" id="scoreB">0</div>
@@ -1311,7 +1343,7 @@
     <div class="comparison-section">
       <div class="section-header">
         <div class="section-title">
-          <span class="icon cost">📈</span>
+          <span class="icon cost"><i data-lucide="trending-up" class="lucide"></i></span>
           Sektör Dinamikleri (Büyüme & Yatırım)
         </div>
         <div class="section-winner" id="velocityWinner"></div>
@@ -1320,24 +1352,26 @@
         <div class="chart-wrapper">
           <canvas id="velocityChart"></canvas>
         </div>
-        <div class="cost-legend">
-          <div class="legend-item">
-            <div class="legend-dot" style="background:var(--success)"></div>
-            <span>Sektörel Büyüme (%)</span>
+        <div class="cost-legend" id="velocityLegend">
+          <div class="legend-item country-a">
+            <div class="legend-dot" style="background:var(--accent)"></div>
+            <span id="legendCountryA">Pazar A</span>
           </div>
-          <div class="legend-item">
+          <div class="legend-item country-b">
             <div class="legend-dot" style="background:var(--purple)"></div>
-            <span>Yatırım Hacmi (Norm.)</span>
+            <span id="legendCountryB">Pazar B</span>
           </div>
-          <div class="legend-item">
-            <div class="legend-dot" style="background:var(--warning)"></div>
-            <span>İstihdam (Norm.)</span>
+          <div class="legend-divider">|</div>
+          <div class="legend-item metric">
+            <span class="legend-metric-label"><i data-lucide="activity" class="lucide"></i> Büyüme</span>
+            <span class="legend-metric-label"><i data-lucide="coins" class="lucide"></i> Yatırım</span>
+            <span class="legend-metric-label"><i data-lucide="users" class="lucide"></i> İstihdam</span>
           </div>
         </div>
         <!-- Smart Insight Card for Velocity -->
         <div class="smart-insight" id="velocityInsightCard">
           <div class="smart-insight-header">
-            <span class="smart-insight-icon">💡</span>
+            <span class="smart-insight-icon"><i data-lucide="lightbulb" class="lucide"></i></span>
             <span class="smart-insight-title">Sektör Dinamikleri Analizi</span>
           </div>
           <div class="smart-insight-body" id="velocityInsightBody">
@@ -1351,7 +1385,7 @@
     <div class="comparison-section">
       <div class="section-header">
         <div class="section-title">
-          <span class="icon cost">💰</span>
+          <span class="icon cost"><i data-lucide="hand-coins" class="lucide"></i></span>
           Pazar Hacmi (İthalat Değeri)
         </div>
         <div class="section-winner" id="volumeWinner"></div>
@@ -1363,7 +1397,7 @@
         <!-- Smart Insight Card for Volume -->
         <div class="smart-insight" id="volumeInsightCard">
           <div class="smart-insight-header">
-            <span class="smart-insight-icon">💡</span>
+            <span class="smart-insight-icon"><i data-lucide="lightbulb" class="lucide"></i></span>
             <span class="smart-insight-title">Pazar Hacmi Analizi</span>
           </div>
           <div class="smart-insight-body" id="volumeInsightBody">
@@ -1377,7 +1411,7 @@
     <div class="comparison-section">
       <div class="section-header">
         <div class="section-title">
-          <span class="icon market">📊</span>
+          <span class="icon market"><i data-lucide="pie-chart" class="lucide"></i></span>
           Pazar Yapısı (Yerel Üretim vs İthalat İhtiyacı)
         </div>
         <div class="section-winner" id="marketWinner"></div>
@@ -1425,7 +1459,7 @@
       <!-- Smart Insight Card for Market -->
       <div class="smart-insight" id="marketInsightCard">
         <div class="smart-insight-header">
-          <span class="smart-insight-icon">💡</span>
+          <span class="smart-insight-icon"><i data-lucide="lightbulb" class="lucide"></i></span>
           <span class="smart-insight-title">Pazar Fırsatı Analizi</span>
         </div>
         <div class="smart-insight-body" id="marketInsightBody">
@@ -1438,21 +1472,21 @@
     <div class="comparison-section">
       <div class="section-header">
         <div class="section-title">
-          <span class="icon swot">🎯</span>
+          <span class="icon swot"><i data-lucide="target" class="lucide"></i></span>
           Otomatik SWOT Analizi
         </div>
       </div>
       <div class="swot-grid">
         <div class="swot-card a" id="swotCardA">
           <div class="swot-country-header">
-            <span class="swot-country-flag" id="swotFlagA">🌍</span>
+            <span class="swot-country-flag" id="swotFlagA"><i data-lucide="flag" class="lucide"></i></span>
             <span class="swot-country-name" id="swotNameA">-</span>
           </div>
           <div class="swot-matrix" id="swotMatrixA"></div>
         </div>
         <div class="swot-card b" id="swotCardB">
           <div class="swot-country-header">
-            <span class="swot-country-flag" id="swotFlagB">🌍</span>
+            <span class="swot-country-flag" id="swotFlagB"><i data-lucide="flag" class="lucide"></i></span>
             <span class="swot-country-name" id="swotNameB">-</span>
           </div>
           <div class="swot-matrix" id="swotMatrixB"></div>
@@ -1465,13 +1499,13 @@
       <div class="action-card a">
         <div class="action-card-title">Bu ülkeyi hedef olarak seçin</div>
         <button class="action-btn a" id="selectBtnA">
-          🎯 <span id="selectNameA">-</span> Seç
+          <i data-lucide="target" class="lucide"></i> <span id="selectNameA">-</span> Seç
         </button>
       </div>
       <div class="action-card b">
         <div class="action-card-title">Bu ülkeyi hedef olarak seçin</div>
         <button class="action-btn b" id="selectBtnB">
-          🎯 <span id="selectNameB">-</span> Seç
+          <i data-lucide="target" class="lucide"></i> <span id="selectNameB">-</span> Seç
         </button>
       </div>
     </div>
@@ -1481,7 +1515,7 @@
   <div class="modal-overlay" id="modalOverlay">
     <div class="modal">
       <div class="modal-header">
-        <h3>📋 Strateji Onayı</h3>
+        <h3><i data-lucide="clipboard-check" class="lucide"></i> Strateji Onayı</h3>
         <button class="modal-close" id="modalClose">×</button>
       </div>
       <div class="modal-body">
@@ -1489,10 +1523,10 @@
         <div class="form-group">
           <label>Karar Durumu</label>
           <select id="decisionStatus">
-            <option value="Öncelikli Hedef">🎯 Öncelikli Hedef</option>
-            <option value="İzleme Listesi">👁️ İzleme Listesi</option>
-            <option value="Pilot Proje">🧪 Pilot Proje</option>
-            <option value="Şimdilik Değil">⏸️ Şimdilik Değil</option>
+            <option value="Öncelikli Hedef">Öncelikli Hedef</option>
+            <option value="İzleme Listesi">İzleme Listesi</option>
+            <option value="Pilot Proje">Pilot Proje</option>
+            <option value="Şimdilik Değil">Şimdilik Değil</option>
           </select>
         </div>
         <div class="form-group">
@@ -1502,7 +1536,7 @@
       </div>
       <div class="modal-footer">
         <button class="btn btn-secondary" id="cancelSave">İptal</button>
-        <button class="btn btn-primary" id="confirmSave">✓ Kaydet</button>
+        <button class="btn btn-primary" id="confirmSave"><i data-lucide="check" class="lucide"></i> Kaydet</button>
       </div>
     </div>
   </div>
@@ -1597,6 +1631,10 @@
     async function init() {
       await Promise.all([loadSectors(), loadCountries()]);
       setupEventListeners();
+
+      if (typeof lucide !== 'undefined') {
+        lucide.createIcons();
+      }
     }
 
     // ==================== LOAD SECTORS ====================
@@ -1663,6 +1701,8 @@
       // Enable dropdowns
       selectA.disabled = false;
       selectB.disabled = false;
+
+      updateCountryLabels();
     }
 
     // ==================== SETUP EVENT LISTENERS ====================
@@ -1671,8 +1711,8 @@
       document.getElementById('sectorSelect').addEventListener('change', handleSectorChange);
       
       // Country selections
-      document.getElementById('countryA').addEventListener('change', updateStepIndicators);
-      document.getElementById('countryB').addEventListener('change', updateStepIndicators);
+      document.getElementById('countryA').addEventListener('change', () => { updateStepIndicators(); updateCountryLabels(); });
+      document.getElementById('countryB').addEventListener('change', () => { updateStepIndicators(); updateCountryLabels(); });
       
       // Compare button
       document.getElementById('compareBtn').addEventListener('click', startComparison);
@@ -1683,6 +1723,27 @@
       document.getElementById('modalClose').addEventListener('click', closeModal);
       document.getElementById('cancelSave').addEventListener('click', closeModal);
       document.getElementById('confirmSave').addEventListener('click', saveDecision);
+    }
+
+    function updateCountryLabels() {
+      const selectA = document.getElementById('countryA');
+      const selectB = document.getElementById('countryB');
+
+      const countryASelected = selectA && selectA.value;
+      const countryBSelected = selectB && selectB.value;
+
+      const labelA = document.getElementById('countryLabelA');
+      const labelB = document.getElementById('countryLabelB');
+      const stepTextA = document.getElementById('stepTextCountryA');
+      const stepTextB = document.getElementById('stepTextCountryB');
+
+      const nameA = countryASelected ? selectA.options[selectA.selectedIndex]?.textContent : 'Ülke';
+      const nameB = countryBSelected ? selectB.options[selectB.selectedIndex]?.textContent : 'Ülke';
+
+      if (labelA) labelA.textContent = nameA || 'Ülke';
+      if (labelB) labelB.textContent = nameB || 'Ülke';
+      if (stepTextA) stepTextA.textContent = nameA || 'Ülke';
+      if (stepTextB) stepTextB.textContent = nameB || 'Ülke';
     }
 
     // ==================== HANDLE SECTOR CHANGE ====================
@@ -1760,7 +1821,7 @@
       
       // Show loading state
       const btn = document.getElementById('compareBtn');
-      btn.textContent = '⏳ Yükleniyor...';
+      btn.textContent = 'Yükleniyor...';
       btn.disabled = true;
       
       try {
@@ -1776,6 +1837,24 @@
           // Also get general country data
           countryA = allCountries.find(c => c.ulke_id == idA) || { ulke_id: idA, ulke_adi: sectorDataA.ulke_adi };
           countryB = allCountries.find(c => c.ulke_id == idB) || { ulke_id: idB, ulke_adi: sectorDataB.ulke_adi };
+
+          // Some ulke_id values come from mock/global datasets and may not exist in DB.
+          // Backend then falls back to 'Ülke A'/'Ülke B'. Override with the actual selected names.
+          const selectedNameA = document.getElementById('countryA')?.options[document.getElementById('countryA').selectedIndex]?.textContent;
+          const selectedNameB = document.getElementById('countryB')?.options[document.getElementById('countryB').selectedIndex]?.textContent;
+
+          if (selectedNameA && (!sectorDataA?.ulke_adi || sectorDataA.ulke_adi === 'Ülke A' || sectorDataA.ulke_adi === 'Ülke')) {
+            sectorDataA.ulke_adi = selectedNameA;
+          }
+          if (selectedNameB && (!sectorDataB?.ulke_adi || sectorDataB.ulke_adi === 'Ülke B' || sectorDataB.ulke_adi === 'Ülke')) {
+            sectorDataB.ulke_adi = selectedNameB;
+          }
+          if (selectedNameA && (!countryA?.ulke_adi || countryA.ulke_adi === 'Ülke A' || countryA.ulke_adi === 'Ülke')) {
+            countryA.ulke_adi = selectedNameA;
+          }
+          if (selectedNameB && (!countryB?.ulke_adi || countryB.ulke_adi === 'Ülke B' || countryB.ulke_adi === 'Ülke')) {
+            countryB.ulke_adi = selectedNameB;
+          }
           
           document.getElementById('emptyState').style.display = 'none';
           document.getElementById('duelContent').classList.add('show');
@@ -1795,6 +1874,13 @@
 
     // ==================== RENDER COMPARISON ====================
     function renderComparison() {
+      // Update Page Title with actual country names
+      document.getElementById('pageMainTitle').textContent = `${sectorDataA.ulke_adi} vs ${sectorDataB.ulke_adi}`;
+      const badge = document.getElementById('comparisonBadge');
+      badge.textContent = selectedSector.sektor_adi;
+      badge.classList.add('active');
+      document.title = `${sectorDataA.ulke_adi} vs ${sectorDataB.ulke_adi} - ${selectedSector.sektor_adi}`;
+      
       // Sector Context Banner
       document.getElementById('sectorContextName').textContent = selectedSector.sektor_adi;
       
@@ -1834,6 +1920,10 @@
       renderVolumeChart();
       renderPieCharts();
       renderSWOT();
+
+      if (typeof lucide !== 'undefined') {
+        lucide.createIcons();
+      }
     }
 
     // ==================== RENDER WINNER VERDICT ====================
@@ -1841,21 +1931,26 @@
       const verdict = document.getElementById('sectorWinnerVerdict');
       const verdictText = document.getElementById('verdictText');
       const winner = comparisonResult.winner;
+      const verdictIcon = document.getElementById('verdictIcon');
       
       verdict.classList.remove('winner-a', 'winner-b', 'tie');
       
       if (winner === 'A') {
         verdict.classList.add('winner-a');
-        verdict.querySelector('.verdict-icon').textContent = '🏅';
+        if (verdictIcon) verdictIcon.innerHTML = '<i data-lucide="award" class="lucide"></i>';
         verdictText.innerHTML = `<strong>${sectorDataA.ulke_adi}</strong> ${selectedSector.sektor_adi} sektöründe stratejik tercih`;
       } else if (winner === 'B') {
         verdict.classList.add('winner-b');
-        verdict.querySelector('.verdict-icon').textContent = '🏅';
+        if (verdictIcon) verdictIcon.innerHTML = '<i data-lucide="award" class="lucide"></i>';
         verdictText.innerHTML = `<strong>${sectorDataB.ulke_adi}</strong> ${selectedSector.sektor_adi} sektöründe stratejik tercih`;
       } else {
         verdict.classList.add('tie');
-        verdict.querySelector('.verdict-icon').textContent = '⚖️';
+        if (verdictIcon) verdictIcon.innerHTML = '<i data-lucide="scale" class="lucide"></i>';
         verdictText.innerHTML = `Her iki pazar da ${selectedSector.sektor_adi} için benzer fırsatlar sunuyor`;
+      }
+
+      if (typeof lucide !== 'undefined') {
+        lucide.createIcons();
       }
     }
 
@@ -1868,25 +1963,32 @@
       const employA = sectorDataA.istihdam || 0;
       const employB = sectorDataB.istihdam || 0;
       
-      // Normalize investment and employment for chart (scale to 0-10)
+      // Normalize investment and employment for chart (scale to match growth %)
       const maxInvest = Math.max(investA, investB, 1);
       const maxEmploy = Math.max(employA, employB, 1);
-      const normInvestA = (investA / maxInvest) * 10;
-      const normInvestB = (investB / maxInvest) * 10;
-      const normEmployA = (employA / maxEmploy) * 10;
-      const normEmployB = (employB / maxEmploy) * 10;
+      const normInvestA = (investA / maxInvest) * Math.max(growthA, growthB, 5);
+      const normInvestB = (investB / maxInvest) * Math.max(growthA, growthB, 5);
+      const normEmployA = (employA / maxEmploy) * Math.max(growthA, growthB, 5);
+      const normEmployB = (employB / maxEmploy) * Math.max(growthA, growthB, 5);
       
       // Velocity winner (growth focused)
       const velocityWinner = document.getElementById('velocityWinner');
       if (growthA > growthB) {
         velocityWinner.className = 'section-winner a';
-        velocityWinner.innerHTML = '✓ ' + sectorDataA.ulke_adi + ' daha hızlı büyüyor';
+        velocityWinner.innerHTML = '<i data-lucide="check" class="lucide"></i> ' + sectorDataA.ulke_adi + ' daha hızlı büyüyor';
       } else if (growthB > growthA) {
         velocityWinner.className = 'section-winner b';
-        velocityWinner.innerHTML = '✓ ' + sectorDataB.ulke_adi + ' daha hızlı büyüyor';
+        velocityWinner.innerHTML = '<i data-lucide="check" class="lucide"></i> ' + sectorDataB.ulke_adi + ' daha hızlı büyüyor';
       } else {
         velocityWinner.className = 'section-winner tie';
         velocityWinner.innerHTML = '= Benzer büyüme hızı';
+      }
+
+      // Update dynamic legend with country names
+      updateVelocityLegend();
+
+      if (typeof lucide !== 'undefined') {
+        lucide.createIcons();
       }
       
       if (charts.velocity) charts.velocity.destroy();
@@ -1895,28 +1997,30 @@
       charts.velocity = new Chart(ctx, {
         type: 'bar',
         data: {
-          labels: [sectorDataA.ulke_adi, sectorDataB.ulke_adi],
+          // X-axis: Metrics (Grouped by metric type)
+          labels: ['Sektörel Büyüme (%)', 'Yatırım Hacmi', 'İstihdam'],
           datasets: [
             {
-              label: 'Sektörel Büyüme (%)',
-              data: [growthA, growthB],
-              backgroundColor: growthA > growthB ? ['rgba(0,255,136,0.8)', 'rgba(0,255,136,0.4)'] : ['rgba(0,255,136,0.4)', 'rgba(0,255,136,0.8)'],
-              borderRadius: 4,
-              yAxisID: 'y'
+              // Country A dataset
+              label: sectorDataA.ulke_adi,
+              data: [growthA, normInvestA, normEmployA],
+              backgroundColor: 'rgba(0,212,255,0.85)',
+              borderColor: 'rgba(0,212,255,1)',
+              borderWidth: 1,
+              borderRadius: { topLeft: 6, topRight: 6, bottomLeft: 0, bottomRight: 0 },
+              barPercentage: 0.7,
+              categoryPercentage: 0.6
             },
             {
-              label: 'Yatırım (Normalize)',
-              data: [normInvestA, normInvestB],
-              backgroundColor: 'rgba(168,85,247,0.6)',
-              borderRadius: 4,
-              yAxisID: 'y'
-            },
-            {
-              label: 'İstihdam (Normalize)',
-              data: [normEmployA, normEmployB],
-              backgroundColor: 'rgba(255,170,0,0.6)',
-              borderRadius: 4,
-              yAxisID: 'y'
+              // Country B dataset
+              label: sectorDataB.ulke_adi,
+              data: [growthB, normInvestB, normEmployB],
+              backgroundColor: 'rgba(168,85,247,0.85)',
+              borderColor: 'rgba(168,85,247,1)',
+              borderWidth: 1,
+              borderRadius: { topLeft: 6, topRight: 6, bottomLeft: 0, bottomRight: 0 },
+              barPercentage: 0.7,
+              categoryPercentage: 0.6
             }
           ]
         },
@@ -1924,13 +2028,42 @@
           responsive: true,
           maintainAspectRatio: false,
           plugins: {
-            legend: { display: false },
+            legend: {
+              display: true,
+              position: 'top',
+              labels: {
+                color: '#e8eaed',
+                font: { size: 12, weight: '600' },
+                usePointStyle: true,
+                pointStyle: 'rectRounded',
+                padding: 20
+              }
+            },
             tooltip: {
+              backgroundColor: 'rgba(10,13,18,0.95)',
+              titleColor: '#e8eaed',
+              bodyColor: '#e8eaed',
+              borderColor: 'rgba(37,41,49,0.8)',
+              borderWidth: 1,
+              padding: 12,
               callbacks: {
+                title: function(tooltipItems) {
+                  return tooltipItems[0].label;
+                },
                 label: function(ctx) {
-                  if (ctx.datasetIndex === 0) return `Büyüme: %${ctx.raw.toFixed(1)}`;
-                  if (ctx.datasetIndex === 1) return `Yatırım: $${(ctx.dataIndex === 0 ? investA : investB).toLocaleString()}M`;
-                  return `İstihdam: ${(ctx.dataIndex === 0 ? employA : employB).toLocaleString()}K kişi`;
+                  const country = ctx.dataset.label;
+                  const metric = ctx.label;
+                  const isCountryA = ctx.datasetIndex === 0;
+                  
+                  if (metric.includes('Büyüme')) {
+                    return `${country}: %${ctx.raw.toFixed(1)}`;
+                  } else if (metric.includes('Yatırım')) {
+                    const realValue = isCountryA ? investA : investB;
+                    return `${country}: $${realValue.toLocaleString()}M`;
+                  } else {
+                    const realValue = isCountryA ? employA : employB;
+                    return `${country}: ${realValue.toLocaleString()}K kişi`;
+                  }
                 }
               }
             }
@@ -1938,11 +2071,16 @@
           scales: {
             x: {
               grid: { display: false },
-              ticks: { color: '#e8eaed', font: { weight: '600' } }
+              ticks: { 
+                color: '#e8eaed', 
+                font: { weight: '600', size: 11 },
+                maxRotation: 0
+              }
             },
             y: {
               grid: { color: 'rgba(37,41,49,0.5)' },
-              ticks: { color: '#6b7280' }
+              ticks: { color: '#6b7280' },
+              beginAtZero: true
             }
           }
         }
@@ -1950,6 +2088,12 @@
 
       // Update Velocity Insight Card
       updateVelocityInsightCard(growthA, growthB, investA, investB);
+    }
+
+    // ==================== UPDATE VELOCITY LEGEND ====================
+    function updateVelocityLegend() {
+      document.getElementById('legendCountryA').textContent = sectorDataA.ulke_adi;
+      document.getElementById('legendCountryB').textContent = sectorDataB.ulke_adi;
     }
 
     // ==================== RENDER VOLUME CHART (Import Value) ====================
@@ -1961,13 +2105,17 @@
       const volumeWinner = document.getElementById('volumeWinner');
       if (volumeA > volumeB) {
         volumeWinner.className = 'section-winner a';
-        volumeWinner.innerHTML = '✓ ' + sectorDataA.ulke_adi + ' daha büyük pazar';
+        volumeWinner.innerHTML = '<i data-lucide="check" class="lucide"></i> ' + sectorDataA.ulke_adi + ' daha büyük pazar';
       } else if (volumeB > volumeA) {
         volumeWinner.className = 'section-winner b';
-        volumeWinner.innerHTML = '✓ ' + sectorDataB.ulke_adi + ' daha büyük pazar';
+        volumeWinner.innerHTML = '<i data-lucide="check" class="lucide"></i> ' + sectorDataB.ulke_adi + ' daha büyük pazar';
       } else {
         volumeWinner.className = 'section-winner tie';
         volumeWinner.innerHTML = '= Benzer pazar boyutu';
+      }
+
+      if (typeof lucide !== 'undefined') {
+        lucide.createIcons();
       }
       
       if (charts.volume) charts.volume.destroy();
@@ -1976,24 +2124,60 @@
       charts.volume = new Chart(ctx, {
         type: 'bar',
         data: {
-          labels: [sectorDataA.ulke_adi, sectorDataB.ulke_adi],
-          datasets: [{
-            label: 'İthalat Hacmi ($M)',
-            data: [volumeA, volumeB],
-            backgroundColor: volumeA > volumeB ? ['rgba(0,212,255,0.9)', 'rgba(168,85,247,0.6)'] : ['rgba(0,212,255,0.6)', 'rgba(168,85,247,0.9)'],
-            borderRadius: 6,
-            barThickness: 60
-          }]
+          labels: ['Sektörel İthalat Hacmi'],
+          datasets: [
+            {
+              label: sectorDataA.ulke_adi,
+              data: [volumeA],
+              backgroundColor: 'rgba(0,212,255,0.85)',
+              borderColor: 'rgba(0,212,255,1)',
+              borderWidth: 1,
+              borderRadius: 6,
+              barPercentage: 0.6,
+              categoryPercentage: 0.7
+            },
+            {
+              label: sectorDataB.ulke_adi,
+              data: [volumeB],
+              backgroundColor: 'rgba(168,85,247,0.85)',
+              borderColor: 'rgba(168,85,247,1)',
+              borderWidth: 1,
+              borderRadius: 6,
+              barPercentage: 0.6,
+              categoryPercentage: 0.7
+            }
+          ]
         },
         options: {
           responsive: true,
           maintainAspectRatio: false,
           indexAxis: 'y',
           plugins: {
-            legend: { display: false },
+            legend: {
+              display: true,
+              position: 'top',
+              labels: {
+                color: '#e8eaed',
+                font: { size: 12, weight: '600' },
+                usePointStyle: true,
+                pointStyle: 'rectRounded',
+                padding: 20
+              }
+            },
             tooltip: {
+              backgroundColor: 'rgba(10,13,18,0.95)',
+              titleColor: '#e8eaed',
+              bodyColor: '#e8eaed',
+              borderColor: 'rgba(37,41,49,0.8)',
+              borderWidth: 1,
+              padding: 12,
               callbacks: {
-                label: ctx => `İthalat: $${ctx.raw.toLocaleString()}M`
+                label: function(ctx) {
+                  const country = ctx.dataset.label;
+                  const value = ctx.raw;
+                  const formatted = value >= 1000 ? `$${(value/1000).toFixed(1)}B` : `$${value.toLocaleString()}M`;
+                  return `${country}: ${formatted}`;
+                }
               }
             }
           },
@@ -2033,20 +2217,24 @@
       card.className = `smart-insight ${insightType}`;
       body.innerHTML = `
         <div style="margin-bottom:10px">
-          📊 <strong>Bu grafik ne gösteriyor?</strong> ${selectedSector.sektor_adi} sektöründe büyüme oranı, 
+          <i data-lucide="info" class="lucide"></i> <strong>Bu grafik ne gösteriyor?</strong> ${selectedSector.sektor_adi} sektöründe büyüme oranı, 
           yatırım hacmi ve istihdam verilerini karşılaştırır.
         </div>
         <div class="insight-verdict">
           <div class="verdict-badge ${insightType === 'positive' ? 'go' : insightType === 'caution' ? 'caution' : 'go'}">
-            ${fasterGrowth > 5 ? '🚀' : fasterGrowth > 2 ? '📈' : '📊'}
+            ${fasterGrowth > 5 ? '<i data-lucide="rocket" class="lucide"></i>' : fasterGrowth > 2 ? '<i data-lucide="trending-up" class="lucide"></i>' : '<i data-lucide="bar-chart-3" class="lucide"></i>'}
           </div>
           <div class="verdict-text">${verdict}</div>
         </div>
         <div class="insight-details">
-          <span class="insight-tag">📈 ${fasterGrower.ulke_adi}: %${fasterGrowth.toFixed(1)} büyüme</span>
-          <span class="insight-tag">📉 ${slowerGrower.ulke_adi}: %${slowerGrowth.toFixed(1)} büyüme</span>
+          <span class="insight-tag"><i data-lucide="trending-up" class="lucide"></i> ${fasterGrower.ulke_adi}: %${fasterGrowth.toFixed(1)} büyüme</span>
+          <span class="insight-tag"><i data-lucide="trending-down" class="lucide"></i> ${slowerGrower.ulke_adi}: %${slowerGrowth.toFixed(1)} büyüme</span>
         </div>
       `;
+
+      if (typeof lucide !== 'undefined') {
+        lucide.createIcons();
+      }
     }
 
     function updateVolumeInsightCard(volumeA, volumeB) {
@@ -2065,20 +2253,24 @@
       card.className = `smart-insight ${insightType}`;
       body.innerHTML = `
         <div style="margin-bottom:10px">
-          📊 <strong>Bu grafik ne gösteriyor?</strong> ${selectedSector.sektor_adi} sektöründeki toplam 
+          <i data-lucide="info" class="lucide"></i> <strong>Bu grafik ne gösteriyor?</strong> ${selectedSector.sektor_adi} sektöründeki toplam 
           ithalat hacmini (pazar büyüklüğü göstergesi) karşılaştırır.
         </div>
         <div class="insight-verdict">
           <div class="verdict-badge ${insightType === 'positive' ? 'go' : insightType === 'caution' ? 'caution' : 'go'}">
-            ${biggerVolume > 5000 ? '💰' : biggerVolume > 1000 ? '📊' : '📋'}
+            ${biggerVolume > 5000 ? '<i data-lucide="hand-coins" class="lucide"></i>' : biggerVolume > 1000 ? '<i data-lucide="bar-chart-3" class="lucide"></i>' : '<i data-lucide="file-text" class="lucide"></i>'}
           </div>
           <div class="verdict-text">${verdict}</div>
         </div>
         <div class="insight-details">
-          <span class="insight-tag">💰 ${biggerMarket.ulke_adi}: $${biggerVolume.toLocaleString()}M</span>
-          <span class="insight-tag">📊 Oran: ${ratio}x büyük</span>
+          <span class="insight-tag"><i data-lucide="hand-coins" class="lucide"></i> ${biggerMarket.ulke_adi}: $${biggerVolume.toLocaleString()}M</span>
+          <span class="insight-tag"><i data-lucide="bar-chart-3" class="lucide"></i> Oran: ${ratio}x büyük</span>
         </div>
       `;
+
+      if (typeof lucide !== 'undefined') {
+        lucide.createIcons();
+      }
     }
 
     // ==================== RENDER PIE CHARTS (Market Saturation) ====================
@@ -2102,38 +2294,46 @@
       const oppB = document.getElementById('opportunityB');
       
       if (importA >= 60) {
-        oppA.textContent = '🟢 Yüksek Fırsat';
+        oppA.innerHTML = '<i data-lucide="check-circle" class="lucide"></i> Yüksek Fırsat';
         oppA.className = 'opportunity-badge high';
       } else if (importA >= 40) {
-        oppA.textContent = '🟡 Orta Fırsat';
+        oppA.innerHTML = '<i data-lucide="alert-circle" class="lucide"></i> Orta Fırsat';
         oppA.className = 'opportunity-badge medium';
       } else {
-        oppA.textContent = '🔴 Doymuş';
+        oppA.innerHTML = '<i data-lucide="x-circle" class="lucide"></i> Doymuş';
         oppA.className = 'opportunity-badge low';
       }
       
       if (importB >= 60) {
-        oppB.textContent = '🟢 Yüksek Fırsat';
+        oppB.innerHTML = '<i data-lucide="check-circle" class="lucide"></i> Yüksek Fırsat';
         oppB.className = 'opportunity-badge high';
       } else if (importB >= 40) {
-        oppB.textContent = '🟡 Orta Fırsat';
+        oppB.innerHTML = '<i data-lucide="alert-circle" class="lucide"></i> Orta Fırsat';
         oppB.className = 'opportunity-badge medium';
       } else {
-        oppB.textContent = '🔴 Doymuş';
+        oppB.innerHTML = '<i data-lucide="x-circle" class="lucide"></i> Doymuş';
         oppB.className = 'opportunity-badge low';
+      }
+
+      if (typeof lucide !== 'undefined') {
+        lucide.createIcons();
       }
       
       // Market winner (based on import opportunity)
       const marketWinner = document.getElementById('marketWinner');
       if (importA > importB) {
         marketWinner.className = 'section-winner a';
-        marketWinner.innerHTML = '✓ ' + sectorDataA.ulke_adi + ' daha açık pazar';
+        marketWinner.innerHTML = '<i data-lucide="check" class="lucide"></i> ' + sectorDataA.ulke_adi + ' daha açık pazar';
       } else if (importB > importA) {
         marketWinner.className = 'section-winner b';
-        marketWinner.innerHTML = '✓ ' + sectorDataB.ulke_adi + ' daha açık pazar';
+        marketWinner.innerHTML = '<i data-lucide="check" class="lucide"></i> ' + sectorDataB.ulke_adi + ' daha açık pazar';
       } else {
         marketWinner.className = 'section-winner tie';
         marketWinner.innerHTML = '= Benzer pazar yapısı';
+      }
+
+      if (typeof lucide !== 'undefined') {
+        lucide.createIcons();
       }
       
       // Pie Chart A
@@ -2222,21 +2422,25 @@
       card.className = `smart-insight ${insightType}`;
       body.innerHTML = `
         <div style="margin-bottom:10px">
-          📊 <strong>Bu grafik ne gösteriyor?</strong> ${selectedSector.sektor_adi} sektöründe yerel üretim kapasitesi ile 
+          <i data-lucide="info" class="lucide"></i> <strong>Bu grafik ne gösteriyor?</strong> ${selectedSector.sektor_adi} sektöründe yerel üretim kapasitesi ile 
           ithalat fırsatı oranını gösterir. %60+ ithalat fırsatı = Yüksek pazar potansiyeli.
         </div>
         <div style="margin-bottom:10px">${explanation}</div>
         <div class="insight-verdict">
           <div class="verdict-badge ${insightType === 'positive' ? 'go' : insightType === 'caution' ? 'caution' : 'stop'}">
-            ${insightType === 'positive' ? '✓' : insightType === 'caution' ? '!' : '✗'}
+            ${insightType === 'positive' ? '<i data-lucide="check" class="lucide"></i>' : insightType === 'caution' ? '<i data-lucide="alert-triangle" class="lucide"></i>' : '<i data-lucide="x" class="lucide"></i>'}
           </div>
           <div class="verdict-text">${verdict}</div>
         </div>
         <div class="insight-details">
-          <span class="insight-tag">🏭 ${sectorDataA.ulke_adi}: %${importA.toFixed(0)} açık</span>
-          <span class="insight-tag">🏭 ${sectorDataB.ulke_adi}: %${importB.toFixed(0)} açık</span>
+          <span class="insight-tag"><i data-lucide="factory" class="lucide"></i> ${sectorDataA.ulke_adi}: %${importA.toFixed(0)} açık</span>
+          <span class="insight-tag"><i data-lucide="factory" class="lucide"></i> ${sectorDataB.ulke_adi}: %${importB.toFixed(0)} açık</span>
         </div>
       `;
+
+      if (typeof lucide !== 'undefined') {
+        lucide.createIcons();
+      }
     }
 
     // ==================== RENDER SWOT ====================
@@ -2303,7 +2507,7 @@
       return `
         <div class="swot-quadrant strengths">
           <div class="swot-quadrant-header">
-            <div class="swot-quadrant-icon">💪</div>
+            <div class="swot-quadrant-icon"><i data-lucide="shield" class="lucide"></i></div>
             <span class="swot-quadrant-title">Güçlü Yönler</span>
           </div>
           <ul class="swot-items">
@@ -2312,7 +2516,7 @@
         </div>
         <div class="swot-quadrant weaknesses">
           <div class="swot-quadrant-header">
-            <div class="swot-quadrant-icon">⚠️</div>
+            <div class="swot-quadrant-icon"><i data-lucide="alert-triangle" class="lucide"></i></div>
             <span class="swot-quadrant-title">Zayıf Yönler</span>
           </div>
           <ul class="swot-items">
@@ -2321,7 +2525,7 @@
         </div>
         <div class="swot-quadrant opportunities">
           <div class="swot-quadrant-header">
-            <div class="swot-quadrant-icon">🚀</div>
+            <div class="swot-quadrant-icon"><i data-lucide="rocket" class="lucide"></i></div>
             <span class="swot-quadrant-title">Fırsatlar</span>
           </div>
           <ul class="swot-items">
@@ -2330,7 +2534,7 @@
         </div>
         <div class="swot-quadrant threats">
           <div class="swot-quadrant-header">
-            <div class="swot-quadrant-icon">⛔</div>
+            <div class="swot-quadrant-icon"><i data-lucide="ban" class="lucide"></i></div>
             <span class="swot-quadrant-title">Tehditler</span>
           </div>
           <ul class="swot-items">
@@ -2371,10 +2575,14 @@
         <div class="modal-stat">
           <div class="modal-stat-label">Karşılaştırma Sonucu</div>
           <div class="modal-stat-value" style="color:var(--success)">
-            ${comparisonResult.winner === side ? '✓ Stratejik Tercih' : comparisonResult.winner === 'TIE' ? '⚖️ Eşit' : '◯ Alternatif'}
+            ${comparisonResult.winner === side ? '<i data-lucide="check" class="lucide"></i> Stratejik Tercih' : comparisonResult.winner === 'TIE' ? '<i data-lucide="scale" class="lucide"></i> Eşit' : '<i data-lucide="circle" class="lucide"></i> Alternatif'}
           </div>
         </div>
       `;
+
+      if (typeof lucide !== 'undefined') {
+        lucide.createIcons();
+      }
       
       document.getElementById('modalOverlay').classList.add('show');
     }
@@ -2393,7 +2601,7 @@
       
       // Loading state
       const originalText = saveBtn.textContent;
-      saveBtn.textContent = '⏳ Kaydediliyor...';
+      saveBtn.textContent = 'Kaydediliyor...';
       saveBtn.disabled = true;
       
       const payload = {
@@ -2406,7 +2614,7 @@
         hesaplanan_skor: selectedForSave.totalScore || 0
       };
       
-      console.log('📤 Frontend gönderilen veri:', payload);
+      console.log('Frontend gönderilen veri:', payload);
       
       try {
         const response = await fetch('/api/decisions', {
@@ -2416,18 +2624,18 @@
         });
 
         const result = await response.json();
-        console.log('📥 Backend yanıtı:', result);
+        console.log('Backend yanıtı:', result);
 
         if (response.ok && result.status === 'success') {
           closeModal();
-          showToast('✓ Strateji başarıyla kaydedildi! (ID: ' + result.data?.id + ')');
+          showToast('Strateji başarıyla kaydedildi (ID: ' + result.data?.id + ')');
         } else {
           console.error('API Hatası:', result);
-          showToast('⚠️ Hata: ' + (result.message || 'Bilinmeyen hata'));
+          showToast('Hata: ' + (result.message || 'Bilinmeyen hata'));
         }
       } catch (error) {
         console.error('Save error:', error);
-        showToast('❌ Bağlantı hatası: ' + error.message);
+        showToast('Bağlantı hatası: ' + error.message);
       } finally {
         // Reset button
         saveBtn.textContent = originalText;

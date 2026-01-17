@@ -1,6 +1,7 @@
 const express = require('express');
 const path = require('path');
 const dotenv = require('dotenv');
+const methodOverride = require('method-override');
 
 // Ortam değişkenlerini yükle (diğer modüllerden önce)
 dotenv.config();
@@ -31,6 +32,7 @@ const app = express();
 // Body parser - JSON ve URL-encoded veriler için
 app.use(express.json({ limit: '10kb' }));
 app.use(express.urlencoded({ extended: true, limit: '10kb' }));
+app.use(methodOverride('_method'));
 
 // Statik dosyalar
 app.use(express.static(path.join(__dirname, 'public')));
