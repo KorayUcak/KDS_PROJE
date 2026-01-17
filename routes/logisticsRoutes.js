@@ -14,9 +14,11 @@ router.get('/:id', logisticsController.getLogisticsDetail);
 
 router.get('/:id/edit', logisticsController.getLogisticsEditForm);
 
-router.post('/:id/edit', logisticsController.updateLogistics);
 
-router.post('/:id/delete', logisticsController.deleteLogistics);
+router.put('/:id', logisticsController.updateLogistics);
+
+
+router.delete('/:id', logisticsController.deleteLogistics);
 
 router.get('/api/list', logisticsController.getLogisticsAPI);
 

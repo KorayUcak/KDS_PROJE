@@ -42,13 +42,7 @@
 
   </div>
 
-  <div class="danger-zone">
-    <h3>⚠️ Tehlikeli Bölge</h3>
-    <p>Bu anlaşma tipini silmek kalıcı bir işlemdir ve geri alınamaz. Bu anlaşmayı kullanan ülkelerin lojistik verileri etkilenecektir.</p>
-    <form action="/agreements/<%= agreement.anlasma_id %>/delete" method="POST" onsubmit="return confirm('Bu anlaşma tipini silmek istediğinizden emin misiniz?');">
-      <button type="submit" class="btn btn-danger">🗑️ Anlaşmayı Sil</button>
-    </form>
-  </div>
+  <form action="/agreements/<%= agreement.anlasma_id %>?_method=DELETE" method="POST" onsubmit="return confirm('Bu anlaşma tipini silmek istediğinizden emin misiniz?');"></form>
 
 </div>
 

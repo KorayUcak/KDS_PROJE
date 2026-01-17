@@ -49,7 +49,7 @@
   <div class="danger-zone">
     <h3>⚠️ Tehlikeli Bölge</h3>
     <p>Bu lojistik verisini silmek kalıcı bir işlemdir ve geri alınamaz.</p>
-    <form action="/logistics/<%= logistics.lojistik_id %>/delete" method="POST" onsubmit="return confirm('Bu lojistik verisini silmek istediğinizden emin misiniz?');">
+    <form action="/logistics/<%= logistics.lojistik_id %>?_method=DELETE" method="POST" onsubmit="return confirm('Bu lojistik verisini silmek istediğinize emin misiniz?');"></form>
       <button type="submit" class="btn btn-danger">🗑️ Veriyi Sil</button>
     </form>
   </div>
